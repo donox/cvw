@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ member.first_name }} {{ member.last_name }}{% endblock %}
+{% block content %}
+<h1>{{ member.first_name }} {{ member.last_name }}</h1>
+<p><strong>Email:</strong> {{ member.email }}</p>
+<div class="form-actions">
+    <a href="/members/{{ member.id }}/edit" class="btn btn-primary">Edit</a>
+    <a href="/members/" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}

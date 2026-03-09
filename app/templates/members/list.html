@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Members{% endblock %}
+{% block content %}
+<h1>Members</h1>
+<p><a href="/members/new" class="btn btn-primary">+ Add Member</a></p>
+
+{% if members %}
+<table>
+    <thead>
+        <tr>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Email</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in members %}
+        <tr>
+            <td>{{ m.last_name }}</td>
+            <td>{{ m.first_name }}</td>
+            <td>{{ m.email }}</td>
+            <td>
+                <a href="/members/{{ m.id }}/edit" class="btn btn-secondary">Edit</a>
+                <form method="post" action="/members/{{ m.id }}/delete" style="display:inline"
+                      onsubmit="return confirm('Delete {{ m.first_name }} {{ m.last_name }}?')">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p style="margin-top:0.75rem; color:#666;">{{ members|length }} member{{ 's' if members|length != 1 }}</p>
+{% else %}
+<p>No members yet.</p>
+{% endif %}
+{% endblock %}

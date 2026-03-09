@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Member" if member else "New Member" }}{% endblock %}
+{% block content %}
+<h1>{{ "Edit Member" if member else "New Member" }}</h1>
+
+{% if errors %}
+<div class="errors">
+    {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+</div>
+{% endif %}
+
+<form method="post" action="{{ '/members/' + member.id|string + '/edit' if member else '/members/' }}">
+    <label for="first_name">First Name</label>
+    <input type="text" id="first_name" name="first_name" required
+           value="{{ first_name if first_name is defined else (member.first_name if member else '') }}">
+
+    <label for="last_name">Last Name</label>
+    <input type="text" id="last_name" name="last_name" required
+           value="{{ last_name if last_name is defined else (member.last_name if member else '') }}">
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required
+           value="{{ email if email is defined else (member.email if member else '') }}">
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ "Save" if member else "Add Member" }}</button>
+        <a href="/members/" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}
