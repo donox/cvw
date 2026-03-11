@@ -10,17 +10,187 @@
 {% endif %}
 
 <form method="post" action="{{ '/members/' + member.id|string + '/edit' if member else '/members/' }}">
-    <label for="first_name">First Name</label>
-    <input type="text" id="first_name" name="first_name" required
-           value="{{ first_name if first_name is defined else (member.first_name if member else '') }}">
 
-    <label for="last_name">Last Name</label>
-    <input type="text" id="last_name" name="last_name" required
-           value="{{ last_name if last_name is defined else (member.last_name if member else '') }}">
+    <fieldset>
+        <legend>Personal</legend>
+        <div class="form-row">
+            <div>
+                <label for="first_name">First Name *</label>
+                <input type="text" id="first_name" name="first_name" required
+                       value="{{ first_name if first_name is defined else (member.first_name if member else '') }}">
+            </div>
+            <div>
+                <label for="last_name">Last Name *</label>
+                <input type="text" id="last_name" name="last_name" required
+                       value="{{ last_name if last_name is defined else (member.last_name if member else '') }}">
+            </div>
+            <div>
+                <label for="nickname">Nickname</label>
+                <input type="text" id="nickname" name="nickname"
+                       value="{{ nickname if nickname is defined else (member.nickname if member else '') }}">
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required
+                       value="{{ email if email is defined else (member.email if member else '') }}">
+            </div>
+            <div>
+                <label for="birthday">Birthday</label>
+                <input type="date" id="birthday" name="birthday"
+                       value="{{ birthday if birthday is defined else (member.birthday|string if member and member.birthday else '') }}">
+            </div>
+            <div>
+                <label for="significant_other">Significant Other</label>
+                <input type="text" id="significant_other" name="significant_other"
+                       value="{{ significant_other if significant_other is defined else (member.significant_other if member else '') }}">
+            </div>
+        </div>
+    </fieldset>
 
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" required
-           value="{{ email if email is defined else (member.email if member else '') }}">
+    <fieldset>
+        <legend>Address</legend>
+        <div class="form-row">
+            <div style="flex:3">
+                <label for="address">Street Address</label>
+                <input type="text" id="address" name="address"
+                       value="{{ address if address is defined else (member.address if member else '') }}">
+            </div>
+        </div>
+        <div class="form-row">
+            <div style="flex:2">
+                <label for="city">City</label>
+                <input type="text" id="city" name="city"
+                       value="{{ city if city is defined else (member.city if member else '') }}">
+            </div>
+            <div>
+                <label for="state">State</label>
+                <input type="text" id="state" name="state" maxlength="2"
+                       value="{{ state if state is defined else (member.state if member else '') }}">
+            </div>
+            <div>
+                <label for="zip_code">Zip Code</label>
+                <input type="text" id="zip_code" name="zip_code"
+                       value="{{ zip_code if zip_code is defined else (member.zip_code if member else '') }}">
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Phone</legend>
+        <div class="form-row">
+            <div>
+                <label for="home_phone">Home Phone</label>
+                <input type="text" id="home_phone" name="home_phone"
+                       value="{{ home_phone if home_phone is defined else (member.home_phone if member else '') }}">
+            </div>
+            <div>
+                <label for="work_phone">Work Phone</label>
+                <input type="text" id="work_phone" name="work_phone"
+                       value="{{ work_phone if work_phone is defined else (member.work_phone if member else '') }}">
+            </div>
+            <div>
+                <label for="mobile_phone">Mobile Phone</label>
+                <input type="text" id="mobile_phone" name="mobile_phone"
+                       value="{{ mobile_phone if mobile_phone is defined else (member.mobile_phone if member else '') }}">
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Membership</legend>
+        <div class="form-row">
+            <div>
+                <label for="membership_type">Membership Type</label>
+                <select id="membership_type" name="membership_type">
+                    <option value="">— Select —</option>
+                    {% set cur_type = membership_type if membership_type is defined else (member.membership_type if member else '') %}
+                    {% for t in membership_types %}
+                    <option value="{{ t }}" {% if cur_type == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="skill_level">Skill Level</label>
+                <select id="skill_level" name="skill_level">
+                    <option value="">— Select —</option>
+                    {% set cur_skill = skill_level if skill_level is defined else (member.skill_level if member else '') %}
+                    {% for s in skill_levels %}
+                    <option value="{{ s }}" {% if cur_skill == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="years_turning">Years Turning</label>
+                <select id="years_turning" name="years_turning">
+                    <option value="">— Select —</option>
+                    {% set cur_years = years_turning if years_turning is defined else (member.years_turning if member else '') %}
+                    {% for y in years_turning_options %}
+                    <option value="{{ y }}" {% if cur_years == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Status &amp; Dues</legend>
+        <div class="form-row">
+            <div>
+                <label for="status">Membership Status</label>
+                <select id="status" name="status">
+                    {% set cur_status = status if status is defined else (member.status if member else 'Prospective') %}
+                    {% for s in statuses %}
+                    <option value="{{ s }}" {% if cur_status == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="dues_paid_date">Dues Paid Date</label>
+                <input type="date" id="dues_paid_date" name="dues_paid_date"
+                       value="{{ dues_paid_date if dues_paid_date is defined else (member.dues_paid_date|string if member and member.dues_paid_date else '') }}">
+            </div>
+            <div style="display:flex; align-items:flex-end; padding-bottom:0.5rem">
+                {% set dp = dues_paid if dues_paid is defined else (member.dues_paid if member else False) %}
+                <label class="radio-label" style="margin-top:0">
+                    <input type="checkbox" name="dues_paid" value="on" {% if dp %}checked{% endif %}
+                           style="width:auto">
+                    Dues Paid
+                </label>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Volunteer</legend>
+        {% set cur_vi = volunteer_interest if volunteer_interest is defined else (('yes' if member.volunteer_interest else 'no') if member and member.volunteer_interest is not none else '') %}
+        <label>Volunteer Interest</label>
+        <div class="radio-group">
+            <label class="radio-label">
+                <input type="radio" name="volunteer_interest" value="yes" {% if cur_vi == 'yes' %}checked{% endif %}
+                       onclick="document.getElementById('volunteer_area_wrap').style.display='block'">
+                Yes
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="volunteer_interest" value="no" {% if cur_vi == 'no' %}checked{% endif %}
+                       onclick="document.getElementById('volunteer_area_wrap').style.display='none'">
+                Not at this time
+            </label>
+        </div>
+        <div id="volunteer_area_wrap" style="display:{{ 'block' if cur_vi == 'yes' else 'none' }}">
+            <label for="volunteer_area">What areas interest you?</label>
+            <input type="text" id="volunteer_area" name="volunteer_area"
+                   value="{{ volunteer_area if volunteer_area is defined else (member.volunteer_area if member else '') }}">
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Other</legend>
+        <label for="how_heard">How did you hear about Central Virginia Woodturners?</label>
+        <input type="text" id="how_heard" name="how_heard" style="max-width:600px"
+               value="{{ how_heard if how_heard is defined else (member.how_heard if member else '') }}">
+    </fieldset>
 
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">{{ "Save" if member else "Add Member" }}</button>

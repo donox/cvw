@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membership Application — Central Virginia Woodturners</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: Georgia, serif; margin: 0; padding: 0; background: #f4f1ec; color: #2c2c2c; }
+        header { background: #5a3e1b; color: #fff; padding: 1.5rem 2rem; }
+        header h1 { margin: 0; font-size: 1.6rem; letter-spacing: 0.03em; }
+        header p { margin: 0.25rem 0 0; font-size: 0.95rem; opacity: 0.85; font-style: italic; }
+        main { max-width: 780px; margin: 2rem auto; padding: 0 1rem 3rem; }
+        .intro { background: #fff; border-left: 4px solid #5a3e1b; padding: 1rem 1.25rem;
+                 border-radius: 0 6px 6px 0; margin-bottom: 2rem; font-size: 0.97rem; line-height: 1.6; }
+        .errors { background: #fff0f0; border: 1px solid #ffaaaa; padding: 0.75rem 1rem;
+                  border-radius: 4px; margin-bottom: 1.5rem; color: #aa2200; }
+        .errors ul { margin: 0.25rem 0 0 1rem; padding: 0; }
+        fieldset { background: #fff; border: 1px solid #d4c9b8; border-radius: 8px;
+                   padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+        legend { font-family: sans-serif; font-weight: 700; font-size: 0.9rem; text-transform: uppercase;
+                 letter-spacing: 0.06em; color: #5a3e1b; padding: 0 0.5rem; }
+        .form-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .form-row > div { flex: 1; min-width: 160px; }
+        label { display: block; margin-top: 0.85rem; font-family: sans-serif;
+                font-size: 0.88rem; font-weight: 600; color: #555; }
+        input[type=text], input[type=email], input[type=date], select, textarea {
+            width: 100%; padding: 0.45rem 0.65rem; border: 1px solid #c8bfb0;
+            border-radius: 4px; font-size: 1rem; font-family: sans-serif;
+            background: #fdfaf6; margin-top: 0.25rem; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #5a3e1b;
+            box-shadow: 0 0 0 2px rgba(90,62,27,0.15); }
+        .radio-group { display: flex; gap: 2rem; margin-top: 0.5rem; }
+        .radio-label { font-weight: normal; font-size: 1rem; color: #2c2c2c;
+                       display: flex; align-items: center; gap: 0.4rem; margin-top: 0; }
+        .radio-label input { width: auto; margin: 0; }
+        .required { color: #aa2200; }
+        .hint { font-size: 0.8rem; color: #888; font-weight: normal; margin-top: 0.15rem; }
+        .submit-row { text-align: center; margin-top: 2rem; }
+        .btn-submit { background: #5a3e1b; color: #fff; border: none; padding: 0.75rem 2.5rem;
+                      font-size: 1.1rem; font-family: sans-serif; border-radius: 6px;
+                      cursor: pointer; letter-spacing: 0.03em; }
+        .btn-submit:hover { background: #7a5628; }
+        .required-note { font-family: sans-serif; font-size: 0.85rem; color: #666;
+                         margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Central Virginia Woodturners</h1>
+    <p>Membership Application</p>
+</header>
+
+<main>
+    <div class="intro">
+        <strong>Welcome!</strong> We're glad you're interested in joining the Central Virginia Woodturners.
+        Please complete the form below and we will be in touch to finalize your membership.
+        Membership dues are collected at your first meeting.
+    </div>
+
+    {% if errors %}
+    <div class="errors">
+        <strong>Please correct the following:</strong>
+        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <p class="required-note"><span class="required">*</span> Required fields</p>
+
+    <form method="post" action="/apply">
+
+        <fieldset>
+            <legend>Personal Information</legend>
+            <div class="form-row">
+                <div>
+                    <label for="first_name">First Name <span class="required">*</span></label>
+                    <input type="text" id="first_name" name="first_name" required autocomplete="given-name"
+                           value="{{ first_name|default('') }}">
+                </div>
+                <div>
+                    <label for="last_name">Last Name <span class="required">*</span></label>
+                    <input type="text" id="last_name" name="last_name" required autocomplete="family-name"
+                           value="{{ last_name|default('') }}">
+                </div>
+                <div>
+                    <label for="nickname">Nickname</label>
+                    <input type="text" id="nickname" name="nickname" autocomplete="off"
+                           value="{{ nickname|default('') }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required autocomplete="email"
+                           value="{{ email|default('') }}">
+                </div>
+                <div>
+                    <label for="birthday">Birthday <span class="hint">(optional)</span></label>
+                    <input type="date" id="birthday" name="birthday" value="{{ birthday|default('') }}">
+                </div>
+                <div>
+                    <label for="significant_other">Significant Other</label>
+                    <input type="text" id="significant_other" name="significant_other"
+                           value="{{ significant_other|default('') }}">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Address</legend>
+            <div>
+                <label for="address">Street Address</label>
+                <input type="text" id="address" name="address" autocomplete="street-address"
+                       value="{{ address|default('') }}">
+            </div>
+            <div class="form-row">
+                <div style="flex:2">
+                    <label for="city">City</label>
+                    <input type="text" id="city" name="city" autocomplete="address-level2"
+                           value="{{ city|default('') }}">
+                </div>
+                <div>
+                    <label for="state">State</label>
+                    <input type="text" id="state" name="state" maxlength="2" autocomplete="address-level1"
+                           value="{{ state|default('') }}">
+                </div>
+                <div>
+                    <label for="zip_code">Zip Code</label>
+                    <input type="text" id="zip_code" name="zip_code" autocomplete="postal-code"
+                           value="{{ zip_code|default('') }}">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Phone</legend>
+            <div class="form-row">
+                <div>
+                    <label for="home_phone">Home Phone</label>
+                    <input type="text" id="home_phone" name="home_phone" autocomplete="home tel"
+                           value="{{ home_phone|default('') }}">
+                </div>
+                <div>
+                    <label for="work_phone">Work Phone</label>
+                    <input type="text" id="work_phone" name="work_phone" autocomplete="work tel"
+                           value="{{ work_phone|default('') }}">
+                </div>
+                <div>
+                    <label for="mobile_phone">Mobile Phone</label>
+                    <input type="text" id="mobile_phone" name="mobile_phone" autocomplete="mobile tel"
+                           value="{{ mobile_phone|default('') }}">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Membership</legend>
+            <div class="form-row">
+                <div>
+                    <label for="membership_type">Membership Type</label>
+                    <select id="membership_type" name="membership_type">
+                        <option value="">— Select —</option>
+                        {% for t in membership_types %}
+                        <option value="{{ t }}" {% if membership_type|default('') == t %}selected{% endif %}>{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="skill_level">Skill Level</label>
+                    <select id="skill_level" name="skill_level">
+                        <option value="">— Select —</option>
+                        {% for s in skill_levels %}
+                        <option value="{{ s }}" {% if skill_level|default('') == s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="years_turning">Years Turning</label>
+                    <select id="years_turning" name="years_turning">
+                        <option value="">— Select —</option>
+                        {% for y in years_turning_options %}
+                        <option value="{{ y }}" {% if years_turning|default('') == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Volunteer</legend>
+            <label>Are you interested in volunteering?</label>
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" name="volunteer_interest" value="yes"
+                           {% if volunteer_interest|default('') == 'yes' %}checked{% endif %}
+                           onclick="document.getElementById('vol_area_wrap').style.display='block'">
+                    Yes
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="volunteer_interest" value="no"
+                           {% if volunteer_interest|default('') == 'no' %}checked{% endif %}
+                           onclick="document.getElementById('vol_area_wrap').style.display='none'">
+                    Not at this time
+                </label>
+            </div>
+            <div id="vol_area_wrap" style="display:{{ 'block' if volunteer_interest|default('') == 'yes' else 'none' }}">
+                <label for="volunteer_area">What areas interest you?</label>
+                <input type="text" id="volunteer_area" name="volunteer_area"
+                       placeholder="e.g. demonstrations, education, events, setup…"
+                       value="{{ volunteer_area|default('') }}">
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>How Did You Hear About Us?</legend>
+            <label for="how_heard"> </label>
+            <input type="text" id="how_heard" name="how_heard"
+                   placeholder="Friend, club website, social media, woodworking show…"
+                   value="{{ how_heard|default('') }}">
+        </fieldset>
+
+        <div class="submit-row">
+            <button type="submit" class="btn-submit">Submit Application</button>
+        </div>
+
+    </form>
+</main>
+
+</body>
+</html>

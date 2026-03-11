@@ -1,8 +1,82 @@
 {% extends "base.html" %}
 {% block title %}{{ member.first_name }} {{ member.last_name }}{% endblock %}
 {% block content %}
-<h1>{{ member.first_name }} {{ member.last_name }}</h1>
-<p><strong>Email:</strong> {{ member.email }}</p>
+<h1>{{ member.first_name }} {{ member.last_name }}{% if member.nickname %} "{{ member.nickname }}"{% endif %}</h1>
+
+<div class="detail-grid">
+
+    <section>
+        <h2>Personal</h2>
+        <dl>
+            <dt>Email</dt><dd>{{ member.email }}</dd>
+            {% if member.birthday %}<dt>Birthday</dt><dd>{{ member.birthday }}</dd>{% endif %}
+            {% if member.significant_other %}<dt>Significant Other</dt><dd>{{ member.significant_other }}</dd>{% endif %}
+        </dl>
+    </section>
+
+    <section>
+        <h2>Address</h2>
+        <dl>
+            {% if member.address %}<dt>Street</dt><dd>{{ member.address }}</dd>{% endif %}
+            {% if member.city or member.state or member.zip_code %}
+            <dt>City/State/Zip</dt>
+            <dd>{{ [member.city, member.state, member.zip_code] | select | join(', ') }}</dd>
+            {% endif %}
+        </dl>
+    </section>
+
+    <section>
+        <h2>Phone</h2>
+        <dl>
+            {% if member.home_phone %}<dt>Home</dt><dd>{{ member.home_phone }}</dd>{% endif %}
+            {% if member.work_phone %}<dt>Work</dt><dd>{{ member.work_phone }}</dd>{% endif %}
+            {% if member.mobile_phone %}<dt>Mobile</dt><dd>{{ member.mobile_phone }}</dd>{% endif %}
+        </dl>
+    </section>
+
+    <section>
+        <h2>Membership &amp; Status</h2>
+        <dl>
+            {% if member.status %}
+            <dt>Status</dt>
+            <dd><span class="badge badge-{{ member.status|lower }}">{{ member.status }}</span></dd>
+            {% endif %}
+            {% if member.membership_type %}<dt>Type</dt><dd>{{ member.membership_type }}</dd>{% endif %}
+            {% if member.skill_level %}<dt>Skill Level</dt><dd>{{ member.skill_level }}</dd>{% endif %}
+            {% if member.years_turning %}<dt>Years Turning</dt><dd>{{ member.years_turning }}</dd>{% endif %}
+        </dl>
+    </section>
+
+    <section>
+        <h2>Dues</h2>
+        <dl>
+            <dt>Paid</dt><dd>{{ 'Yes' if member.dues_paid else 'No' }}</dd>
+            {% if member.dues_paid_date %}<dt>Date</dt><dd>{{ member.dues_paid_date }}</dd>{% endif %}
+        </dl>
+    </section>
+
+    <section>
+        <h2>Volunteer</h2>
+        <dl>
+            {% if member.volunteer_interest is not none %}
+            <dt>Interest</dt>
+            <dd>{{ "Yes" if member.volunteer_interest else "Not at this time" }}</dd>
+            {% endif %}
+            {% if member.volunteer_area %}<dt>Areas of Interest</dt><dd>{{ member.volunteer_area }}</dd>{% endif %}
+        </dl>
+    </section>
+
+    {% if member.how_heard %}
+    <section>
+        <h2>Other</h2>
+        <dl>
+            <dt>How Heard</dt><dd>{{ member.how_heard }}</dd>
+        </dl>
+    </section>
+    {% endif %}
+
+</div>
+
 <div class="form-actions">
     <a href="/members/{{ member.id }}/edit" class="btn btn-primary">Edit</a>
     <a href="/members/" class="btn btn-secondary">Back</a>

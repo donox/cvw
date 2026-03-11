@@ -22,10 +22,31 @@
         .errors { background: #fff0f0; border: 1px solid #ffaaaa; padding: 0.75rem 1rem;
                   border-radius: 4px; margin-bottom: 1rem; color: #cc2200; }
         label { display: block; margin-top: 0.75rem; font-weight: 500; }
-        input[type=text], input[type=email] { width: 100%; max-width: 400px; padding: 0.4rem 0.6rem;
+        input[type=text], input[type=email], input[type=date], select {
+               width: 100%; padding: 0.4rem 0.6rem;
                border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; box-sizing: border-box; }
         .form-actions { margin-top: 1.25rem; display: flex; gap: 0.75rem; align-items: center; }
         h1 { margin-bottom: 1rem; }
+        fieldset { border: 1px solid #ddd; border-radius: 6px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+        legend { font-weight: 600; padding: 0 0.5rem; color: #555; }
+        .form-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .form-row > div { flex: 1; min-width: 160px; }
+        .radio-group { display: flex; gap: 1.5rem; margin-top: 0.4rem; }
+        .radio-label { font-weight: normal; display: flex; align-items: center; gap: 0.4rem; margin-top: 0; }
+        .radio-label input { width: auto; }
+        /* detail page */
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        .detail-grid section { background: #f9f9f9; border: 1px solid #eee; border-radius: 6px; padding: 0.75rem 1rem; }
+        .detail-grid h2 { margin: 0 0 0.5rem; font-size: 1rem; color: #555; }
+        dl { margin: 0; }
+        dt { font-weight: 600; font-size: 0.85rem; color: #777; margin-top: 0.4rem; }
+        dd { margin: 0; }
+        /* status badges */
+        .badge { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 10px;
+                 font-size: 0.8rem; font-weight: 600; }
+        .badge-active { background: #d4edda; color: #155724; }
+        .badge-prospective { background: #fff3cd; color: #856404; }
+        .badge-former { background: #e2e3e5; color: #383d41; }
     </style>
 </head>
 <body>
