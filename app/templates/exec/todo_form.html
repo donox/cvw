@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Item" if todo else "New Action Item" }}{% endblock %}
+{% block content %}
+<h1>{{ "Edit Action Item" if todo else "New Action Item" }}</h1>
+{% if errors %}<div class="errors">{% for e in errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
+
+<form method="post" action="{{ '/exec/todo/' + todo.id|string + '/edit' if todo else '/exec/todo' }}">
+    <fieldset>
+        <legend>Item Details</legend>
+        <div>
+            <label for="title">Title *</label>
+            <input type="text" id="title" name="title" required style="max-width:600px"
+                   value="{{ todo.title if todo else '' }}">
+        </div>
+        <div>
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="2"
+                      style="width:100%; max-width:600px; resize:vertical">{{ todo.description if todo else '' }}</textarea>
+        </div>
+        <div class="form-row">
+            <div>
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="">— None —</option>
+                    {% for c in categories %}
+                    <option value="{{ c }}" {% if todo and todo.category == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority">
+                    {% for p in priorities %}
+                    <option value="{{ p }}" {% if (todo.priority if todo else 'Normal') == p %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if todo %}
+            <div>
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    {% for s in statuses %}
+                    <option value="{{ s }}" {% if todo.status == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <div>
+                <label for="owner">Owner</label>
+                <input type="text" id="owner" name="owner" placeholder="Responsible person"
+                       value="{{ todo.owner if todo else '' }}">
+            </div>
+            <div>
+                <label for="due_date">Due Date</label>
+                <input type="date" id="due_date" name="due_date"
+                       value="{{ todo.due_date|string if todo and todo.due_date else '' }}">
+            </div>
+        </div>
+    </fieldset>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ "Save" if todo else "Add Item" }}</button>
+        <a href="/exec/todo" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

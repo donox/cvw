@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+{% set user = request.state.user %}
+<h1>Welcome, {{ user.full_name }}</h1>
+<p style="color:#666; margin-top:-0.5rem">{{ user.role|title }} Console &nbsp;·&nbsp; Central Virginia Woodturners</p>
+
+<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:1rem; margin-top:1.5rem">
+
+{% set perms = {'admin': ['members','programs','financial','exec','admin'],
+                'membership': ['members'],
+                'program': ['programs'],
+                'financial': ['financial'],
+                'exec': ['exec','members','programs']}[user.role] %}
+
+{% if 'members' in perms %}
+<a href="/members/" class="console-card">
+    <div class="cc-icon">👥</div>
+    <div class="cc-title">Membership</div>
+    <div class="cc-desc">Members, applications, dues</div>
+</a>
+{% endif %}
+
+{% if 'programs' in perms %}
+<a href="/programs/" class="console-card">
+    <div class="cc-icon">📋</div>
+    <div class="cc-title">Programs</div>
+    <div class="cc-desc">Meetings, demos, feedback</div>
+</a>
+{% endif %}
+
+{% if 'financial' in perms %}
+<a href="/financial/" class="console-card">
+    <div class="cc-icon">💰</div>
+    <div class="cc-title">Financial</div>
+    <div class="cc-desc">Dues, income, expenses</div>
+</a>
+{% endif %}
+
+{% if 'exec' in perms %}
+<a href="/exec/" class="console-card">
+    <div class="cc-icon">🏛</div>
+    <div class="cc-title">Executive</div>
+    <div class="cc-desc">Officers, schedule, planning</div>
+</a>
+{% endif %}
+
+{% if 'admin' in perms %}
+<a href="/admin/" class="console-card">
+    <div class="cc-icon">⚙️</div>
+    <div class="cc-title">Admin</div>
+    <div class="cc-desc">Users, system settings</div>
+</a>
+{% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Schedule{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Organizational Schedule</h1>
+    <a href="/exec/schedule/new" class="btn btn-primary">+ Add Event</a>
+</div>
+
+<table>
+    <thead>
+        <tr><th>Date</th><th>Type</th><th>Title</th><th>Time</th><th>Location</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for e in events %}
+        <tr {% if e.date < today %}style="color:#aaa"{% endif %}>
+            <td>{{ e.date }}</td>
+            <td>{{ e.event_type }}</td>
+            <td>{{ e.title }}</td>
+            <td>
+                {% if e.start_time %}{{ e.start_time }}{% if e.end_time %} – {{ e.end_time }}{% endif %}{% else %}—{% endif %}
+            </td>
+            <td>{{ e.location or '—' }}</td>
+            <td>
+                <a href="/exec/schedule/{{ e.id }}/edit" class="btn btn-secondary">Edit</a>
+                <form method="post" action="/exec/schedule/{{ e.id }}/delete" style="display:inline"
+                      onsubmit="return confirm('Delete this event?')">
+                    <button class="btn btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="color:#888">No events scheduled.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

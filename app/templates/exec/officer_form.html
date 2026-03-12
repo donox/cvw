@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Officer" if officer else "New Officer" }}{% endblock %}
+{% block content %}
+<h1>{{ "Edit Officer" if officer else "New Officer" }}</h1>
+{% if errors %}<div class="errors">{% for e in errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
+
+<form method="post" action="{{ '/exec/officers/' + officer.id|string + '/edit' if officer else '/exec/officers' }}">
+    <fieldset>
+        <legend>Officer Details</legend>
+        <div class="form-row">
+            <div>
+                <label for="title">Title *</label>
+                <select id="title" name="title">
+                    {% for t in titles %}
+                    <option value="{{ t }}" {% if officer and officer.title == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="flex:2">
+                <label for="member_id">Member *</label>
+                <select id="member_id" name="member_id">
+                    <option value="">— Select Active Member —</option>
+                    {% for m in members %}
+                    <option value="{{ m.id }}" {% if officer and officer.member_id == m.id %}selected{% endif %}>
+                        {{ m.last_name }}, {{ m.first_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label for="term_start">Term Start</label>
+                <input type="date" id="term_start" name="term_start"
+                       value="{{ officer.term_start|string if officer and officer.term_start else '' }}">
+            </div>
+            <div>
+                <label for="term_end">Term End</label>
+                <input type="date" id="term_end" name="term_end"
+                       value="{{ officer.term_end|string if officer and officer.term_end else '' }}">
+            </div>
+            {% if officer %}
+            <div style="display:flex; align-items:flex-end; padding-bottom:0.4rem">
+                <label class="radio-label" style="margin:0">
+                    <input type="checkbox" name="active" value="on" style="width:auto"
+                           {% if officer.active %}checked{% endif %}> &nbsp;Active
+                </label>
+            </div>
+            {% endif %}
+        </div>
+    </fieldset>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ "Save" if officer else "Add Officer" }}</button>
+        <a href="/exec/officers" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Action Items{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Action Items</h1>
+    <a href="/exec/todo/new" class="btn btn-primary">+ Add Item</a>
+</div>
+
+<div style="margin-bottom:1rem; display:flex; gap:0.5rem; flex-wrap:wrap">
+    <a href="/exec/todo" class="btn {% if not status_filter %}btn-primary{% else %}btn-secondary{% endif %}">Open</a>
+    {% for s in statuses %}
+    <a href="/exec/todo?status_filter={{ s }}"
+       class="btn {% if status_filter == s %}btn-primary{% else %}btn-secondary{% endif %}">{{ s }}</a>
+    {% endfor %}
+</div>
+
+<table>
+    <thead>
+        <tr><th>Priority</th><th>Category</th><th>Item</th><th>Owner</th><th>Due</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for t in todos %}
+        <tr>
+            <td><span class="badge badge-{{ {'High':'prospective','Normal':'active','Low':'former'}[t.priority] }}">{{ t.priority }}</span></td>
+            <td>{{ t.category or '—' }}</td>
+            <td>
+                <strong>{{ t.title }}</strong>
+                {% if t.description %}<br><small style="color:#888">{{ t.description }}</small>{% endif %}
+            </td>
+            <td>{{ t.owner or '—' }}</td>
+            <td>{{ t.due_date or '—' }}</td>
+            <td>{{ t.status }}</td>
+            <td>
+                <a href="/exec/todo/{{ t.id }}/edit" class="btn btn-secondary">Edit</a>
+                <form method="post" action="/exec/todo/{{ t.id }}/delete" style="display:inline"
+                      onsubmit="return confirm('Delete this item?')">
+                    <button class="btn btn-danger">Del</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="color:#888">No items.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<h1>Admin Console</h1>
+<div class="detail-grid">
+    <section>
+        <h2>Users</h2>
+        <dl>
+            <dt>Total</dt><dd>{{ user_count }}</dd>
+            <dt>Active</dt><dd>{{ active_count }}</dd>
+        </dl>
+        <div style="margin-top:0.75rem">
+            <a href="/admin/users" class="btn btn-primary">Manage Users</a>
+        </div>
+    </section>
+    <section>
+        <h2>Consoles</h2>
+        <dl>
+            <dt>Membership</dt><dd><a href="/members/">/members/</a></dd>
+            <dt>Programs</dt><dd><a href="/programs/">/programs/</a></dd>
+            <dt>Financial</dt><dd><a href="/financial/">/financial/</a></dd>
+            <dt>Executive</dt><dd><a href="/exec/">/exec/</a></dd>
+        </dl>
+    </section>
+</div>
+{% endblock %}

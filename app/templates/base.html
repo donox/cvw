@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CVW Membership{% endblock %}</title>
     <style>
-        body { font-family: sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; color: #333; }
-        nav { margin-bottom: 1.5rem; }
-        nav a { margin-right: 1rem; text-decoration: none; color: #0066cc; }
-        nav a:hover { text-decoration: underline; }
+        body { font-family: sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; color: #333; }
+        nav { margin-bottom: 1.5rem; background: #5a3e28; padding: 0.5rem 1rem; border-radius: 6px;
+              display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+        nav .nav-brand { color: #f5e6d3; font-weight: 700; font-size: 1rem; margin-right: 1.25rem; }
+        nav a { margin-right: 0.1rem; text-decoration: none; color: #f5e6d3; font-size: 0.9rem;
+                padding: 0.3rem 0.7rem; border-radius: 4px; }
+        nav a:hover { background: rgba(255,255,255,0.15); }
+        nav .nav-right { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+        nav .nav-user { color: #d9c4b0; font-size: 0.85rem; }
         table { width: 100%; border-collapse: collapse; }
         th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #ddd; }
         th { background: #f5f5f5; font-weight: 600; }
@@ -22,7 +27,8 @@
         .errors { background: #fff0f0; border: 1px solid #ffaaaa; padding: 0.75rem 1rem;
                   border-radius: 4px; margin-bottom: 1rem; color: #cc2200; }
         label { display: block; margin-top: 0.75rem; font-weight: 500; }
-        input[type=text], input[type=email], input[type=date], select {
+        input[type=text], input[type=email], input[type=date], input[type=number],
+        input[type=password], select, textarea {
                width: 100%; padding: 0.4rem 0.6rem;
                border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; box-sizing: border-box; }
         .form-actions { margin-top: 1.25rem; display: flex; gap: 0.75rem; align-items: center; }
@@ -47,13 +53,57 @@
         .badge-active { background: #d4edda; color: #155724; }
         .badge-prospective { background: #fff3cd; color: #856404; }
         .badge-former { background: #e2e3e5; color: #383d41; }
+        /* console cards (dashboard) */
+        .console-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
+        .console-card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1.25rem 1.5rem;
+                        text-decoration: none; color: #333; transition: box-shadow 0.15s; display: block; }
+        .console-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); text-decoration: none; }
+        .console-card h2 { margin: 0 0 0.4rem; font-size: 1.1rem; color: #5a3e28; }
+        .console-card p { margin: 0; font-size: 0.875rem; color: #666; }
+        /* stat cards (financial dashboard) */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 0.9rem 1.1rem; }
+        .stat-card h3 { margin: 0 0 0.3rem; font-size: 0.85rem; color: #666; text-transform: uppercase; letter-spacing: 0.04em; }
+        .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; }
+        .stat-income .stat-value { color: #155724; }
+        .stat-expense .stat-value { color: #721c24; }
+        .stat-net-pos .stat-value { color: #0d6efd; }
+        .stat-net-neg .stat-value { color: #cc2200; }
+        /* print */
+        @media print {
+            nav { display: none; }
+            .btn { display: none; }
+            body { max-width: 100%; margin: 0; }
+        }
     </style>
 </head>
 <body>
 <nav>
-    <a href="/members/">Members</a>
-    <a href="/members/pdf/current">PDF List</a>
-    <a href="/programs/">Programs</a>
+    <span class="nav-brand">CVW</span>
+    {% if request.state.user %}
+        {% set role = request.state.user.role %}
+        {% if role in ['admin', 'exec', 'membership'] %}
+            <a href="/members/">Members</a>
+        {% endif %}
+        {% if role in ['admin', 'exec', 'program'] %}
+            <a href="/programs/">Programs</a>
+        {% endif %}
+        {% if role in ['admin', 'financial'] %}
+            <a href="/financial/">Financial</a>
+        {% endif %}
+        {% if role in ['admin', 'exec'] %}
+            <a href="/exec/">Exec</a>
+        {% endif %}
+        {% if role == 'admin' %}
+            <a href="/admin/">Admin</a>
+        {% endif %}
+        <div class="nav-right">
+            <span class="nav-user">{{ request.state.user.full_name }} ({{ role }})</span>
+            <a href="/logout">Log out</a>
+        </div>
+    {% else %}
+        <div class="nav-right"><a href="/login">Log in</a></div>
+    {% endif %}
 </nav>
 {% block content %}{% endblock %}
 </body>

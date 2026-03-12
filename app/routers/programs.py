@@ -9,10 +9,13 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db, settings
+from app.dependencies import require_permission
 from app.models.program import Program, ProgramComment
 
 router = APIRouter(prefix="/programs", tags=["programs"])
 templates = Jinja2Templates(directory="app/templates")
+
+auth = Depends(require_permission("programs"))
 
 
 def _get_or_404(db: Session, program_id: int) -> Program:
@@ -35,13 +38,13 @@ def _summary(comments: list) -> dict:
 
 
 @router.get("/", response_class=HTMLResponse)
-def list_programs(request: Request, db: Session = Depends(get_db)):
+def list_programs(request: Request, _=auth, db: Session = Depends(get_db)):
     programs = db.query(Program).order_by(Program.date.desc()).all()
     return templates.TemplateResponse("programs/list.html", {"request": request, "programs": programs})
 
 
 @router.get("/new", response_class=HTMLResponse)
-def new_program_form(request: Request):
+def new_program_form(request: Request, _=auth):
     return templates.TemplateResponse("programs/form.html", {
         "request": request, "program": None, "errors": []
     })
@@ -91,7 +94,7 @@ def create_program(
 
 
 @router.get("/{program_id}", response_class=HTMLResponse)
-def program_detail(program_id: int, request: Request, db: Session = Depends(get_db)):
+def program_detail(program_id: int, request: Request, _=auth, db: Session = Depends(get_db)):
     program = _get_or_404(db, program_id)
     summary = _summary(program.comments)
     return templates.TemplateResponse("programs/detail.html", {
@@ -100,7 +103,7 @@ def program_detail(program_id: int, request: Request, db: Session = Depends(get_
 
 
 @router.get("/{program_id}/edit", response_class=HTMLResponse)
-def edit_program_form(program_id: int, request: Request, db: Session = Depends(get_db)):
+def edit_program_form(program_id: int, request: Request, _=auth, db: Session = Depends(get_db)):
     program = _get_or_404(db, program_id)
     return templates.TemplateResponse("programs/form.html", {
         "request": request, "program": program, "errors": []
@@ -176,7 +179,7 @@ def _generate_qr_png(url: str) -> bytes:
 
 
 @router.get("/{program_id}/qr.png")
-def program_qr_png(program_id: int, db: Session = Depends(get_db)):
+def program_qr_png(program_id: int, _=auth, db: Session = Depends(get_db)):
     _get_or_404(db, program_id)
     png = _generate_qr_png(_feedback_url(program_id))
     return Response(content=png, media_type="image/png",
@@ -184,7 +187,7 @@ def program_qr_png(program_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/{program_id}/qr", response_class=HTMLResponse)
-def program_qr_page(program_id: int, request: Request, db: Session = Depends(get_db)):
+def program_qr_page(program_id: int, request: Request, _=auth, db: Session = Depends(get_db)):
     program = _get_or_404(db, program_id)
     url = _feedback_url(program_id)
     return templates.TemplateResponse("programs/qr.html", {

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Officers{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Officers</h1>
+    <a href="/exec/officers/new" class="btn btn-primary">+ Add Officer</a>
+</div>
+
+<table>
+    <thead>
+        <tr><th>Title</th><th>Name</th><th>Email</th><th>Term Start</th><th>Term End</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for o in officers %}
+        <tr>
+            <td>{{ o.title }}</td>
+            <td>{{ o.member.first_name }} {{ o.member.last_name }}</td>
+            <td>{{ o.member.email }}</td>
+            <td>{{ o.term_start or '—' }}</td>
+            <td>{{ o.term_end or '—' }}</td>
+            <td><span class="badge {% if o.active %}badge-active{% else %}badge-former{% endif %}">
+                {{ 'Active' if o.active else 'Inactive' }}</span></td>
+            <td><a href="/exec/officers/{{ o.id }}/edit" class="btn btn-secondary">Edit</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="color:#888">No officers on record.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

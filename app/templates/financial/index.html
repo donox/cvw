@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Financial{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem">
+    <h1 style="margin:0">Financial — {{ year }}</h1>
+    <a href="/financial/transactions/new" class="btn btn-primary">+ Add Transaction</a>
+</div>
+
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem">
+    <div class="stat-card stat-income">
+        <div class="stat-label">YTD Income</div>
+        <div class="stat-value">${{ "%.2f"|format(summary.income) }}</div>
+    </div>
+    <div class="stat-card stat-expense">
+        <div class="stat-label">YTD Expenses</div>
+        <div class="stat-value">${{ "%.2f"|format(summary.expenses) }}</div>
+    </div>
+    <div class="stat-card {% if summary.net >= 0 %}stat-income{% else %}stat-expense{% endif %}">
+        <div class="stat-label">Net</div>
+        <div class="stat-value">${{ "%.2f"|format(summary.net) }}</div>
+    </div>
+</div>
+
+{% if summary.by_category %}
+<h2>By Category</h2>
+<table style="max-width:480px; margin-bottom:1.5rem">
+    <thead><tr><th>Category</th><th style="text-align:right">Amount</th></tr></thead>
+    <tbody>
+    {% for cat, amt in summary.by_category.items()|sort %}
+    <tr>
+        <td>{{ cat }}</td>
+        <td style="text-align:right">${{ "%.2f"|format(amt) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<div style="display:flex; justify-content:space-between; align-items:center">
+    <h2 style="margin:0">Recent Transactions</h2>
+    <a href="/financial/transactions" class="btn btn-secondary">View All</a>
+</div>
+<table style="margin-top:0.5rem">
+    <thead>
+        <tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th style="text-align:right">Amount</th></tr>
+    </thead>
+    <tbody>
+        {% for t in recent %}
+        <tr>
+            <td>{{ t.date }}</td>
+            <td><span class="badge {% if t.type == 'Income' %}badge-active{% else %}badge-former{% endif %}">{{ t.type }}</span></td>
+            <td>{{ t.category }}</td>
+            <td>{{ t.description or '—' }}</td>
+            <td style="text-align:right">${{ "%.2f"|format(t.amount) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="color:#888">No transactions yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

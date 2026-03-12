@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Transactions{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem">
+    <h1 style="margin:0">Transactions</h1>
+    <a href="/financial/transactions/new" class="btn btn-primary">+ Add</a>
+</div>
+
+<div style="margin-bottom:1rem; display:flex; gap:0.5rem; flex-wrap:wrap">
+    <a href="/financial/transactions" class="btn {% if not type_filter %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+    {% for t in transaction_types %}
+    <a href="/financial/transactions?type_filter={{ t }}"
+       class="btn {% if type_filter == t %}btn-primary{% else %}btn-secondary{% endif %}">{{ t }}</a>
+    {% endfor %}
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Member</th>
+            <th>Ref</th>
+            <th style="text-align:right">Amount</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in transactions %}
+        <tr>
+            <td>{{ t.date }}</td>
+            <td><span class="badge {% if t.type == 'Income' %}badge-active{% else %}badge-former{% endif %}">{{ t.type }}</span></td>
+            <td>{{ t.category }}</td>
+            <td>{{ t.description or '—' }}</td>
+            <td>{% if t.member %}{{ t.member.last_name }}, {{ t.member.first_name }}{% else %}—{% endif %}</td>
+            <td>{{ t.reference or '—' }}</td>
+            <td style="text-align:right">${{ "%.2f"|format(t.amount) }}</td>
+            <td>
+                <a href="/financial/transactions/{{ t.id }}/edit" class="btn btn-secondary" style="font-size:0.8rem">Edit</a>
+                <form method="post" action="/financial/transactions/{{ t.id }}/delete" style="display:inline"
+                      onsubmit="return confirm('Delete this transaction?')">
+                    <button class="btn btn-danger" style="font-size:0.8rem">Del</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" style="color:#888">No transactions.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

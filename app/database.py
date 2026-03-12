@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./data/cvw.db"
     APP_TITLE: str = "CVW Membership Database"
     BASE_URL: str = "http://localhost:8000"
+    SECRET_KEY: str = "change-this-in-production"
+    ADMIN_INITIAL_PASSWORD: str = ""
 
     class Config:
         env_file = ".env"

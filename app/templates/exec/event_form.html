@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Event" if event else "New Event" }}{% endblock %}
+{% block content %}
+<h1>{{ "Edit Event" if event else "New Event" }}</h1>
+{% if errors %}<div class="errors">{% for e in errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
+
+<form method="post" action="{{ '/exec/schedule/' + event.id|string + '/edit' if event else '/exec/schedule' }}">
+    <fieldset>
+        <legend>Event Details</legend>
+        <div class="form-row">
+            <div>
+                <label for="date">Date *</label>
+                <input type="date" id="date" name="date" required
+                       value="{{ event.date|string if event else '' }}">
+            </div>
+            <div>
+                <label for="event_type">Type *</label>
+                <select id="event_type" name="event_type">
+                    {% for t in event_types %}
+                    <option value="{{ t }}" {% if event and event.event_type == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div style="flex:2">
+                <label for="title">Title *</label>
+                <input type="text" id="title" name="title" required
+                       value="{{ event.title if event else '' }}">
+            </div>
+            <div>
+                <label for="location">Location</label>
+                <input type="text" id="location" name="location"
+                       value="{{ event.location if event else '' }}">
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label for="start_time">Start Time</label>
+                <input type="time" id="start_time" name="start_time"
+                       value="{{ event.start_time if event else '' }}">
+            </div>
+            <div>
+                <label for="end_time">End Time</label>
+                <input type="time" id="end_time" name="end_time"
+                       value="{{ event.end_time if event else '' }}">
+            </div>
+        </div>
+        <div>
+            <label for="description">Description / Notes</label>
+            <textarea id="description" name="description" rows="3"
+                      style="width:100%; max-width:600px; resize:vertical">{{ event.description if event else '' }}</textarea>
+        </div>
+    </fieldset>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ "Save" if event else "Add Event" }}</button>
+        <a href="/exec/schedule" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

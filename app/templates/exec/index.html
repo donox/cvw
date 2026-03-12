@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Executive{% endblock %}
+{% block content %}
+<h1>Executive Console</h1>
+
+<div class="detail-grid">
+    <section>
+        <h2>Current Officers <a href="/exec/officers" style="font-size:0.8rem; font-weight:normal; margin-left:0.5rem">manage →</a></h2>
+        {% if officers %}
+        <dl>
+            {% for o in officers %}
+            <dt>{{ o.title }}</dt>
+            <dd>{{ o.member.first_name }} {{ o.member.last_name }}</dd>
+            {% endfor %}
+        </dl>
+        {% else %}
+        <p style="color:#888; margin:0.5rem 0 0">No officers on record.</p>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Upcoming Events <a href="/exec/schedule" style="font-size:0.8rem; font-weight:normal; margin-left:0.5rem">all →</a></h2>
+        {% if upcoming %}
+        <dl>
+            {% for e in upcoming %}
+            <dt>{{ e.date }} — {{ e.event_type }}</dt>
+            <dd>{{ e.title }}{% if e.location %} · {{ e.location }}{% endif %}</dd>
+            {% endfor %}
+        </dl>
+        {% else %}
+        <p style="color:#888; margin:0.5rem 0 0">No upcoming events.</p>
+        {% endif %}
+    </section>
+
+    <section style="grid-column: 1 / -1">
+        <h2>Open Action Items <a href="/exec/todo" style="font-size:0.8rem; font-weight:normal; margin-left:0.5rem">all →</a></h2>
+        {% if open_todos %}
+        <table>
+            <thead><tr><th>Priority</th><th>Category</th><th>Item</th><th>Owner</th><th>Due</th></tr></thead>
+            <tbody>
+            {% for t in open_todos %}
+            <tr>
+                <td><span class="badge badge-{{ {'High':'prospective','Normal':'active','Low':'former'}[t.priority] }}">{{ t.priority }}</span></td>
+                <td>{{ t.category or '—' }}</td>
+                <td>{{ t.title }}</td>
+                <td>{{ t.owner or '—' }}</td>
+                <td>{{ t.due_date or '—' }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color:#888; margin:0.5rem 0 0">No open action items.</p>
+        {% endif %}
+    </section>
+</div>
+
+<div style="display:flex; gap:0.75rem; margin-top:1rem; flex-wrap:wrap">
+    <a href="/exec/officers" class="btn btn-secondary">Officers</a>
+    <a href="/exec/schedule" class="btn btn-secondary">Schedule</a>
+    <a href="/exec/todo" class="btn btn-secondary">Action Items</a>
+</div>
+{% endblock %}

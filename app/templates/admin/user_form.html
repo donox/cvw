@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit User" if user else "New User" }}{% endblock %}
+{% block content %}
+<h1>{{ "Edit User" if user else "New User" }}</h1>
+
+{% if errors %}
+<div class="errors">{% for e in errors %}<div>{{ e }}</div>{% endfor %}</div>
+{% endif %}
+
+<form method="post" action="{{ '/admin/users/' + user.id|string + '/edit' if user else '/admin/users' }}">
+    <fieldset>
+        <legend>Account</legend>
+        <div class="form-row">
+            <div>
+                <label for="username">Username *</label>
+                <input type="text" id="username" name="username" required autocomplete="off"
+                       value="{{ username if username is defined else (user.username if user else '') }}">
+            </div>
+            <div>
+                <label for="full_name">Full Name *</label>
+                <input type="text" id="full_name" name="full_name" required
+                       value="{{ full_name if full_name is defined else (user.full_name if user else '') }}">
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label for="role">Role *</label>
+                <select id="role" name="role">
+                    {% set cur_role = role if role is defined else (user.role if user else '') %}
+                    {% for r in roles %}
+                    <option value="{{ r }}" {% if cur_role == r %}selected{% endif %}>{{ r|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if user %}
+            <div style="display:flex; align-items:flex-end; padding-bottom:0.4rem">
+                <label class="radio-label" style="margin:0">
+                    <input type="checkbox" name="active" value="on" style="width:auto"
+                           {% if user.active %}checked{% endif %}>
+                    &nbsp;Active
+                </label>
+            </div>
+            {% endif %}
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Password {% if user %}<span style="font-weight:normal; font-size:0.85rem">(leave blank to keep current)</span>{% endif %}</legend>
+        <div class="form-row">
+            <div>
+                <label for="password">{{ "New Password" if user else "Password *" }}</label>
+                <input type="password" id="password" name="password" autocomplete="new-password"
+                       {% if not user %}required{% endif %} minlength="8">
+            </div>
+            <div>
+                <label for="confirm_password">Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password">
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ "Save" if user else "Create User" }}</button>
+        <a href="/admin/users" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

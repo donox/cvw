@@ -8,10 +8,13 @@ from fpdf import FPDF
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.dependencies import require_permission
 from app.models.member import Member
 
 router = APIRouter(prefix="/members", tags=["members"])
 templates = Jinja2Templates(directory="app/templates")
+
+auth = Depends(require_permission("members"))
 
 MEMBERSHIP_TYPES = ["Individual", "Family", "Secondary/Affiliate"]
 SKILL_LEVELS = ["Beginner", "Intermediate", "Advanced", "Professional"]
@@ -83,13 +86,13 @@ def _parse_member_form(
 
 
 @router.get("/", response_class=HTMLResponse)
-def list_members(request: Request, db: Session = Depends(get_db)):
+def list_members(request: Request, _=auth, db: Session = Depends(get_db)):
     members = db.query(Member).order_by(Member.last_name, Member.first_name).all()
     return templates.TemplateResponse("members/list.html", {"request": request, "members": members})
 
 
 @router.get("/new", response_class=HTMLResponse)
-def new_member_form(request: Request):
+def new_member_form(request: Request, _=auth):
     return templates.TemplateResponse("members/form.html", {
         "request": request, "member": None, "errors": [], **_form_context()
     })
@@ -149,13 +152,13 @@ def create_member(
 
 
 @router.get("/{member_id}", response_class=HTMLResponse)
-def member_detail(member_id: int, request: Request, db: Session = Depends(get_db)):
+def member_detail(member_id: int, request: Request, _=auth, db: Session = Depends(get_db)):
     member = _get_or_404(db, member_id)
     return templates.TemplateResponse("members/detail.html", {"request": request, "member": member})
 
 
 @router.get("/{member_id}/edit", response_class=HTMLResponse)
-def edit_member_form(member_id: int, request: Request, db: Session = Depends(get_db)):
+def edit_member_form(member_id: int, request: Request, _=auth, db: Session = Depends(get_db)):
     member = _get_or_404(db, member_id)
     return templates.TemplateResponse("members/form.html", {
         "request": request, "member": member, "errors": [], **_form_context()
@@ -222,7 +225,7 @@ def delete_member(member_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/pdf/current", response_class=Response)
-def member_list_pdf(db: Session = Depends(get_db)):
+def member_list_pdf(_=auth, db: Session = Depends(get_db)):
     members = (
         db.query(Member)
         .filter(Member.status == "Active")

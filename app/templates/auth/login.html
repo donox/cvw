@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — CVW Membership</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: sans-serif; margin: 0; background: #f0ede8; display: flex;
+               flex-direction: column; min-height: 100vh; align-items: center; justify-content: center; }
+        .card { background: #fff; border-radius: 10px; padding: 2.5rem 2rem;
+                border: 1px solid #d4c9b8; width: 100%; max-width: 380px; }
+        h1 { text-align: center; font-size: 1.2rem; color: #5a3e1b; margin: 0 0 0.25rem; }
+        .sub { text-align: center; color: #888; font-size: 0.85rem; margin-bottom: 1.75rem; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; color: #555;
+                margin-top: 1rem; }
+        input { width: 100%; padding: 0.5rem 0.7rem; border: 1px solid #ccc; border-radius: 4px;
+                font-size: 1rem; margin-top: 0.25rem; }
+        input:focus { outline: none; border-color: #5a3e1b;
+                      box-shadow: 0 0 0 2px rgba(90,62,27,0.15); }
+        .error { background: #fff0f0; border: 1px solid #ffaaaa; color: #aa2200;
+                 border-radius: 4px; padding: 0.6rem 0.8rem; margin-top: 1rem;
+                 font-size: 0.88rem; }
+        .btn { width: 100%; background: #5a3e1b; color: #fff; border: none;
+               padding: 0.65rem; font-size: 1rem; border-radius: 4px; margin-top: 1.5rem;
+               cursor: pointer; }
+        .btn:hover { background: #7a5628; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Central Virginia Woodturners</h1>
+    <div class="sub">Staff / Officer Login</div>
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/login">
+        <input type="hidden" name="next" value="{{ next }}">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" autocomplete="username" autofocus required>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+        <button type="submit" class="btn">Log In</button>
+    </form>
+</div>
+</body>
+</html>
