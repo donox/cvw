@@ -16,7 +16,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 auth = Depends(require_permission("members"))
 
-MEMBERSHIP_TYPES = ["Individual", "Family", "Secondary/Affiliate"]
+MEMBERSHIP_TYPES = ["Individual", "Family", "Secondary/Affiliate", "Life"]
 SKILL_LEVELS = ["Beginner", "Intermediate", "Advanced", "Professional"]
 YEARS_TURNING = ["Less than 1", "1-3", "3-5", "5-10", "10-20", "20+"]
 STATUSES = ["Prospective", "Active", "Former"]

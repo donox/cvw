@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Date, Integer, String, DateTime, func
+from sqlalchemy import Boolean, Column, Date, Float, Integer, String, DateTime, func
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -13,7 +13,7 @@ class Member(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     nickname = Column(String)
-    email = Column(String, unique=True, nullable=False, index=True)
+    email = Column(String, unique=True, index=True)
     birthday = Column(Date)
     significant_other = Column(String)
 
@@ -37,6 +37,9 @@ class Member(Base):
     # Dues
     dues_paid = Column(Boolean, default=False)
     dues_paid_date = Column(Date)
+    dues_amount = Column(Float)
+    donation = Column(Float)
+    payment_method = Column(String)  # PayPal, Cash, CK, Check
 
     # Volunteer
     volunteer_interest = Column(Boolean)
