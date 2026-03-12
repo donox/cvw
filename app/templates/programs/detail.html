@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}{{ program.subject }}{% endblock %}
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1rem">
+    <h1 style="margin:0">{{ program.subject }}</h1>
+    <div style="display:flex; gap:0.5rem">
+        <a href="/programs/{{ program.id }}/feedback" class="btn btn-primary">Submit Feedback</a>
+        <a href="/programs/{{ program.id }}/qr" class="btn btn-secondary">QR Code</a>
+        <a href="/programs/{{ program.id }}/edit" class="btn btn-secondary">Edit</a>
+    </div>
+</div>
+
+<div class="detail-grid" style="margin-bottom:1.5rem">
+    <section>
+        <h2>Program Info</h2>
+        <dl>
+            <dt>Date</dt><dd>{{ program.date }}</dd>
+            {% if program.presenter %}<dt>Presenter</dt><dd>{{ program.presenter }}</dd>{% endif %}
+            {% if program.cost is not none %}<dt>Cost</dt><dd>${{ "%.2f"|format(program.cost) }}</dd>{% endif %}
+            {% if program.attendee_count %}<dt>Attendees</dt><dd>{{ program.attendee_count }}</dd>{% endif %}
+            {% if program.notes %}<dt>Notes</dt><dd>{{ program.notes }}</dd>{% endif %}
+        </dl>
+    </section>
+
+    <section>
+        <h2>Feedback Summary <span style="font-weight:normal; font-size:0.9rem; color:#888">({{ summary.count }} response{{ 's' if summary.count != 1 }})</span></h2>
+        {% if summary.count > 0 %}
+        <dl>
+            {% if summary.avg_rating is not none %}
+            <dt>Avg Rating</dt>
+            <dd>{{ summary.avg_rating }} / 5 &nbsp;{{ '★' * summary.avg_rating|int }}{{ '☆' * (5 - summary.avg_rating|int) }}</dd>
+            {% endif %}
+            {% if summary.avg_relevance is not none %}
+            <dt>Avg Relevance</dt>
+            <dd>{{ summary.avg_relevance }} / 5</dd>
+            {% endif %}
+            {% if summary.pct_learned is not none %}
+            <dt>Learned & Will Use</dt>
+            <dd>{{ summary.pct_learned }}%</dd>
+            {% endif %}
+        </dl>
+        {% else %}
+        <p style="color:#888; margin:0.5rem 0 0">No feedback yet.</p>
+        {% endif %}
+    </section>
+</div>
+
+{% if program.comments %}
+<h2>Individual Responses</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Rating</th>
+            <th>Relevance</th>
+            <th>Will Use</th>
+            <th>Improvements</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in program.comments|sort(attribute='created_at') %}
+        <tr>
+            <td>
+                {% if c.anonymous %}
+                    <em style="color:#888">Anonymous</em>
+                {% elif c.member %}
+                    <a href="/members/{{ c.member.id }}">{{ c.member.first_name }} {{ c.member.last_name }}</a>
+                {% else %}
+                    <em style="color:#888">Unidentified</em>
+                {% endif %}
+            </td>
+            <td>{{ c.rating ~ '/5' if c.rating else '—' }}</td>
+            <td>{{ c.relevance ~ '/5' if c.relevance else '—' }}</td>
+            <td>{{ 'Yes' if c.learned_something else ('No' if c.learned_something is not none else '—') }}</td>
+            <td>{{ c.improvements or '—' }}</td>
+            <td>
+                <form method="post" action="/programs/{{ program.id }}/comments/{{ c.id }}/delete" style="display:inline"
+                      onsubmit="return confirm('Delete this response?')">
+                    <button type="submit" class="btn btn-danger" style="font-size:0.8rem; padding:0.2rem 0.6rem">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<div class="form-actions" style="margin-top:1.5rem">
+    <a href="/programs/" class="btn btn-secondary">Back to Programs</a>
+</div>
+{% endblock %}

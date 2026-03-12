@@ -39,17 +39,62 @@ Update this as decisions are made or directions change.
 - [x] CRUD routes (list, new, create, detail, edit, update, delete)
 - [x] Jinja2 templates (list, form, detail) with fieldset layout
 - [x] PDF current member list (sorted by last/first name, includes type and skill)
-- [x] Docker / docker-compose setup
+- [x] Public membership application form (`/apply`) with confirmation page
+- [x] Membership status (Prospective/Active/Former) and dues (paid, date) fields
+- [x] Docker / docker-compose setup (dev)
 
 ---
 
 ## Pending Decisions
 
-- [ ] Authentication — deferred, not in initial scope
+- [ ] Authentication — deferred until after initial deploy
 - [ ] Pagination — needed once member count grows
-- [ ] Member status field (Active, Inactive, Lapsed) — not on public form but likely needed for management
-- [ ] Dues / renewal tracking
 - [ ] Import existing member data (CSV?)
+
+---
+
+## Deployment (do after minimal deploy is working)
+
+### Steps to deploy in a container
+
+1. **Install Docker on server**
+   ```bash
+   sudo apt install docker.io docker-compose-plugin
+   sudo systemctl enable --now docker
+   ```
+
+2. **Copy project to server** (rsync or git clone)
+   ```bash
+   rsync -av --exclude='.venv' --exclude='data/' --exclude='.git' \
+     /home/don/PycharmProjects/CVWdata/ user@server:/opt/cvwdata/
+   ```
+
+3. **Create `.env` on server**
+   ```bash
+   cp .env.example .env   # edit if needed
+   ```
+
+4. **Fix `docker-compose.yml` for production** — remove the local volume mount
+   (`. :/app`) and `--reload`; create a `docker-compose.prod.yml`
+
+5. **Build and start**
+   ```bash
+   docker compose up -d --build
+   ```
+
+6. **Run migrations**
+   ```bash
+   docker compose exec web alembic upgrade head
+   ```
+
+7. **Reverse proxy** — put nginx or Caddy in front of port 8000 for HTTPS
+
+### Subsequent updates
+```bash
+git pull
+docker compose up -d --build
+docker compose exec web alembic upgrade head   # if schema changed
+```
 
 ---
 

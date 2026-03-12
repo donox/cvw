@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Programs{% endblock %}
+{% block content %}
+<h1>Programs</h1>
+<p><a href="/programs/new" class="btn btn-primary">+ Add Program</a></p>
+
+{% if programs %}
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Subject</th>
+            <th>Presenter</th>
+            <th>Attendees</th>
+            <th>Feedback</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in programs %}
+        <tr>
+            <td><a href="/programs/{{ p.id }}">{{ p.date }}</a></td>
+            <td>{{ p.subject }}</td>
+            <td>{{ p.presenter or '' }}</td>
+            <td>{{ p.attendee_count or '' }}</td>
+            <td>
+                {{ p.comments|length }} response{{ 's' if p.comments|length != 1 }}
+                &nbsp;<a href="/programs/{{ p.id }}/feedback" class="btn btn-secondary" style="font-size:0.8rem">Submit</a>
+            </td>
+            <td>
+                <a href="/programs/{{ p.id }}/qr" class="btn btn-secondary">QR</a>
+                <a href="/programs/{{ p.id }}/edit" class="btn btn-secondary">Edit</a>
+                <form method="post" action="/programs/{{ p.id }}/delete" style="display:inline"
+                      onsubmit="return confirm('Delete this program and all its feedback?')">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No programs recorded yet.</p>
+{% endif %}
+{% endblock %}

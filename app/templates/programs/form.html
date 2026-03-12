@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Program" if program else "New Program" }}{% endblock %}
+{% block content %}
+<h1>{{ "Edit Program" if program else "New Program" }}</h1>
+
+{% if errors %}
+<div class="errors">{% for e in errors %}<div>{{ e }}</div>{% endfor %}</div>
+{% endif %}
+
+<form method="post" action="{{ '/programs/' + program.id|string + '/edit' if program else '/programs/' }}">
+    <fieldset>
+        <legend>Program Details</legend>
+        <div class="form-row">
+            <div>
+                <label for="date">Date *</label>
+                <input type="date" id="date" name="date" required
+                       value="{{ date if date is defined else (program.date|string if program else '') }}">
+            </div>
+            <div style="flex:2">
+                <label for="subject">Subject *</label>
+                <input type="text" id="subject" name="subject" required
+                       value="{{ subject if subject is defined else (program.subject if program else '') }}">
+            </div>
+        </div>
+        <div class="form-row">
+            <div style="flex:2">
+                <label for="presenter">Presenter</label>
+                <input type="text" id="presenter" name="presenter"
+                       value="{{ presenter if presenter is defined else (program.presenter if program else '') }}">
+            </div>
+            <div>
+                <label for="cost">Cost ($)</label>
+                <input type="text" id="cost" name="cost"
+                       value="{{ cost if cost is defined else (program.cost if program else '') }}">
+            </div>
+            <div>
+                <label for="attendee_count">Attendees</label>
+                <input type="text" id="attendee_count" name="attendee_count"
+                       value="{{ attendee_count if attendee_count is defined else (program.attendee_count if program else '') }}">
+            </div>
+        </div>
+        <div>
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="3" style="width:100%; max-width:600px; resize:vertical">{{ notes if notes is defined else (program.notes if program else '') }}</textarea>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ "Save" if program else "Add Program" }}</button>
+        <a href="/programs/" class="btn btn-secondary">Cancel</a>
+        {% if program %}
+        <a href="/programs/{{ program.id }}/qr" class="btn btn-secondary">QR Code</a>
+        {% endif %}
+    </div>
+</form>
+{% endblock %}

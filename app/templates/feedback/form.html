@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Feedback — Central Virginia Woodturners</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: Georgia, serif; margin: 0; padding: 0; background: #f4f1ec; color: #2c2c2c; }
+        header { background: #5a3e1b; color: #fff; padding: 1.5rem 2rem; }
+        header h1 { margin: 0; font-size: 1.6rem; }
+        header p { margin: 0.25rem 0 0; font-size: 0.95rem; opacity: 0.85; font-style: italic; }
+        main { max-width: 680px; margin: 2rem auto; padding: 0 1rem 3rem; }
+        .program-card { background: #fff; border-left: 4px solid #5a3e1b; padding: 1rem 1.25rem;
+                        border-radius: 0 6px 6px 0; margin-bottom: 2rem; }
+        .program-card h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+        .program-card p { margin: 0; color: #666; font-size: 0.9rem; font-family: sans-serif; }
+        .errors { background: #fff0f0; border: 1px solid #ffaaaa; padding: 0.75rem 1rem;
+                  border-radius: 4px; margin-bottom: 1.5rem; color: #aa2200; font-family: sans-serif; }
+        .errors ul { margin: 0.25rem 0 0 1rem; padding: 0; }
+        fieldset { background: #fff; border: 1px solid #d4c9b8; border-radius: 8px;
+                   padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+        legend { font-family: sans-serif; font-weight: 700; font-size: 0.9rem; text-transform: uppercase;
+                 letter-spacing: 0.06em; color: #5a3e1b; padding: 0 0.5rem; }
+        label { display: block; margin-top: 0.85rem; font-family: sans-serif;
+                font-size: 0.88rem; font-weight: 600; color: #555; }
+        input[type=email], input[type=text], textarea {
+            width: 100%; padding: 0.45rem 0.65rem; border: 1px solid #c8bfb0;
+            border-radius: 4px; font-size: 1rem; font-family: sans-serif;
+            background: #fdfaf6; margin-top: 0.25rem; }
+        input:focus, textarea:focus { outline: none; border-color: #5a3e1b;
+            box-shadow: 0 0 0 2px rgba(90,62,27,0.15); }
+        textarea { resize: vertical; }
+        /* rating buttons */
+        .rating-group { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .rating-group input[type=radio] { display: none; }
+        .rating-group label {
+            display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 4rem; padding: 0.35rem 0.2rem; border: 2px solid #c8bfb0; border-radius: 6px;
+            cursor: pointer; color: #777; background: #fdfaf6; margin-top: 0; transition: all 0.15s; }
+        .rating-group input[type=radio]:checked + label { background: #5a3e1b; color: #fff; border-color: #5a3e1b; }
+        .rating-group label:hover { border-color: #5a3e1b; color: #5a3e1b; }
+        .rn { font-size: 1.1rem; font-weight: 700; line-height: 1; }
+        .rl { font-size: 0.6rem; text-align: center; line-height: 1.2; margin-top: 0.2rem; font-weight: normal; }
+        .scale-note { font-family: sans-serif; font-size: 0.78rem; color: #888;
+                      font-style: italic; margin-top: 0.4rem; }
+        /* yes/no */
+        .yn-group { display: flex; gap: 1rem; margin-top: 0.5rem; }
+        .yn-group input[type=radio] { display: none; }
+        .yn-group label { display: inline-flex; align-items: center; justify-content: center;
+            padding: 0.4rem 1.5rem; border: 2px solid #c8bfb0; border-radius: 6px;
+            cursor: pointer; font-size: 1rem; background: #fdfaf6; color: #555; margin-top: 0; }
+        .yn-group input[type=radio]:checked + label { background: #5a3e1b; color: #fff; border-color: #5a3e1b; }
+        .yn-group label:hover { border-color: #5a3e1b; }
+        /* anonymous */
+        .anon-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.75rem;
+                    font-family: sans-serif; font-size: 0.9rem; }
+        .anon-row input { width: auto; margin: 0; }
+        .hint { font-size: 0.8rem; color: #999; font-family: sans-serif; margin-top: 0.2rem; }
+        .required { color: #aa2200; }
+        .submit-row { text-align: center; margin-top: 2rem; }
+        .btn-submit { background: #5a3e1b; color: #fff; border: none; padding: 0.75rem 2.5rem;
+                      font-size: 1.1rem; font-family: sans-serif; border-radius: 6px;
+                      cursor: pointer; }
+        .btn-submit:hover { background: #7a5628; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Central Virginia Woodturners</h1>
+    <p>Program Feedback</p>
+</header>
+
+<main>
+    <div class="program-card">
+        <h2>{{ program.subject }}</h2>
+        <p>{{ program.date }}{% if program.presenter %} &nbsp;·&nbsp; {{ program.presenter }}{% endif %}</p>
+    </div>
+
+    {% if errors %}
+    <div class="errors">
+        <strong>Please correct the following:</strong>
+        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <form method="post" action="/programs/{{ program.id }}/feedback">
+
+        <fieldset>
+            <legend>Your Identity</legend>
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" autocomplete="email"
+                   placeholder="your@email.com — used to link your response to your membership record"
+                   value="{{ email|default('') }}">
+            <p class="hint">Optional. Leave blank or check anonymous below to submit without identification.</p>
+            <div class="anon-row">
+                <input type="checkbox" id="anonymous" name="anonymous" value="on"
+                       {% if anonymous == 'on' %}checked{% endif %}
+                       onclick="document.getElementById('email').disabled = this.checked">
+                <label for="anonymous" style="margin:0; font-weight:normal; border:none; padding:0; background:none; color:#333">
+                    Submit anonymously
+                </label>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Program Rating <span class="required">*</span></legend>
+            <label>Overall quality — independent of your personal interest in the topic</label>
+            <div class="rating-group">
+                {% for n, lbl in [(1,'Poor'),(2,'Fair'),(3,'Good'),(4,'Excellent'),(5,'Exceptional')] %}
+                <input type="radio" id="rating_{{ n }}" name="rating" value="{{ n }}"
+                       {% if rating|default('') == n|string %}checked{% endif %}>
+                <label for="rating_{{ n }}"><span class="rn">{{ n }}</span><span class="rl">{{ lbl }}</span></label>
+                {% endfor %}
+            </div>
+            <p class="scale-note">3 = solid, professional presentation — reserve 4–5 for programs that truly stand out</p>
+        </fieldset>
+
+        <fieldset>
+            <legend>Relevance <span class="required">*</span></legend>
+            <label>How applicable was this to your own turning, regardless of overall quality</label>
+            <div class="rating-group">
+                {% for n, lbl in [(1,'None'),(2,'Slight'),(3,'Moderate'),(4,'High'),(5,'Immediate')] %}
+                <input type="radio" id="relevance_{{ n }}" name="relevance" value="{{ n }}"
+                       {% if relevance|default('') == n|string %}checked{% endif %}>
+                <label for="relevance_{{ n }}"><span class="rn">{{ n }}</span><span class="rl">{{ lbl }}</span></label>
+                {% endfor %}
+            </div>
+            <p class="scale-note">3 = relevant to most turners — 5 = you'll apply this at your next session</p>
+        </fieldset>
+
+        <fieldset>
+            <legend>Learning <span class="required">*</span></legend>
+            <label>Did you learn something you expect to use?</label>
+            <div class="yn-group">
+                <input type="radio" id="learned_yes" name="learned_something" value="yes"
+                       {% if learned_something|default('') == 'yes' %}checked{% endif %}>
+                <label for="learned_yes">Yes</label>
+                <input type="radio" id="learned_no" name="learned_something" value="no"
+                       {% if learned_something|default('') == 'no' %}checked{% endif %}>
+                <label for="learned_no">No</label>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Improvements</legend>
+            <label for="improvements">What might be improved?</label>
+            <textarea id="improvements" name="improvements" rows="4"
+                      placeholder="Any suggestions to make future programs better…">{{ improvements|default('') }}</textarea>
+        </fieldset>
+
+        <div class="submit-row">
+            <button type="submit" class="btn-submit">Submit Feedback</button>
+        </div>
+
+    </form>
+</main>
+
+</body>
+</html>

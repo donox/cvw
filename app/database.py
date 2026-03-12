@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./data/cvw.db"
     APP_TITLE: str = "CVW Membership Database"
+    BASE_URL: str = "http://localhost:8000"
 
     class Config:
         env_file = ".env"

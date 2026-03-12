@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback QR — {{ program.subject }}</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: Georgia, serif; margin: 0; padding: 0;
+               background: #fff; color: #2c2c2c; }
+
+        .page { max-width: 480px; margin: 2rem auto; padding: 2rem;
+                border: 3px solid #5a3e1b; border-radius: 12px; text-align: center; }
+
+        .org { font-family: sans-serif; font-size: 0.85rem; text-transform: uppercase;
+               letter-spacing: 0.1em; color: #5a3e1b; font-weight: 700; margin-bottom: 0.5rem; }
+
+        h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+        .meta { font-family: sans-serif; font-size: 0.9rem; color: #666; margin-bottom: 1.5rem; }
+
+        .qr-wrap { display: inline-block; padding: 1rem; background: #fff;
+                   border: 1px solid #e0d8cc; border-radius: 8px; margin-bottom: 1.25rem; }
+        .qr-wrap img { display: block; width: 240px; height: 240px; }
+
+        .cta { font-family: sans-serif; font-size: 1.15rem; font-weight: 700;
+               color: #5a3e1b; margin-bottom: 0.5rem; }
+        .url { font-family: monospace; font-size: 0.78rem; color: #888;
+               word-break: break-all; margin-bottom: 1.5rem; }
+
+        .no-print { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee; }
+        .btn { display: inline-block; padding: 0.5rem 1.25rem; border-radius: 4px;
+               text-decoration: none; font-family: sans-serif; font-size: 0.9rem;
+               border: 1px solid transparent; cursor: pointer; margin: 0.25rem; }
+        .btn-primary { background: #5a3e1b; color: white; }
+        .btn-secondary { background: #eee; color: #333; border-color: #ccc; }
+
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+            .page { border: 2px solid #5a3e1b; margin: 0; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="org">Central Virginia Woodturners</div>
+    <h1>{{ program.subject }}</h1>
+    <div class="meta">
+        {{ program.date }}
+        {% if program.presenter %}&nbsp;·&nbsp; {{ program.presenter }}{% endif %}
+    </div>
+
+    <div class="qr-wrap">
+        <img src="/programs/{{ program.id }}/qr.png" alt="QR code for feedback form">
+    </div>
+
+    <div class="cta">Scan to share your feedback</div>
+    <div class="url">{{ feedback_url }}</div>
+
+    <div class="no-print">
+        <button onclick="window.print()" class="btn btn-primary">Print</button>
+        <a href="/programs/{{ program.id }}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+</body>
+</html>
