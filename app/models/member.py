@@ -49,5 +49,6 @@ class Member(Base):
     how_heard = Column(String)
 
     created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())
 
     program_comments = relationship("ProgramComment", back_populates="member")

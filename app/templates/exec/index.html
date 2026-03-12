@@ -5,16 +5,37 @@
 
 <div class="detail-grid">
     <section>
-        <h2>Current Officers <a href="/exec/officers" style="font-size:0.8rem; font-weight:normal; margin-left:0.5rem">manage →</a></h2>
-        {% if officers %}
+        <h2>Executive Committee <a href="/exec/officers" style="font-size:0.8rem; font-weight:normal; margin-left:0.5rem">manage →</a></h2>
+        {% if elected %}
         <dl>
-            {% for o in officers %}
+            {% for o in elected %}
             <dt>{{ o.title }}</dt>
-            <dd>{{ o.member.first_name }} {{ o.member.last_name }}</dd>
+            <dd>
+                {% if o.member %}{{ o.member.first_name }} {{ o.member.last_name }}
+                {% else %}<span style="color:#aaa">Vacant</span>{% endif %}
+            </dd>
             {% endfor %}
         </dl>
         {% else %}
         <p style="color:#888; margin:0.5rem 0 0">No officers on record.</p>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Volunteer Staff <a href="/exec/officers" style="font-size:0.8rem; font-weight:normal; margin-left:0.5rem">manage →</a></h2>
+        {% if volunteers %}
+        <dl>
+            {% for o in volunteers %}
+            <dt>{{ o.title }}</dt>
+            <dd>
+                {% if o.member %}{{ o.member.first_name }} {{ o.member.last_name }}
+                {% elif o.notes %}<span style="color:#aaa">{{ o.notes }}</span>
+                {% else %}<span style="color:#aaa">Vacant</span>{% endif %}
+            </dd>
+            {% endfor %}
+        </dl>
+        {% else %}
+        <p style="color:#888; margin:0.5rem 0 0">No volunteer staff on record.</p>
         {% endif %}
     </section>
 
@@ -56,7 +77,7 @@
 </div>
 
 <div style="display:flex; gap:0.75rem; margin-top:1rem; flex-wrap:wrap">
-    <a href="/exec/officers" class="btn btn-secondary">Officers</a>
+    <a href="/exec/officers" class="btn btn-secondary">Officers &amp; Staff</a>
     <a href="/exec/schedule" class="btn btn-secondary">Schedule</a>
     <a href="/exec/todo" class="btn btn-secondary">Action Items</a>
 </div>

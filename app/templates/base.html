@@ -79,7 +79,7 @@
 </head>
 <body>
 <nav>
-    <span class="nav-brand">CVW</span>
+    <a href="/" class="nav-brand" style="text-decoration:none">CVW</a>
     {% if request.state.user %}
         {% set role = request.state.user.role %}
         {% if role in ['admin', 'exec', 'membership'] %}
@@ -95,7 +95,7 @@
             <a href="/exec/">Exec</a>
         {% endif %}
         {% if role == 'admin' %}
-            <a href="/admin/">Admin</a>
+            <a href="/dashboard">Admin</a>
         {% endif %}
         <div class="nav-right">
             <span class="nav-user">{{ request.state.user.full_name }} ({{ role }})</span>

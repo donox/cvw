@@ -1,19 +1,36 @@
 {% extends "base.html" %}
 {% block title %}Members{% endblock %}
 {% block content %}
-<h1>Members</h1>
-<p><a href="/members/new" class="btn btn-primary">+ Add Member</a></p>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Members</h1>
+    <a href="/members/new" class="btn btn-primary">+ Add Member</a>
+</div>
+
+<form method="get" action="/members/" style="margin-bottom:1rem; display:flex; gap:0.5rem; align-items:center">
+    <input type="text" name="search" value="{{ search }}" placeholder="Search last name…"
+           style="width:220px; margin-top:0" autocomplete="off">
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <button type="submit" class="btn btn-secondary">Search</button>
+    {% if search %}<a href="/members/?sort={{ sort }}" class="btn btn-secondary">Clear</a>{% endif %}
+</form>
+
+{% macro sort_link(col, label) %}
+    {% set arrow = ' ▲' if sort == col else '' %}
+    <a href="/members/?sort={{ col }}{% if search %}&search={{ search }}{% endif %}"
+       style="color:inherit; text-decoration:{% if sort == col %}underline{% else %}none{% endif %}">{{ label }}{{ arrow }}</a>
+{% endmacro %}
 
 {% if members %}
 <table>
     <thead>
         <tr>
-            <th>Last Name</th>
+            <th>{{ sort_link('last_name', 'Last Name') }}</th>
             <th>First Name</th>
-            <th>Email</th>
-            <th>Type</th>
-            <th>Status</th>
+            <th>{{ sort_link('email', 'Email') }}</th>
+            <th>{{ sort_link('membership_type', 'Type') }}</th>
+            <th>{{ sort_link('status', 'Status') }}</th>
             <th>Dues</th>
+            <th>Last Update</th>
             <th></th>
         </tr>
     </thead>
@@ -22,7 +39,7 @@
         <tr>
             <td><a href="/members/{{ m.id }}">{{ m.last_name }}</a></td>
             <td>{{ m.first_name }}</td>
-            <td>{{ m.email }}</td>
+            <td>{{ m.email or '' }}</td>
             <td>{{ m.membership_type or '' }}</td>
             <td>
                 <span class="badge badge-{{ (m.status or 'prospective')|lower }}">
@@ -30,6 +47,9 @@
                 </span>
             </td>
             <td>{{ '✓' if m.dues_paid else '' }}</td>
+            <td style="color:#888; font-size:0.85rem">
+                {{ m.updated_at.strftime('%Y-%m-%d') if m.updated_at else 'never' }}
+            </td>
             <td>
                 <a href="/members/{{ m.id }}/edit" class="btn btn-secondary">Edit</a>
                 <form method="post" action="/members/{{ m.id }}/delete" style="display:inline"
@@ -41,8 +61,8 @@
         {% endfor %}
     </tbody>
 </table>
-<p style="margin-top:0.75rem; color:#666;">{{ members|length }} member{{ 's' if members|length != 1 }}</p>
+<p style="margin-top:0.75rem; color:#666;">{{ members|length }} member{{ 's' if members|length != 1 }}{% if search %} matching "{{ search }}"{% endif %}</p>
 {% else %}
-<p>No members yet.</p>
+<p>No members{% if search %} matching "{{ search }}"{% endif %}.</p>
 {% endif %}
 {% endblock %}

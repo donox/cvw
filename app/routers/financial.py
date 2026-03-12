@@ -45,6 +45,23 @@ def financial_index(request: Request, _=auth, db: Session = Depends(get_db)):
     })
 
 
+@router.get("/dues", response_class=HTMLResponse)
+def dues_status(request: Request, _=auth, db: Session = Depends(get_db)):
+    subject_members = (
+        db.query(Member)
+        .filter(Member.status == "Active", Member.membership_type != "Life")
+        .order_by(Member.last_name, Member.first_name)
+        .all()
+    )
+    paid = [m for m in subject_members if m.dues_paid]
+    unpaid = [m for m in subject_members if not m.dues_paid]
+    return templates.TemplateResponse("financial/dues.html", {
+        "request": request,
+        "paid": paid,
+        "unpaid": unpaid,
+    })
+
+
 @router.get("/transactions", response_class=HTMLResponse)
 def transaction_list(
     request: Request,

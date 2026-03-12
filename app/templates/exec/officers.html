@@ -2,29 +2,44 @@
 {% block title %}Officers{% endblock %}
 {% block content %}
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
-    <h1 style="margin:0">Officers</h1>
-    <a href="/exec/officers/new" class="btn btn-primary">+ Add Officer</a>
+    <h1 style="margin:0">Officers &amp; Volunteers 2026-2027</h1>
+    <a href="/exec/officers/new" class="btn btn-primary">+ Add Position</a>
 </div>
 
-<table>
+{% for category in ['Elected', 'Volunteer'] %}
+{% set group = officers | selectattr('category', 'equalto', category) | list %}
+{% if group %}
+<h2 style="margin:1.5rem 0 0.5rem; font-size:1rem; text-transform:uppercase; color:#666; letter-spacing:0.05em">
+    {% if category == 'Elected' %}Executive Committee – Elected Positions{% else %}Volunteer Staff Positions{% endif %}
+</h2>
+<table style="margin-bottom:1rem">
     <thead>
-        <tr><th>Title</th><th>Name</th><th>Email</th><th>Term Start</th><th>Term End</th><th>Status</th><th></th></tr>
+        <tr><th>Title</th><th>Member</th><th>Email</th><th>Notes</th><th>Status</th><th></th></tr>
     </thead>
     <tbody>
-        {% for o in officers %}
+        {% for o in group %}
         <tr>
             <td>{{ o.title }}</td>
-            <td>{{ o.member.first_name }} {{ o.member.last_name }}</td>
-            <td>{{ o.member.email }}</td>
-            <td>{{ o.term_start or '—' }}</td>
-            <td>{{ o.term_end or '—' }}</td>
+            <td>
+                {% if o.member %}
+                    <a href="/members/{{ o.member.id }}">{{ o.member.first_name }} {{ o.member.last_name }}</a>
+                {% else %}
+                    <span style="color:#aaa">Vacant</span>
+                {% endif %}
+            </td>
+            <td>{{ o.member.email if o.member and o.member.email else '' }}</td>
+            <td style="color:#666; font-size:0.875rem">{{ o.notes or '' }}</td>
             <td><span class="badge {% if o.active %}badge-active{% else %}badge-former{% endif %}">
                 {{ 'Active' if o.active else 'Inactive' }}</span></td>
             <td><a href="/exec/officers/{{ o.id }}/edit" class="btn btn-secondary">Edit</a></td>
         </tr>
-        {% else %}
-        <tr><td colspan="7" style="color:#888">No officers on record.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+{% endif %}
+{% endfor %}
+
+{% if not officers %}
+<p style="color:#888">No officers on record.</p>
+{% endif %}
 {% endblock %}

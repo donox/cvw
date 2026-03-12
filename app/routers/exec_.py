@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies import require_permission
 from app.models.member import Member
-from app.models.officer import Officer, OFFICER_TITLES
+from app.models.officer import Officer, OFFICER_TITLES, OFFICER_CATEGORIES
 from app.models.org import OrgEvent, OrgTodo, EVENT_TYPES, TODO_CATEGORIES, TODO_STATUSES, TODO_PRIORITIES
 
 router = APIRouter(prefix="/exec", tags=["exec"])
@@ -20,7 +20,9 @@ auth = Depends(require_permission("exec"))
 
 @router.get("/", response_class=HTMLResponse)
 def exec_index(request: Request, _=auth, db: Session = Depends(get_db)):
-    officers = db.query(Officer).filter(Officer.active == True).order_by(Officer.title).all()
+    all_officers = db.query(Officer).filter(Officer.active == True).order_by(Officer.title).all()
+    elected   = [o for o in all_officers if o.category == "Elected"]
+    volunteers = [o for o in all_officers if o.category == "Volunteer"]
     today = date.today()
     upcoming = (
         db.query(OrgEvent)
@@ -37,7 +39,8 @@ def exec_index(request: Request, _=auth, db: Session = Depends(get_db)):
         .all()
     )
     return templates.TemplateResponse("exec/index.html", {
-        "request": request, "officers": officers,
+        "request": request,
+        "elected": elected, "volunteers": volunteers,
         "upcoming": upcoming, "open_todos": open_todos,
     })
 
@@ -54,26 +57,30 @@ def officer_list(request: Request, _=auth, db: Session = Depends(get_db)):
 
 @router.get("/officers/new", response_class=HTMLResponse)
 def new_officer_form(request: Request, _=auth, db: Session = Depends(get_db)):
-    members = db.query(Member).filter(Member.status == "Active").order_by(Member.last_name).all()
+    members = db.query(Member).order_by(Member.last_name, Member.first_name).all()
     return templates.TemplateResponse("exec/officer_form.html", {
         "request": request, "officer": None, "members": members,
-        "titles": OFFICER_TITLES, "errors": [],
+        "titles": OFFICER_TITLES, "categories": OFFICER_CATEGORIES, "errors": [],
     })
 
 
 @router.post("/officers", response_class=RedirectResponse)
 def create_officer(
     request: Request,
-    member_id: str = Form(...),
+    member_id: Optional[str] = Form(None),
     title: str = Form(...),
+    category: str = Form("Elected"),
+    notes: Optional[str] = Form(None),
     term_start: Optional[str] = Form(None),
     term_end: Optional[str] = Form(None),
     _=auth,
     db: Session = Depends(get_db),
 ):
     officer = Officer(
-        member_id=int(member_id),
+        member_id=int(member_id) if member_id else None,
         title=title,
+        category=category,
+        notes=notes or None,
         term_start=date.fromisoformat(term_start) if term_start else None,
         term_end=date.fromisoformat(term_end) if term_end else None,
         active=True,
@@ -88,18 +95,20 @@ def edit_officer_form(officer_id: int, request: Request, _=auth, db: Session = D
     officer = db.get(Officer, officer_id)
     if not officer:
         raise HTTPException(status_code=404)
-    members = db.query(Member).filter(Member.status == "Active").order_by(Member.last_name).all()
+    members = db.query(Member).order_by(Member.last_name, Member.first_name).all()
     return templates.TemplateResponse("exec/officer_form.html", {
         "request": request, "officer": officer, "members": members,
-        "titles": OFFICER_TITLES, "errors": [],
+        "titles": OFFICER_TITLES, "categories": OFFICER_CATEGORIES, "errors": [],
     })
 
 
 @router.post("/officers/{officer_id}/edit", response_class=RedirectResponse)
 def update_officer(
     officer_id: int,
-    member_id: str = Form(...),
+    member_id: Optional[str] = Form(None),
     title: str = Form(...),
+    category: str = Form("Elected"),
+    notes: Optional[str] = Form(None),
     term_start: Optional[str] = Form(None),
     term_end: Optional[str] = Form(None),
     active: Optional[str] = Form(None),
@@ -109,8 +118,10 @@ def update_officer(
     officer = db.get(Officer, officer_id)
     if not officer:
         raise HTTPException(status_code=404)
-    officer.member_id = int(member_id)
+    officer.member_id = int(member_id) if member_id else None
     officer.title = title
+    officer.category = category
+    officer.notes = notes or None
     officer.term_start = date.fromisoformat(term_start) if term_start else None
     officer.term_end = date.fromisoformat(term_end) if term_end else None
     officer.active = active == "on"

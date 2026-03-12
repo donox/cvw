@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Dues Status{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Dues Status</h1>
+    <a href="/financial/" class="btn btn-secondary">← Financial</a>
+</div>
+<p style="color:#666; font-size:0.9rem">Active members only. Life members excluded.</p>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:0.75rem">
+    <div class="stat-card stat-income">
+        <h3>Paid</h3>
+        <div class="stat-value">{{ paid|length }}</div>
+    </div>
+    <div class="stat-card stat-expense">
+        <h3>Unpaid</h3>
+        <div class="stat-value">{{ unpaid|length }}</div>
+    </div>
+</div>
+
+<h2 style="margin-top:1.5rem">Not Paid ({{ unpaid|length }})</h2>
+{% if unpaid %}
+<table>
+    <thead>
+        <tr><th>Name</th><th>Type</th><th>Email</th><th>Payment Method</th></tr>
+    </thead>
+    <tbody>
+        {% for m in unpaid %}
+        <tr>
+            <td><a href="/members/{{ m.id }}">{{ m.last_name }}, {{ m.first_name }}</a></td>
+            <td>{{ m.membership_type or '—' }}</td>
+            <td>{{ m.email or '—' }}</td>
+            <td>{{ m.payment_method or '—' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">All active members have paid dues.</p>
+{% endif %}
+
+<h2 style="margin-top:1.5rem">Paid ({{ paid|length }})</h2>
+{% if paid %}
+<table>
+    <thead>
+        <tr><th>Name</th><th>Type</th><th>Amount</th><th>Date Paid</th><th>Method</th></tr>
+    </thead>
+    <tbody>
+        {% for m in paid %}
+        <tr>
+            <td><a href="/members/{{ m.id }}">{{ m.last_name }}, {{ m.first_name }}</a></td>
+            <td>{{ m.membership_type or '—' }}</td>
+            <td>{{ "$%.2f"|format(m.dues_amount) if m.dues_amount else '—' }}</td>
+            <td>{{ m.dues_paid_date or '—' }}</td>
+            <td>{{ m.payment_method or '—' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
@@ -85,10 +85,33 @@ def _parse_member_form(
     )
 
 
+SORT_COLUMNS = {
+    "last_name":       (Member.last_name, Member.first_name),
+    "email":           (Member.email,),
+    "membership_type": (Member.membership_type, Member.last_name),
+    "status":          (Member.status, Member.last_name),
+}
+
+
 @router.get("/", response_class=HTMLResponse)
-def list_members(request: Request, _=auth, db: Session = Depends(get_db)):
-    members = db.query(Member).order_by(Member.last_name, Member.first_name).all()
-    return templates.TemplateResponse("members/list.html", {"request": request, "members": members})
+def list_members(
+    request: Request,
+    _=auth,
+    db: Session = Depends(get_db),
+    search: Optional[str] = None,
+    sort: Optional[str] = None,
+):
+    sort_key = sort if sort in SORT_COLUMNS else "last_name"
+    q = db.query(Member)
+    if search:
+        q = q.filter(Member.last_name.ilike(f"{search}%"))
+    members = q.order_by(*SORT_COLUMNS[sort_key]).all()
+    return templates.TemplateResponse("members/list.html", {
+        "request": request,
+        "members": members,
+        "search": search or "",
+        "sort": sort_key,
+    })
 
 
 @router.get("/new", response_class=HTMLResponse)
@@ -212,6 +235,7 @@ def update_member(
     )
     for key, value in fields.items():
         setattr(member, key, value)
+    member.updated_at = datetime.now()
     db.commit()
     return RedirectResponse(url="/members/", status_code=303)
 

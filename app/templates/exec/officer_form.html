@@ -6,9 +6,17 @@
 
 <form method="post" action="{{ '/exec/officers/' + officer.id|string + '/edit' if officer else '/exec/officers' }}">
     <fieldset>
-        <legend>Officer Details</legend>
+        <legend>Position</legend>
         <div class="form-row">
             <div>
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    {% for c in categories %}
+                    <option value="{{ c }}" {% if (officer.category if officer else 'Elected') == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="flex:2">
                 <label for="title">Title *</label>
                 <select id="title" name="title">
                     {% for t in titles %}
@@ -16,19 +24,25 @@
                     {% endfor %}
                 </select>
             </div>
-            <div style="flex:2">
-                <label for="member_id">Member *</label>
-                <select id="member_id" name="member_id">
-                    <option value="">— Select Active Member —</option>
-                    {% for m in members %}
-                    <option value="{{ m.id }}" {% if officer and officer.member_id == m.id %}selected{% endif %}>
-                        {{ m.last_name }}, {{ m.first_name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
         </div>
-        <div class="form-row">
+        <div>
+            <label for="member_id">Member (leave blank if vacant)</label>
+            <select id="member_id" name="member_id">
+                <option value="">— Vacant —</option>
+                {% for m in members %}
+                <option value="{{ m.id }}" {% if officer and officer.member_id == m.id %}selected{% endif %}>
+                    {{ m.last_name }}, {{ m.first_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="notes">Notes</label>
+            <input type="text" id="notes" name="notes"
+                   value="{{ officer.notes if officer and officer.notes else '' }}"
+                   placeholder="Additional info or interim name if member unknown">
+        </div>
+        <div class="form-row" style="margin-top:0.5rem">
             <div>
                 <label for="term_start">Term Start</label>
                 <input type="date" id="term_start" name="term_start"
