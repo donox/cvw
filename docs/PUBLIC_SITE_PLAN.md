@@ -72,11 +72,38 @@ Notes:
 | Route | Description | Notes |
 |---|---|---|
 | `/newsletters` | PDF archive list by year/month | Requires PDF upload management |
-| `/resources` | Curated link library by category | DB-backed or YAML-driven |
+| `/site/resources` | Curated link library by category | YAML-driven (see below) |
 | `/gallery` | Member photo gallery | Requires image upload + storage |
 | `/symposium` | Virginia Woodturning Symposium info | Static or linked |
 | `/dues` | Membership tiers + PayPal integration | PayPal Buttons API |
 | `/members-only` | Protected content for logged-in members | Auth already exists |
+
+#### Resources page approach
+
+The existing WordPress Resources page has ~15 categories of links (PDFs, videos, external websites). The proposed approach:
+
+- **Storage: YAML file** (`data/resources.yaml`). Each entry has a category, title, URL, and optional description. Example:
+
+  ```yaml
+  - category: "Getting Started"
+    title: "AAW Turning Fundamentals"
+    url: "https://example.com/fundamentals"
+    description: "Introductory video series from the AAW"
+
+  - category: "Wood Sources"
+    title: "Local suppliers list (PDF)"
+    url: "/static/pdfs/wood_sources.pdf"
+  ```
+
+- **Why YAML, not a DB table:** Resources change infrequently (a few times a year). YAML is human-editable by any officer with file access, version-controlled in git, and requires no admin UI to manage. A DB table would add a full CRUD console for minimal benefit at CVW's scale.
+
+- **The `/site/resources` route** reads the YAML file at request time, groups entries by category, and renders them. No migration needed.
+
+- **PDFs:** Linked PDFs are stored in `static/pdfs/` and served by FastAPI's StaticFiles mount. Uploading new PDFs requires server file access (same as editing YAML) — deferred to Phase 3 if an upload UI is needed.
+
+- **Who maintains it:** Any officer or developer with git access edits `data/resources.yaml` and redeploys. If a browser-based editor is needed later, a simple admin CRUD UI can be added without changing the public route.
+
+---
 
 ### Phase 3 — Deferred / Complex
 
