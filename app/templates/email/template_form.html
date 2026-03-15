@@ -43,22 +43,26 @@
         </div>
     </div>
 
-    {# ── Help panels ── #}
-    <div id="help-simple" style="{% if cur_type == 'jinja2' %}display:none;{% endif %}
-         background:#f5f9ff; border:1px solid #c8ddf5; border-radius:6px; padding:1rem 1.25rem; margin-top:0.5rem; font-size:0.9rem">
-        <strong>Available substitutions</strong> — wrap any variable name in <code>&#123;&#123; &#125;&#125;</code>:
-        <table style="margin:0.6rem 0; font-size:0.88rem">
-            <tr><th style="width:160px">Variable</th><th>What it contains</th></tr>
-            <tr><td><code>&#123;&#123; first_name &#125;&#125;</code></td><td>Recipient's first name</td></tr>
-            <tr><td><code>&#123;&#123; last_name &#125;&#125;</code></td><td>Recipient's last name</td></tr>
-            <tr><td><code>&#123;&#123; full_name &#125;&#125;</code></td><td>First and last name combined</td></tr>
-            <tr><td><code>&#123;&#123; email &#125;&#125;</code></td><td>Recipient's email address</td></tr>
-            <tr><td><code>&#123;&#123; membership_type &#125;&#125;</code></td><td>Individual / Family / Affiliated / Honorary / Life</td></tr>
-            <tr><td><code>&#123;&#123; status &#125;&#125;</code></td><td>Active / Prospective / Former</td></tr>
-            <tr><td><code>&#123;&#123; dues_paid &#125;&#125;</code></td><td>True or False</td></tr>
-        </table>
-        <strong>Example:</strong>
-        <pre style="background:#fff; border:1px solid #dde; border-radius:4px; padding:0.75rem; margin:0.5rem 0 0; font-size:0.85rem; white-space:pre-wrap">Hi &#123;&#123; first_name &#125;&#125;,
+    {# ── Help panels (collapsed by default, one shown per mode) ── #}
+    <details id="help-simple" style="margin-top:0.5rem; {% if cur_type == 'jinja2' %}display:none;{% endif %}">
+        <summary style="cursor:pointer; font-size:0.88rem; color:#0066cc; user-select:none">
+            Variables &amp; example…
+        </summary>
+        <div style="background:#f5f9ff; border:1px solid #c8ddf5; border-radius:6px;
+                    padding:1rem 1.25rem; margin-top:0.4rem; font-size:0.9rem">
+            <strong>Available substitutions</strong> — wrap any variable name in <code>&#123;&#123; &#125;&#125;</code>:
+            <table style="margin:0.6rem 0; font-size:0.88rem">
+                <tr><th style="width:160px">Variable</th><th>What it contains</th></tr>
+                <tr><td><code>&#123;&#123; first_name &#125;&#125;</code></td><td>Recipient's first name</td></tr>
+                <tr><td><code>&#123;&#123; last_name &#125;&#125;</code></td><td>Recipient's last name</td></tr>
+                <tr><td><code>&#123;&#123; full_name &#125;&#125;</code></td><td>First and last name combined</td></tr>
+                <tr><td><code>&#123;&#123; email &#125;&#125;</code></td><td>Recipient's email address</td></tr>
+                <tr><td><code>&#123;&#123; membership_type &#125;&#125;</code></td><td>Individual / Family / Affiliated / Honorary / Life</td></tr>
+                <tr><td><code>&#123;&#123; status &#125;&#125;</code></td><td>Active / Prospective / Former</td></tr>
+                <tr><td><code>&#123;&#123; dues_paid &#125;&#125;</code></td><td>True or False</td></tr>
+            </table>
+            <strong>Example:</strong>
+            <pre style="background:#fff; border:1px solid #dde; border-radius:4px; padding:0.75rem; margin:0.5rem 0 0; font-size:0.85rem; white-space:pre-wrap">Hi &#123;&#123; first_name &#125;&#125;,
 
 This is a reminder that the next CVW meeting is this Saturday at 9 AM.
 
@@ -66,28 +70,33 @@ Your membership type is: &#123;&#123; membership_type &#125;&#125;
 
 See you there!
 The CVW Team</pre>
-        <p style="color:#888; margin:0.5rem 0 0; font-size:0.85rem">
-            <strong>Note:</strong> All recipients are CVW members from the database.
-            If a member field is blank (e.g. no membership type set), the substitution produces an empty string.
-            Members with no email address are silently skipped.
-        </p>
-    </div>
+            <p style="color:#888; margin:0.5rem 0 0; font-size:0.85rem">
+                <strong>Note:</strong> All recipients are CVW members from the database.
+                If a member field is blank, the substitution produces an empty string.
+                Members with no email address are silently skipped.
+            </p>
+        </div>
+    </details>
 
-    <div id="help-jinja2" style="{% if cur_type != 'jinja2' %}display:none;{% endif %}
-         background:#f5fff5; border:1px solid #b8e0c0; border-radius:6px; padding:1rem 1.25rem; margin-top:0.5rem; font-size:0.9rem">
-        <strong>Jinja2 template syntax</strong> — same variables as Simple mode, plus full Jinja2 features:
-        <table style="margin:0.6rem 0; font-size:0.88rem">
-            <tr><th style="width:160px">Variable</th><th>What it contains</th></tr>
-            <tr><td><code>first_name</code></td><td>Recipient's first name</td></tr>
-            <tr><td><code>last_name</code></td><td>Recipient's last name</td></tr>
-            <tr><td><code>full_name</code></td><td>First and last name combined</td></tr>
-            <tr><td><code>email</code></td><td>Recipient's email address</td></tr>
-            <tr><td><code>membership_type</code></td><td>Individual / Family / Affiliated / Honorary / Life</td></tr>
-            <tr><td><code>status</code></td><td>Active / Prospective / Former</td></tr>
-            <tr><td><code>dues_paid</code></td><td>True or False (use in <code>&#123;% if %&#125;</code> blocks)</td></tr>
-        </table>
-        <strong>Example:</strong>
-        <pre style="background:#fff; border:1px solid #dde; border-radius:4px; padding:0.75rem; margin:0.5rem 0 0; font-size:0.85rem; white-space:pre-wrap">Hi {{ "{{ first_name }}" }},
+    <details id="help-jinja2" style="margin-top:0.5rem; {% if cur_type != 'jinja2' %}display:none;{% endif %}">
+        <summary style="cursor:pointer; font-size:0.88rem; color:#0066cc; user-select:none">
+            Variables &amp; example…
+        </summary>
+        <div style="background:#f5fff5; border:1px solid #b8e0c0; border-radius:6px;
+                    padding:1rem 1.25rem; margin-top:0.4rem; font-size:0.9rem">
+            <strong>Jinja2 template syntax</strong> — same variables as Simple mode, plus full Jinja2 features:
+            <table style="margin:0.6rem 0; font-size:0.88rem">
+                <tr><th style="width:160px">Variable</th><th>What it contains</th></tr>
+                <tr><td><code>first_name</code></td><td>Recipient's first name</td></tr>
+                <tr><td><code>last_name</code></td><td>Recipient's last name</td></tr>
+                <tr><td><code>full_name</code></td><td>First and last name combined</td></tr>
+                <tr><td><code>email</code></td><td>Recipient's email address</td></tr>
+                <tr><td><code>membership_type</code></td><td>Individual / Family / Affiliated / Honorary / Life</td></tr>
+                <tr><td><code>status</code></td><td>Active / Prospective / Former</td></tr>
+                <tr><td><code>dues_paid</code></td><td>True or False (use in <code>&#123;% if %&#125;</code> blocks)</td></tr>
+            </table>
+            <strong>Example:</strong>
+            <pre style="background:#fff; border:1px solid #dde; border-radius:4px; padding:0.75rem; margin:0.5rem 0 0; font-size:0.85rem; white-space:pre-wrap">Hi {{ "{{ first_name }}" }},
 
 {% raw %}{% if not dues_paid %}
 Your 2026 dues are still outstanding. Please renew at the next meeting or via PayPal.
@@ -98,12 +107,13 @@ Thank you — your dues are paid and your membership is current.
 Questions? Reply to this email or speak to the Membership VP at the next meeting.
 
 CVW Membership</pre>
-        <p style="color:#888; margin:0.5rem 0 0; font-size:0.85rem">
-            If the template contains a syntax error, the email will be delivered with an error
-            message at the top rather than failing silently.
-            All recipients are CVW members — members without an email address are silently skipped.
-        </p>
-    </div>
+            <p style="color:#888; margin:0.5rem 0 0; font-size:0.85rem">
+                If the template contains a syntax error, the email will be delivered with an error
+                message at the top rather than failing silently.
+                All recipients are CVW members — members without an email address are silently skipped.
+            </p>
+        </div>
+    </details>
 
     <div class="form-group" style="margin-top:1rem">
         <label>Body</label>
@@ -155,8 +165,13 @@ CVW Membership</pre>
 
 <script>
 function showHelp(mode) {
-    document.getElementById('help-simple').style.display = mode === 'simple' ? '' : 'none';
-    document.getElementById('help-jinja2').style.display = mode === 'jinja2' ? '' : 'none';
+    const simple = document.getElementById('help-simple');
+    const jinja  = document.getElementById('help-jinja2');
+    simple.style.display = mode === 'simple' ? '' : 'none';
+    jinja.style.display  = mode === 'jinja2' ? '' : 'none';
+    // Close the outgoing panel so it doesn't reopen stale when re-shown
+    if (mode === 'simple') { jinja.open  = false; }
+    else                   { simple.open = false; }
 }
 </script>
 {% endblock %}
