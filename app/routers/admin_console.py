@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import require_permission
+from app.models.member import Member
 from app.models.user import User, ROLES
 
 DOCS_DIR = Path(__file__).resolve().parent.parent.parent / "docs"
@@ -66,9 +67,10 @@ def user_list(request: Request, _=auth, db: Session = Depends(get_db)):
 
 
 @router.get("/users/new", response_class=HTMLResponse)
-def new_user_form(request: Request, _=auth):
+def new_user_form(request: Request, _=auth, db: Session = Depends(get_db)):
+    members = db.query(Member).order_by(Member.last_name, Member.first_name).all()
     return templates.TemplateResponse("admin/user_form.html", {
-        "request": request, "user": None, "roles": ROLES, "errors": []
+        "request": request, "user": None, "roles": ROLES, "errors": [], "members": members
     })
 
 
@@ -76,14 +78,23 @@ def new_user_form(request: Request, _=auth):
 def create_user(
     request: Request,
     username: str = Form(...),
-    full_name: str = Form(...),
+    member_id: str = Form(""),
+    full_name: str = Form(""),
     role: str = Form(...),
     password: str = Form(...),
     confirm_password: str = Form(...),
+    must_change_password: Optional[str] = Form(None),
     _=auth,
     db: Session = Depends(get_db),
 ):
     errors = []
+    mid = int(member_id) if member_id else None
+    member = db.get(Member, mid) if mid else None
+
+    resolved_name = (f"{member.first_name} {member.last_name}".strip()
+                     if member else full_name.strip())
+    if not resolved_name:
+        errors.append("Either select a member or enter a full name.")
     if password != confirm_password:
         errors.append("Passwords do not match.")
     if len(password) < 8:
@@ -93,17 +104,21 @@ def create_user(
     if role not in ROLES:
         errors.append("Invalid role.")
     if errors:
+        members = db.query(Member).order_by(Member.last_name, Member.first_name).all()
         return templates.TemplateResponse("admin/user_form.html", {
             "request": request, "user": None, "roles": ROLES, "errors": errors,
-            "username": username, "full_name": full_name, "role": role,
+            "members": members, "username": username, "full_name": full_name,
+            "role": role, "sel_member_id": mid,
         }, status_code=422)
 
     user = User(
         username=username.strip().lower(),
-        full_name=full_name.strip(),
+        full_name=resolved_name,
         role=role,
         hashed_password=User.hash_password(password),
         active=True,
+        member_id=mid,
+        must_change_password=must_change_password == "on",
     )
     db.add(user)
     db.commit()
@@ -115,8 +130,9 @@ def edit_user_form(user_id: int, request: Request, _=auth, db: Session = Depends
     user = db.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404)
+    members = db.query(Member).order_by(Member.last_name, Member.first_name).all()
     return templates.TemplateResponse("admin/user_form.html", {
-        "request": request, "user": user, "roles": ROLES, "errors": []
+        "request": request, "user": user, "roles": ROLES, "errors": [], "members": members
     })
 
 
@@ -125,17 +141,24 @@ def update_user(
     user_id: int,
     request: Request,
     username: str = Form(...),
-    full_name: str = Form(...),
+    member_id: str = Form(""),
+    full_name: str = Form(""),
     role: str = Form(...),
     password: Optional[str] = Form(None),
     confirm_password: Optional[str] = Form(None),
     active: Optional[str] = Form(None),
+    must_change_password: Optional[str] = Form(None),
     _=auth,
     db: Session = Depends(get_db),
 ):
     user = db.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404)
+
+    mid = int(member_id) if member_id else None
+    member = db.get(Member, mid) if mid else None
+    resolved_name = (f"{member.first_name} {member.last_name}".strip()
+                     if member else full_name.strip() or user.full_name)
 
     errors = []
     duplicate = db.query(User).filter(
@@ -149,14 +172,18 @@ def update_user(
         elif len(password) < 8:
             errors.append("Password must be at least 8 characters.")
     if errors:
+        members = db.query(Member).order_by(Member.last_name, Member.first_name).all()
         return templates.TemplateResponse("admin/user_form.html", {
             "request": request, "user": user, "roles": ROLES, "errors": errors,
+            "members": members,
         }, status_code=422)
 
     user.username = username.strip().lower()
-    user.full_name = full_name.strip()
+    user.full_name = resolved_name
     user.role = role
     user.active = active == "on"
+    user.member_id = mid
+    user.must_change_password = must_change_password == "on"
     if password:
         user.hashed_password = User.hash_password(password)
     db.commit()

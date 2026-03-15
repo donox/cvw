@@ -111,12 +111,19 @@
         <a href="/site/" style="margin-left:0.5rem; opacity:0.7; font-size:0.82rem">🌐 Website</a>
         <div class="nav-right">
             <span class="nav-user">{{ request.state.user.full_name }} ({{ role }})</span>
+            <a href="/change-password" title="Change password" style="font-size:0.82rem; opacity:0.8">🔑</a>
             <a href="/logout">Log out</a>
         </div>
     {% else %}
         <div class="nav-right"><a href="/login">Log in</a></div>
     {% endif %}
 </nav>
+{% if request.state.user and request.state.user.must_change_password %}
+<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:4px; padding:0.6rem 1rem;
+            margin-bottom:1rem; font-family:sans-serif; font-size:0.9rem">
+    ⚠️ You must <a href="/change-password"><strong>change your password</strong></a> before using the system.
+</div>
+{% endif %}
 {% block content %}{% endblock %}
 </body>
 </html>

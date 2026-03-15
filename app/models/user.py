@@ -1,5 +1,6 @@
 from passlib.context import CryptContext
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, func
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy.orm import relationship
 
 from app.database import Base
 
@@ -17,7 +18,11 @@ class User(Base):
     role = Column(String, nullable=False)       # see ROLES
     hashed_password = Column(String, nullable=False)
     active = Column(Boolean, default=True)
+    must_change_password = Column(Boolean, default=False)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
+
+    member = relationship("Member", backref="user_account")
 
     def verify_password(self, password: str) -> bool:
         return pwd_context.verify(password, self.hashed_password)

@@ -9,6 +9,37 @@
 
 <form method="post" action="{{ '/admin/users/' + user.id|string + '/edit' if user else '/admin/users' }}">
     <fieldset>
+        <legend>Member Link</legend>
+        <div class="form-row">
+            <div style="flex:2">
+                <label for="member_id">Member</label>
+                <select id="member_id" name="member_id" onchange="onMemberChange(this)">
+                    <option value="">— None (system / non-member user) —</option>
+                    {% set cur_mid = user.member_id if user else (sel_member_id|default(None)) %}
+                    {% for m in members %}
+                    <option value="{{ m.id }}"
+                            data-first="{{ m.first_name }}"
+                            data-last="{{ m.last_name }}"
+                            data-suggest="{{ (m.first_name[0] + m.last_name)|lower|replace(' ','') }}"
+                            {% if cur_mid == m.id %}selected{% endif %}>
+                        {{ m.last_name }}, {{ m.first_name }}{% if m.email %} — {{ m.email }}{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small style="color:#888">Selecting a member sets the display name automatically.</small>
+            </div>
+        </div>
+        <div id="manual-name-row" class="form-row"
+             style="{% if (user and user.member_id) or (sel_member_id is defined and sel_member_id) %}display:none{% endif %}">
+            <div>
+                <label for="full_name">Full Name <span id="name-req">*</span></label>
+                <input type="text" id="full_name" name="full_name"
+                       value="{{ full_name if full_name is defined else (user.full_name if user and not user.member_id else '') }}">
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
         <legend>Account</legend>
         <div class="form-row">
             <div>
@@ -16,13 +47,6 @@
                 <input type="text" id="username" name="username" required autocomplete="off"
                        value="{{ username if username is defined else (user.username if user else '') }}">
             </div>
-            <div>
-                <label for="full_name">Full Name *</label>
-                <input type="text" id="full_name" name="full_name" required
-                       value="{{ full_name if full_name is defined else (user.full_name if user else '') }}">
-            </div>
-        </div>
-        <div class="form-row">
             <div>
                 <label for="role">Role *</label>
                 <select id="role" name="role">
@@ -41,6 +65,13 @@
                 </label>
             </div>
             {% endif %}
+        </div>
+        <div style="margin-top:0.75rem">
+            <label style="display:flex; align-items:center; gap:0.5rem; font-weight:normal; cursor:pointer">
+                <input type="checkbox" name="must_change_password" value="on"
+                       {% if user and user.must_change_password %}checked{% endif %}>
+                Require password change on next login
+            </label>
         </div>
     </fieldset>
 
@@ -64,4 +95,22 @@
         <a href="/admin/users" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
+
+<script>
+function onMemberChange(sel) {
+    const opt = sel.options[sel.selectedIndex];
+    const nameRow = document.getElementById('manual-name-row');
+    const usernameInput = document.getElementById('username');
+
+    if (opt.value) {
+        nameRow.style.display = 'none';
+        // Suggest username only if the field is currently empty
+        if (!usernameInput.value) {
+            usernameInput.value = opt.dataset.suggest || '';
+        }
+    } else {
+        nameRow.style.display = '';
+    }
+}
+</script>
 {% endblock %}
