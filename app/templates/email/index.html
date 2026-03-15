@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Email Console{% endblock %}
+{% block content %}
+<h1>Email Console</h1>
+
+<div class="detail-grid">
+    <section>
+        <h2>Actions</h2>
+        <div style="display:flex; flex-direction:column; gap:0.5rem">
+            <a href="/email/compose" class="btn btn-primary">Compose &amp; Send</a>
+            <a href="/email/templates" class="btn btn-secondary">Templates</a>
+            <a href="/email/scheduled" class="btn btn-secondary">Scheduled Emails</a>
+            <a href="/email/log" class="btn btn-secondary">Send Log</a>
+        </div>
+    </section>
+
+    <section>
+        <h2>Recent Activity</h2>
+        {% if recent_logs %}
+        <table>
+            <thead><tr><th>Date</th><th>Subject</th><th>Recipients</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for log in recent_logs %}
+            <tr>
+                <td style="white-space:nowrap">{{ log.sent_at.strftime('%m/%d %H:%M') if log.sent_at else '—' }}</td>
+                <td>{{ log.subject }}</td>
+                <td style="text-align:center">{{ log.recipient_count }}</td>
+                <td>
+                    {% if log.status == 'sent' %}<span style="color:green">✓ sent</span>
+                    {% elif log.status == 'failed' %}<span style="color:red">✗ failed</span>
+                    {% else %}<span style="color:orange">⚠ partial</span>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color:#888">No emails sent yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

@@ -1,7 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Admin{% endblock %}
 {% block content %}
-<h1>Admin Console</h1>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Admin Console</h1>
+    <div style="display:flex; gap:0.5rem">
+        <a href="/admin/docs" class="btn btn-secondary">Documents</a>
+        <a href="/admin/users" class="btn btn-primary">Users</a>
+    </div>
+</div>
 <div class="detail-grid">
     <section>
         <h2>Users</h2>

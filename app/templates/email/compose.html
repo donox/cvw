@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Compose Email{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Compose &amp; Send</h1>
+    <a href="/email/" class="btn btn-secondary">← Email</a>
+</div>
+
+{% if sent_count is defined %}
+<div class="flash {% if send_error and sent_count == 0 %}flash-error{% else %}flash-success{% endif %}">
+    Sent to {{ sent_count }} recipient(s).
+    {% if send_error %}<br><small>Errors: {{ send_error }}</small>{% endif %}
+</div>
+{% endif %}
+
+{% if errors %}
+<div class="flash flash-error">{% for e in errors %}<div>{{ e }}</div>{% endfor %}</div>
+{% endif %}
+
+<form method="post" action="/email/compose">
+    <div class="form-group">
+        <label>Load Template</label>
+        <select id="tmpl-select" onchange="loadTemplate(this)">
+            <option value="">— select template —</option>
+            {% for t in email_templates %}
+            <option value="{{ t.id }}" data-subject="{{ t.subject }}" data-body="{{ t.body | e }}">{{ t.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Send To</label>
+        <select name="group_id">
+            <option value="">All Active Members</option>
+            {% for g in groups %}
+            <option value="{{ g.id }}">{{ g.name }} ({{ g.members|length }})</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Subject</label>
+        <input type="text" name="subject" id="subject" required
+               value="{{ form.get('subject','') }}">
+    </div>
+
+    <div class="form-group">
+        <label>Body</label>
+        <textarea name="body" id="body" rows="12" required
+                  style="width:100%; font-family:monospace">{{ form.get('body','') }}</textarea>
+        <small style="color:#888">Use <code>&#123;&#123; first_name &#125;&#125;</code>, <code>&#123;&#123; last_name &#125;&#125;</code>, <code>&#123;&#123; email &#125;&#125;</code> for personalisation.</small>
+    </div>
+
+    <div class="form-group">
+        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer">
+            <input type="checkbox" name="per_member" value="on">
+            Personalise (send individual emails with member substitutions)
+        </label>
+    </div>
+
+    <div style="display:flex; gap:0.5rem; margin-top:1rem">
+        <button type="submit" class="btn btn-primary">Send Now</button>
+        <a href="/email/" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<script>
+function loadTemplate(sel) {
+    const opt = sel.options[sel.selectedIndex];
+    if (!opt.value) return;
+    document.getElementById('subject').value = opt.dataset.subject || '';
+    document.getElementById('body').value = opt.dataset.body || '';
+}
+</script>
+{% endblock %}

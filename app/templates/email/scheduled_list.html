@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Scheduled Emails{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Scheduled Emails</h1>
+    <div style="display:flex; gap:0.5rem">
+        <a href="/email/scheduled/new" class="btn btn-primary">+ New Schedule</a>
+        <a href="/email/" class="btn btn-secondary">← Email</a>
+    </div>
+</div>
+
+{% if scheduled %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Template</th>
+            <th>Audience</th>
+            <th>Schedule</th>
+            <th>Last Run</th>
+            <th>Active</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for se in scheduled %}
+    <tr>
+        <td>{{ se.name }}</td>
+        <td>{{ se.template.name }}</td>
+        <td>{{ se.group.name if se.group else 'All Active' }}</td>
+        <td style="font-family:monospace; font-size:0.85rem">
+            {{ se.cron_minute }} {{ se.cron_hour }} {{ se.cron_day }} {{ se.cron_month }} {{ se.cron_day_of_week }}
+        </td>
+        <td>{{ se.last_run_at.strftime('%Y-%m-%d %H:%M') if se.last_run_at else '—' }}</td>
+        <td style="text-align:center">{% if se.active %}✓{% else %}—{% endif %}</td>
+        <td style="display:flex; gap:0.4rem">
+            <a href="/email/scheduled/{{ se.id }}/edit" class="btn btn-secondary">Edit</a>
+            <form method="post" action="/email/scheduled/{{ se.id }}/delete"
+                  onsubmit="return confirm('Delete {{ se.name }}?')" style="margin:0">
+                <button type="submit" class="btn" style="background:#c00;color:#fff">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">No scheduled emails configured.</p>
+{% endif %}
+{% endblock %}

@@ -10,6 +10,14 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-this-in-production"
     ADMIN_INITIAL_PASSWORD: str = ""
 
+    # SMTP (leave SMTP_HOST empty to disable email sending)
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = ""
+    SMTP_STARTTLS: bool = True
+
     class Config:
         env_file = ".env"
 

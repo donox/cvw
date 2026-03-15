@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{% if tmpl %}Edit Template{% else %}New Template{% endif %}{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">{% if tmpl %}Edit: {{ tmpl.name }}{% else %}New Template{% endif %}</h1>
+    <a href="/email/templates" class="btn btn-secondary">← Templates</a>
+</div>
+
+{% if errors %}
+<div class="flash flash-error">{% for e in errors %}<div>{{ e }}</div>{% endfor %}</div>
+{% endif %}
+
+<form method="post" action="{% if tmpl %}/email/templates/{{ tmpl.id }}/edit{% else %}/email/templates{% endif %}">
+    <div class="form-group">
+        <label>Template Name</label>
+        <input type="text" name="name" required maxlength="100"
+               value="{{ tmpl.name if tmpl else (name|default('')) }}">
+    </div>
+    <div class="form-group">
+        <label>Subject</label>
+        <input type="text" name="subject" required
+               value="{{ tmpl.subject if tmpl else (subject|default('')) }}">
+    </div>
+    <div class="form-group">
+        <label>Body</label>
+        <textarea name="body" rows="14" required style="width:100%; font-family:monospace">{{ tmpl.body if tmpl else (body|default('')) }}</textarea>
+        <small style="color:#888">
+            Available substitutions: <code>&#123;&#123; first_name &#125;&#125;</code>
+            <code>&#123;&#123; last_name &#125;&#125;</code>
+            <code>&#123;&#123; full_name &#125;&#125;</code>
+            <code>&#123;&#123; email &#125;&#125;</code>
+        </small>
+    </div>
+    <div style="display:flex; gap:0.5rem; margin-top:1rem">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/email/templates" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

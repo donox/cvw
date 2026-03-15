@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Member Groups{% endblock %}
+{% block content %}
+{% set user = request.state.user %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Member Groups</h1>
+    {% if user.role in ['membership','admin'] %}
+    <a href="/groups/new" class="btn btn-primary">+ New Group</a>
+    {% endif %}
+</div>
+
+{% if groups %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th style="text-align:center">Members</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for g in groups %}
+    <tr>
+        <td><a href="/groups/{{ g.id }}">{{ g.name }}</a></td>
+        <td style="color:#666">{{ g.description or '' }}</td>
+        <td style="text-align:center">{{ g.members|length }}</td>
+        <td>
+            {% if user.role in ['membership','admin'] %}
+            <a href="/groups/{{ g.id }}/edit" class="btn btn-secondary">Edit</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">No groups defined yet.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Email Templates{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Email Templates</h1>
+    <div style="display:flex; gap:0.5rem">
+        <a href="/email/templates/new" class="btn btn-primary">+ New Template</a>
+        <a href="/email/" class="btn btn-secondary">← Email</a>
+    </div>
+</div>
+
+{% if email_templates %}
+<table>
+    <thead>
+        <tr><th>Name</th><th>Subject</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for t in email_templates %}
+    <tr>
+        <td>{{ t.name }}</td>
+        <td>{{ t.subject }}</td>
+        <td style="display:flex; gap:0.4rem">
+            <a href="/email/templates/{{ t.id }}/edit" class="btn btn-secondary">Edit</a>
+            <form method="post" action="/email/templates/{{ t.id }}/delete"
+                  onsubmit="return confirm('Delete template {{ t.name }}?')" style="margin:0">
+                <button type="submit" class="btn" style="background:#c00;color:#fff">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">No templates yet.</p>
+{% endif %}
+{% endblock %}

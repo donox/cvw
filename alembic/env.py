@@ -23,6 +23,8 @@ import app.models.user      # noqa: F401 — register models
 import app.models.officer   # noqa: F401 — register models
 import app.models.org       # noqa: F401 — register models
 import app.models.financial # noqa: F401 — register models
+import app.models.group      # noqa: F401 — register models
+import app.models.email_models  # noqa: F401 — register models
 
 target_metadata = Base.metadata
 

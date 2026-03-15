@@ -1,22 +1,38 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import engine, Base, SessionLocal, settings
-import app.models.member   # register with Base
-import app.models.program  # register with Base
-import app.models.user     # register with Base
-import app.models.officer  # register with Base
-import app.models.org      # register with Base
-import app.models.financial  # register with Base
+import app.models.member        # register with Base
+import app.models.program       # register with Base
+import app.models.user          # register with Base
+import app.models.officer       # register with Base
+import app.models.org           # register with Base
+import app.models.financial     # register with Base
+import app.models.group         # register with Base
+import app.models.email_models  # register with Base
 from app.dependencies import NotAuthenticatedException, PermissionDeniedException
 from app.routers import members, apply, programs, feedback, auth
-from app.routers import admin_console, financial, exec_
+from app.routers import admin_console, financial, exec_, groups
+from app.routers import email_ as email_router
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="CVW Membership Database")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from app.scheduler import start_scheduler
+    start_scheduler(app)
+    yield
+    from app.scheduler import scheduler
+    if scheduler.running:
+        scheduler.shutdown(wait=False)
+
+
+app = FastAPI(title="CVW Membership Database", lifespan=lifespan)
 
 
 # ── Middleware ────────────────────────────────────────────────────────────────
@@ -67,6 +83,8 @@ app.include_router(feedback.router)
 app.include_router(financial.router)
 app.include_router(exec_.router)
 app.include_router(admin_console.router)
+app.include_router(groups.router)
+app.include_router(email_router.router)
 
 
 @app.get("/")

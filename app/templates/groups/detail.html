@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }}{% endblock %}
+{% block content %}
+{% set user = request.state.user %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">{{ group.name }}</h1>
+    <div style="display:flex; gap:0.5rem">
+        {% if user.role in ['membership','admin'] %}
+        <a href="/groups/{{ group.id }}/edit" class="btn btn-secondary">Edit</a>
+        {% endif %}
+        <a href="/groups/" class="btn btn-secondary">← Groups</a>
+    </div>
+</div>
+
+{% if group.description %}
+<p style="color:#666; margin-bottom:1.5rem">{{ group.description }}</p>
+{% endif %}
+
+<p style="color:#888; font-size:0.9rem">Created by {{ group.created_by or '—' }}</p>
+
+<h2>Members ({{ group.members|length }})</h2>
+{% if group.members %}
+<table>
+    <thead>
+        <tr><th>Name</th><th>Email</th><th>Type</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+    {% for m in group.members|sort(attribute='last_name') %}
+    <tr>
+        <td><a href="/members/{{ m.id }}">{{ m.last_name }}, {{ m.first_name }}</a></td>
+        <td>{{ m.email or '—' }}</td>
+        <td>{{ m.membership_type or '—' }}</td>
+        <td>{{ m.status or '—' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">No members in this group.</p>
+{% endif %}
+
+{% if user.role in ['membership','admin'] %}
+<form method="post" action="/groups/{{ group.id }}/delete"
+      onsubmit="return confirm('Delete group {{ group.name }}?')"
+      style="margin-top:2rem">
+    <button type="submit" class="btn" style="background:#c00;color:#fff">Delete Group</button>
+</form>
+{% endif %}
+{% endblock %}
