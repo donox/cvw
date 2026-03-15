@@ -85,8 +85,8 @@ def create_program(
         date=parsed_date,
         subject=subject.strip(),
         presenter=presenter or None,
-        cost=float(cost) if cost else None,
-        attendee_count=int(attendee_count) if attendee_count else None,
+        cost=float(cost) if cost and cost.strip() not in ("", "None") else None,
+        attendee_count=int(attendee_count) if attendee_count and attendee_count.strip() not in ("", "None") else None,
         notes=notes or None,
         show_on_public=show_on_public == "on",
     )
@@ -154,8 +154,8 @@ def update_program(
     program.date = parsed_date
     program.subject = subject.strip()
     program.presenter = presenter or None
-    program.cost = float(cost) if cost else None
-    program.attendee_count = int(attendee_count) if attendee_count else None
+    program.cost = float(cost) if cost and cost.strip() not in ("", "None") else None
+    program.attendee_count = int(attendee_count) if attendee_count and attendee_count.strip() not in ("", "None") else None
     program.notes = notes or None
     program.show_on_public = show_on_public == "on"
     db.commit()

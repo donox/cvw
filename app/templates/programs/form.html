@@ -31,12 +31,12 @@
             <div>
                 <label for="cost">Cost ($)</label>
                 <input type="text" id="cost" name="cost"
-                       value="{{ cost if cost is defined else (program.cost if program else '') }}">
+                       value="{{ cost if cost is defined else (program.cost if program and program.cost is not none else '') }}">
             </div>
             <div>
                 <label for="attendee_count">Attendees</label>
                 <input type="text" id="attendee_count" name="attendee_count"
-                       value="{{ attendee_count if attendee_count is defined else (program.attendee_count if program else '') }}">
+                       value="{{ attendee_count if attendee_count is defined else (program.attendee_count if program and program.attendee_count is not none else '') }}">
             </div>
         </div>
         <div>
