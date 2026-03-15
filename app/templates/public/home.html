@@ -1,0 +1,95 @@
+{% extends "base_public.html" %}
+{% block title %}Central Virginia Woodturners{% endblock %}
+{% block content %}
+
+{% if next_program %}
+<div class="pub-hero">
+    <h2>Next Meeting</h2>
+    <p class="hero-title">{{ next_program.subject }}</p>
+    <p class="hero-meta">
+        {{ next_program.date.strftime('%A, %B %-d, %Y') }}
+        {% if next_program.presenter %}&nbsp;·&nbsp; Presenter: {{ next_program.presenter }}{% endif %}
+    </p>
+    <p style="margin-top:0.75rem">
+        <a href="/site/next-meeting" class="pub-btn pub-btn-primary">Meeting Details</a>
+    </p>
+</div>
+{% endif %}
+
+<div class="pub-section">
+    <h2>Welcome to Central Virginia Woodturners</h2>
+    <p>
+        Central Virginia Woodturners (CVW) is a chapter of the American Association of Woodturners (AAW),
+        serving turners of all skill levels in the greater Richmond, Virginia area. We meet monthly
+        to share our passion for the art and craft of woodturning — from bowl turning and spindle work
+        to artistic vessels and beyond.
+    </p>
+    <p>
+        Whether you are just discovering the lathe or have been turning for decades, you will find a
+        welcoming community, excellent programs, and hands-on learning opportunities at CVW.
+    </p>
+    <p style="margin-top:1rem">
+        <a href="/site/about" class="pub-btn pub-btn-outline">About the Club</a>
+        &nbsp;
+        <a href="/apply" class="pub-btn pub-btn-primary">Join Us</a>
+    </p>
+</div>
+
+<div class="pub-cards">
+    <a href="/site/next-meeting" class="pub-card">
+        <div class="pub-card-icon">📅</div>
+        <p class="pub-card-title">Next Meeting</p>
+        <p class="pub-card-desc">Program details, presenter, and agenda for the upcoming meeting.</p>
+    </a>
+    <a href="/site/calendar" class="pub-card">
+        <div class="pub-card-icon">🗓</div>
+        <p class="pub-card-title">Calendar</p>
+        <p class="pub-card-desc">Full schedule of meetings, skill sessions, and club events.</p>
+    </a>
+    <a href="/site/officers" class="pub-card">
+        <div class="pub-card-icon">👥</div>
+        <p class="pub-card-title">Officers &amp; Staff</p>
+        <p class="pub-card-desc">Meet the elected officers and volunteer team who keep CVW running.</p>
+    </a>
+    <a href="/site/skill-center" class="pub-card">
+        <div class="pub-card-icon">🔨</div>
+        <p class="pub-card-title">Skill Center</p>
+        <p class="pub-card-desc">Hands-on mentoring and skill-building sessions at our shop.</p>
+    </a>
+    <a href="/apply" class="pub-card">
+        <div class="pub-card-icon">✍️</div>
+        <p class="pub-card-title">Join CVW</p>
+        <p class="pub-card-desc">Become a member and join a community of passionate woodturners.</p>
+    </a>
+    <a href="/site/contact" class="pub-card">
+        <div class="pub-card-icon">✉️</div>
+        <p class="pub-card-title">Contact Us</p>
+        <p class="pub-card-desc">Reach out to our officers with questions or feedback.</p>
+    </a>
+</div>
+
+{% if upcoming_events %}
+<div class="pub-section" style="margin-top:2rem">
+    <h2>Upcoming Events</h2>
+    <table>
+        <thead>
+            <tr><th>Date</th><th>Event</th><th>Location</th></tr>
+        </thead>
+        <tbody>
+        {% for ev in upcoming_events %}
+        <tr>
+            <td style="white-space:nowrap">{{ ev.date.strftime('%b %-d, %Y') }}</td>
+            <td>
+                {{ ev.title }}
+                {% if ev.event_type != 'Meeting' %}<span style="font-family:sans-serif; font-size:0.8rem; color:#888"> — {{ ev.event_type }}</span>{% endif %}
+            </td>
+            <td style="font-family:sans-serif; font-size:0.88rem; color:#666">{{ ev.location or '' }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p style="margin-top:0.75rem"><a href="/site/calendar" class="pub-btn pub-btn-outline">Full Calendar</a></p>
+</div>
+{% endif %}
+
+{% endblock %}

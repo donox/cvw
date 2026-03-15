@@ -43,6 +43,13 @@
             <label for="notes">Notes</label>
             <textarea id="notes" name="notes" rows="3" style="width:100%; max-width:600px; resize:vertical">{{ notes if notes is defined else (program.notes if program else '') }}</textarea>
         </div>
+        <div style="margin-top:0.75rem">
+            <label style="display:flex; align-items:center; gap:0.5rem; font-weight:normal; cursor:pointer">
+                <input type="checkbox" name="show_on_public" value="on"
+                       {% if program and program.show_on_public %}checked{% endif %}>
+                Show on public website "Next Meeting" page
+            </label>
+        </div>
     </fieldset>
 
     <div class="form-actions">

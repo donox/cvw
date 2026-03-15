@@ -13,6 +13,7 @@
             <th>Presenter</th>
             <th>Attendees</th>
             <th>Feedback</th>
+            <th title="Show on public website next-meeting page">Public</th>
             <th></th>
         </tr>
     </thead>
@@ -26,6 +27,14 @@
             <td>
                 {{ p.comments|length }} response{{ 's' if p.comments|length != 1 }}
                 &nbsp;<a href="/programs/{{ p.id }}/feedback" class="btn btn-secondary" style="font-size:0.8rem">Submit</a>
+            </td>
+            <td style="text-align:center">
+                <form method="post" action="/programs/{{ p.id }}/toggle-public" style="margin:0">
+                    <button type="submit" class="btn" style="padding:0.2rem 0.5rem; font-size:1rem; background:none; border:none; cursor:pointer"
+                            title="{% if p.show_on_public %}Shown on public site — click to hide{% else %}Hidden from public site — click to show{% endif %}">
+                        {% if p.show_on_public %}🌐{% else %}<span style="color:#ccc">🌐</span>{% endif %}
+                    </button>
+                </form>
             </td>
             <td>
                 <a href="/programs/{{ p.id }}/qr" class="btn btn-secondary">QR</a>

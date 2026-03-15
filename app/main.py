@@ -18,6 +18,7 @@ from app.dependencies import NotAuthenticatedException, PermissionDeniedExceptio
 from app.routers import members, apply, programs, feedback, auth
 from app.routers import admin_console, financial, exec_, groups
 from app.routers import email_ as email_router
+from app.routers import public_ as public_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -85,6 +86,7 @@ app.include_router(exec_.router)
 app.include_router(admin_console.router)
 app.include_router(groups.router)
 app.include_router(email_router.router)
+app.include_router(public_router.router)
 
 
 @app.get("/")

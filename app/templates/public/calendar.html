@@ -1,0 +1,40 @@
+{% extends "base_public.html" %}
+{% block title %}Calendar — Central Virginia Woodturners{% endblock %}
+{% block content %}
+<h1>Calendar of Events</h1>
+
+{% if events %}
+<div class="pub-section">
+    <table>
+        <thead>
+            <tr>
+                <th style="width:130px">Date</th>
+                <th>Event</th>
+                <th>Type</th>
+                <th>Time</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for ev in events %}
+        <tr>
+            <td style="white-space:nowrap; font-family:sans-serif">{{ ev.date.strftime('%a, %b %-d, %Y') }}</td>
+            <td>{{ ev.title }}</td>
+            <td style="font-family:sans-serif; font-size:0.88rem; color:#666">{{ ev.event_type }}</td>
+            <td style="font-family:sans-serif; font-size:0.88rem; white-space:nowrap">
+                {% if ev.start_time %}{{ ev.start_time }}{% if ev.end_time %} – {{ ev.end_time }}{% endif %}{% endif %}
+            </td>
+            <td style="font-family:sans-serif; font-size:0.88rem; color:#666">{{ ev.location or '' }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>No upcoming events are scheduled yet. Check back soon.</p>
+{% endif %}
+
+<p style="font-family:sans-serif; font-size:0.875rem; color:#888; margin-top:1rem">
+    CVW meets monthly — generally the third Saturday of each month, 9 AM – noon.
+</p>
+{% endblock %}

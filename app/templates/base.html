@@ -108,6 +108,7 @@
         {% if role == 'admin' %}
             <a href="/dashboard">Admin</a>
         {% endif %}
+        <a href="/site/" style="margin-left:0.5rem; opacity:0.7; font-size:0.82rem">🌐 Website</a>
         <div class="nav-right">
             <span class="nav-user">{{ request.state.user.full_name }} ({{ role }})</span>
             <a href="/logout">Log out</a>

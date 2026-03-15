@@ -14,6 +14,7 @@ class Program(Base):
     cost = Column(Float)
     attendee_count = Column(Integer)
     notes = Column(String)
+    show_on_public = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
 
     comments = relationship(

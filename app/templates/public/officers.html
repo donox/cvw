@@ -1,0 +1,41 @@
+{% extends "base_public.html" %}
+{% block title %}Officers — Central Virginia Woodturners{% endblock %}
+{% block content %}
+<h1>Officers &amp; Volunteer Staff</h1>
+
+<div class="pub-section">
+    <h2>Executive Committee</h2>
+    <div class="officer-grid">
+    {% for o in elected %}
+    <div class="officer-card">
+        <div class="officer-title">{{ o.title }}</div>
+        <div class="officer-name">
+            {% if o.member %}{{ o.member.first_name }} {{ o.member.last_name }}
+            {% else %}<em style="color:#999; font-weight:normal">Vacant</em>{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+</div>
+
+{% if volunteers %}
+<div class="pub-section">
+    <h2>Volunteer Staff</h2>
+    <div class="officer-grid">
+    {% for o in volunteers %}
+    <div class="officer-card">
+        <div class="officer-title">{{ o.title }}</div>
+        <div class="officer-name">
+            {% if o.member %}{{ o.member.first_name }} {{ o.member.last_name }}
+            {% else %}<em style="color:#999; font-weight:normal">Vacant</em>{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<p style="margin-top:2rem; font-family:sans-serif; font-size:0.9rem; color:#888">
+    Want to get involved? Contact us at <a href="/site/contact">the contact page</a>.
+</p>
+{% endblock %}

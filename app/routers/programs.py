@@ -59,6 +59,7 @@ def create_program(
     cost: Optional[str] = Form(None),
     attendee_count: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
+    show_on_public: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
     errors = []
@@ -87,6 +88,7 @@ def create_program(
         cost=float(cost) if cost else None,
         attendee_count=int(attendee_count) if attendee_count else None,
         notes=notes or None,
+        show_on_public=show_on_public == "on",
     )
     db.add(program)
     db.commit()
@@ -110,6 +112,14 @@ def edit_program_form(program_id: int, request: Request, _=auth, db: Session = D
     })
 
 
+@router.post("/{program_id}/toggle-public", response_class=RedirectResponse)
+def toggle_public(program_id: int, _=auth, db: Session = Depends(get_db)):
+    program = _get_or_404(db, program_id)
+    program.show_on_public = not bool(program.show_on_public)
+    db.commit()
+    return RedirectResponse(url="/programs/", status_code=303)
+
+
 @router.post("/{program_id}/edit", response_class=RedirectResponse)
 def update_program(
     program_id: int,
@@ -120,6 +130,7 @@ def update_program(
     cost: Optional[str] = Form(None),
     attendee_count: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
+    show_on_public: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
     program = _get_or_404(db, program_id)
@@ -146,6 +157,7 @@ def update_program(
     program.cost = float(cost) if cost else None
     program.attendee_count = int(attendee_count) if attendee_count else None
     program.notes = notes or None
+    program.show_on_public = show_on_public == "on"
     db.commit()
     return RedirectResponse(url=f"/programs/{program_id}", status_code=303)
 

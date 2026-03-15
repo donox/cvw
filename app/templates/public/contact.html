@@ -1,0 +1,53 @@
+{% extends "base_public.html" %}
+{% block title %}Contact — Central Virginia Woodturners{% endblock %}
+{% block content %}
+<h1>Contact Us</h1>
+
+<p style="font-family:sans-serif; font-size:1rem; color:#555; margin-bottom:2rem">
+    Reach out to the appropriate CVW officer below. For general inquiries, contact the President or Secretary.
+</p>
+
+<div class="pub-section">
+    <h2>Officers</h2>
+    <div class="officer-grid">
+    {% for o in officers %}
+    {% if o.member and o.member.email %}
+    <div class="officer-card">
+        <div class="officer-title">{{ o.title }}</div>
+        <div class="officer-name">{{ o.member.first_name }} {{ o.member.last_name }}</div>
+        <div style="margin-top:0.4rem; font-family:sans-serif; font-size:0.875rem">
+            <a href="mailto:{{ o.member.email }}">{{ o.member.email }}</a>
+        </div>
+    </div>
+    {% elif o.member %}
+    <div class="officer-card">
+        <div class="officer-title">{{ o.title }}</div>
+        <div class="officer-name">{{ o.member.first_name }} {{ o.member.last_name }}</div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    </div>
+</div>
+
+<div class="pub-section" style="margin-top:2rem">
+    <h2>Membership Inquiries</h2>
+    <p style="font-family:sans-serif">
+        Interested in joining CVW? Submit our online application or bring a completed form to any meeting.
+    </p>
+    <p><a href="/apply" class="pub-btn pub-btn-primary">Membership Application</a></p>
+</div>
+
+<div class="pub-section">
+    <h2>Find Us</h2>
+    <div class="meeting-info">
+        <dl>
+            <dt>Monthly Meetings</dt>
+            <dd>Deep Run Park Recreation Center, Henrico County, Virginia</dd>
+            <dt>Typical Schedule</dt>
+            <dd>Third Saturday of the month, 9:00 AM – 12:00 PM</dd>
+            <dt>Current Program</dt>
+            <dd><a href="/site/next-meeting">See the next meeting page</a></dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

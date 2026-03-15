@@ -1,0 +1,51 @@
+{% extends "base_public.html" %}
+{% block title %}Next Meeting — Central Virginia Woodturners{% endblock %}
+{% block content %}
+<h1>Next Meeting</h1>
+
+{% if programs %}
+{% for p in programs %}
+<div style="background:#f5ede3; border-radius:8px; padding:1.5rem 2rem; margin-bottom:1.5rem;
+            border-left:5px solid #5a3e28">
+    <h2 style="margin:0 0 0.5rem; font-size:1.5rem">{{ p.subject }}</h2>
+
+    <div style="font-family:sans-serif; color:#5a3e28; margin-bottom:1rem">
+        <strong>{{ p.date.strftime('%A, %B %-d, %Y') }}</strong>
+        {% if p.presenter %}&nbsp;·&nbsp; Presenter: {{ p.presenter }}{% endif %}
+    </div>
+
+    {% if p.notes %}
+    <div style="font-family:sans-serif; font-size:0.95rem; line-height:1.6; color:#3d2a1a">
+        {{ p.notes | replace('\n', '<br>') | safe }}
+    </div>
+    {% endif %}
+
+    {% if p.cost %}
+    <p style="font-family:sans-serif; font-size:0.9rem; margin-top:0.75rem; color:#666">
+        Materials fee: ${{ '%.2f'|format(p.cost) }}
+    </p>
+    {% endif %}
+
+    <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #d9c4b0;
+                font-family:sans-serif; font-size:0.88rem; color:#666">
+        <strong>Time:</strong> 9:00 AM – 12:00 PM<br>
+        <strong>Location:</strong> Deep Run Park Recreation Center, Henrico County, Virginia
+    </div>
+</div>
+{% endfor %}
+
+<p style="font-family:sans-serif; font-size:0.9rem; color:#888">
+    Guests are welcome. <a href="/apply">Join CVW</a> to attend all our programs and events.
+</p>
+
+{% else %}
+<div style="background:#f5ede3; border-radius:8px; padding:2rem; text-align:center">
+    <p style="font-family:sans-serif; font-size:1.1rem; color:#5a3e28; margin:0">
+        Meeting details for the next session have not been posted yet.
+    </p>
+    <p style="font-family:sans-serif; font-size:0.9rem; color:#888; margin:0.5rem 0 0">
+        Check back soon, or see the <a href="/site/calendar">calendar</a> for upcoming dates.
+    </p>
+</div>
+{% endif %}
+{% endblock %}
