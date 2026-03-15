@@ -116,6 +116,43 @@ CVW Membership</pre>
     </div>
 </form>
 
+{% if tmpl %}
+<hr style="margin:2rem 0; border:none; border-top:1px solid #e0e0e0">
+
+<h2 style="font-size:1rem; margin-bottom:0.75rem">Send Test Email</h2>
+
+{% if test_sent %}
+<div class="flash flash-success">Test email sent to <strong>{{ test_sent }}</strong> using sample member data.</div>
+{% elif test_error %}
+<div class="flash flash-error">Test failed: {{ test_error }}</div>
+{% endif %}
+
+<form method="post" action="/email/templates/{{ tmpl.id }}/test"
+      style="display:flex; gap:0.75rem; align-items:flex-end; flex-wrap:wrap">
+    <div style="flex:1; min-width:240px">
+        <label style="font-size:0.88rem; color:#555; display:block; margin-bottom:0.3rem">
+            Send to (your email address)
+        </label>
+        <input type="email" name="test_email" required
+               value="{{ default_test_email }}"
+               placeholder="you@example.com"
+               style="width:100%">
+    </div>
+    <button type="submit" class="btn btn-secondary">Send Test</button>
+</form>
+
+<p style="font-size:0.82rem; color:#888; margin-top:0.6rem">
+    The test email uses sample member data:
+    <strong>first_name = Jane</strong>,
+    <strong>last_name = Sample</strong>,
+    <strong>membership_type = Individual</strong>,
+    <strong>status = Active</strong>,
+    <strong>dues_paid = True</strong>.
+    The subject is prefixed with <code>[TEST]</code>.
+    SMTP must be configured in <code>.env</code> for the email to actually send.
+</p>
+{% endif %}
+
 <script>
 function showHelp(mode) {
     document.getElementById('help-simple').style.display = mode === 'simple' ? '' : 'none';

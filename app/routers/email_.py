@@ -1,5 +1,5 @@
 """Email console router.  Named email_ to avoid shadowing stdlib email package."""
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -147,13 +147,63 @@ def create_template(
 
 
 @router.get("/templates/{tmpl_id}/edit", response_class=HTMLResponse)
-def edit_template_form(tmpl_id: int, request: Request, _=auth, db: Session = Depends(get_db)):
+def edit_template_form(
+    tmpl_id: int,
+    request: Request,
+    _=auth,
+    db: Session = Depends(get_db),
+    test_sent: str = Query(default=""),
+    test_error: str = Query(default=""),
+):
     tmpl = db.get(EmailTemplate, tmpl_id)
     if not tmpl:
         raise HTTPException(status_code=404)
+    # Pre-fill test address from the logged-in user's linked member, if any
+    user = request.state.user
+    default_test_email = ""
+    if user and user.member_id and user.member:
+        default_test_email = user.member.email or ""
     return templates.TemplateResponse("email/template_form.html", {
-        "request": request, "tmpl": tmpl, "errors": []
+        "request": request, "tmpl": tmpl, "errors": [],
+        "test_sent": test_sent, "test_error": test_error,
+        "default_test_email": default_test_email,
     })
+
+
+@router.post("/templates/{tmpl_id}/test", response_class=RedirectResponse)
+def test_template(
+    tmpl_id: int,
+    test_email: str = Form(...),
+    _=auth,
+    db: Session = Depends(get_db),
+):
+    from app.email_service import dummy_member, render_body, send_email
+    from urllib.parse import quote
+
+    tmpl = db.get(EmailTemplate, tmpl_id)
+    if not tmpl:
+        raise HTTPException(status_code=404)
+
+    test_email = test_email.strip()
+    if not test_email:
+        return RedirectResponse(
+            url=f"/email/templates/{tmpl_id}/edit?test_error=No+email+address+provided",
+            status_code=303,
+        )
+
+    member = dummy_member(test_email)
+    try:
+        body = render_body(tmpl.body, member, tmpl.template_type or "simple")
+        send_email([test_email], f"[TEST] {tmpl.subject}", body)
+        return RedirectResponse(
+            url=f"/email/templates/{tmpl_id}/edit?test_sent={quote(test_email)}",
+            status_code=303,
+        )
+    except Exception as exc:
+        return RedirectResponse(
+            url=f"/email/templates/{tmpl_id}/edit?test_error={quote(str(exc))}",
+            status_code=303,
+        )
 
 
 @router.post("/templates/{tmpl_id}/edit", response_class=RedirectResponse)

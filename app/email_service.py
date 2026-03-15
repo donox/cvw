@@ -46,6 +46,23 @@ def send_email(to_addresses: list[str], subject: str, body: str) -> None:
         server.sendmail(settings.SMTP_FROM, to_addresses, msg.as_string())
 
 
+def dummy_member(send_to_email: str):
+    """Return a SimpleNamespace that looks like a Member, for test sends.
+
+    Uses clearly labelled sample values so every substitution is visible
+    in the rendered output.
+    """
+    from types import SimpleNamespace
+    return SimpleNamespace(
+        first_name="Jane",
+        last_name="Sample",
+        email=send_to_email,
+        membership_type="Individual",
+        status="Active",
+        dues_paid=True,
+    )
+
+
 def _member_context(member) -> dict:
     """Build the variable dict for a single member."""
     return {
