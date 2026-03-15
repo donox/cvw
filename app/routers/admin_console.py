@@ -1,5 +1,7 @@
+from pathlib import Path
 from typing import Optional
 
+import markdown as md
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -8,6 +10,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies import require_permission
 from app.models.user import User, ROLES
+
+DOCS_DIR = Path(__file__).resolve().parent.parent.parent / "docs"
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
@@ -21,6 +25,35 @@ def admin_index(request: Request, _=auth, db: Session = Depends(get_db)):
     active_count = db.query(User).filter(User.active == True).count()
     return templates.TemplateResponse("admin/index.html", {
         "request": request, "user_count": user_count, "active_count": active_count
+    })
+
+
+@router.get("/docs", response_class=HTMLResponse)
+def docs_index(request: Request, _=auth):
+    docs = sorted(
+        [{"name": f.stem, "filename": f.name}
+         for f in DOCS_DIR.glob("*.md")],
+        key=lambda d: d["name"]
+    )
+    return templates.TemplateResponse("admin/docs.html", {
+        "request": request, "docs": docs
+    })
+
+
+@router.get("/docs/{filename}", response_class=HTMLResponse)
+def view_doc(filename: str, request: Request, _=auth):
+    path = (DOCS_DIR / filename).resolve()
+    if not path.exists() or path.suffix != ".md" or not path.is_relative_to(DOCS_DIR):
+        raise HTTPException(status_code=404)
+    content_html = md.markdown(
+        path.read_text(),
+        extensions=["tables", "toc", "fenced_code"]
+    )
+    return templates.TemplateResponse("admin/doc_view.html", {
+        "request": request,
+        "title": path.stem.replace("_", " ").title(),
+        "content_html": content_html,
+        "filename": filename,
     })
 
 

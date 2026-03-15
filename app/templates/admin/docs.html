@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Planning Documents{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Planning Documents</h1>
+    <a href="/admin/" class="btn btn-secondary">← Admin</a>
+</div>
+
+<table>
+    <thead>
+        <tr><th>Document</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for doc in docs %}
+        <tr>
+            <td style="font-size:1rem">{{ doc.name.replace('_', ' ').title() }}</td>
+            <td><a href="/admin/docs/{{ doc.filename }}" class="btn btn-secondary">View</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="2" style="color:#888">No documents found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
