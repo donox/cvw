@@ -1,8 +1,9 @@
 {% extends "base_public.html" %}
 {% block title %}Resources — Central Virginia Woodturners{% endblock %}
 {% block content %}
+<div id="top"></div>
 <h1 style="margin-bottom:0.25rem">Woodturning Resources</h1>
-<p style="color:#666; margin-bottom:1.5rem">
+<p style="color:#666; margin-bottom:1.25rem">
     A curated library of links, PDFs, and videos for CVW members and visitors.
 </p>
 
@@ -10,22 +11,33 @@
 <p style="color:#888">No resources are available yet — check back soon.</p>
 {% endif %}
 
-{# Category jump links #}
+{# Sticky category index #}
 {% if by_category %}
-<nav style="background:#f5ede4; border-radius:6px; padding:0.75rem 1rem; margin-bottom:1.75rem; font-size:0.9rem">
-    <strong>Jump to:</strong>
+<nav id="res-index" style="background:#f5ede4; border-radius:6px; padding:0.6rem 1rem;
+     margin-bottom:1.75rem; font-size:0.88rem; line-height:1.9">
+    <strong style="display:block; margin-bottom:0.15rem; font-size:0.8rem;
+                   text-transform:uppercase; letter-spacing:0.06em; color:#5a3e28">Jump to section</strong>
     {% for category in by_category %}
-        <a href="#cat-{{ loop.index }}" style="margin-left:0.75rem; color:#5a3e28">{{ category }}</a>
+        {%- set anchor = category | lower | replace(' ', '-') | replace('&', '') | replace('/', '-') -%}
+        <a href="#{{ anchor }}"
+           style="display:inline-block; margin:0.1rem 0.5rem 0.1rem 0; padding:0.15rem 0.55rem;
+                  background:#fff; border:1px solid #c8a870; border-radius:3px;
+                  color:#5a3e28; text-decoration:none; font-size:0.85rem; white-space:nowrap">{{ category }}</a>
     {% endfor %}
 </nav>
 {% endif %}
 
 {% for category, items in by_category.items() %}
-<h2 id="cat-{{ loop.index }}"
-    style="font-size:1.15rem; color:#5a3e28; border-bottom:2px solid #d4a96a;
-           padding-bottom:0.3rem; margin:1.75rem 0 0.75rem">
-    {{ category }}
-</h2>
+    {%- set anchor = category | lower | replace(' ', '-') | replace('&', '') | replace('/', '-') -%}
+<div style="display:flex; align-items:baseline; justify-content:space-between;
+            border-bottom:2px solid #d4a96a; margin:1.75rem 0 0.75rem; padding-bottom:0.3rem">
+    <h2 id="{{ anchor }}" style="font-size:1.15rem; color:#5a3e28; margin:0">
+        {{ category }}
+        <span style="font-weight:normal; font-size:0.8rem; color:#999">({{ items|length }})</span>
+    </h2>
+    <a href="#top" style="font-size:0.8rem; color:#888; text-decoration:none;
+                           white-space:nowrap; margin-left:1rem">↑ Top</a>
+</div>
 <ul style="margin:0 0 0.5rem; padding-left:1.25rem; line-height:1.9">
 {% for r in items %}
     <li>
@@ -42,5 +54,6 @@
 <p style="margin-top:2rem; font-size:0.85rem; color:#888; border-top:1px solid #ddd; padding-top:1rem">
     Missing a resource? Contact the librarian or any officer — see the
     <a href="/site/contact" style="color:#5a3e28">Contact</a> page.
+    &nbsp;·&nbsp; <a href="#top" style="color:#888">↑ Back to top</a>
 </p>
 {% endblock %}
