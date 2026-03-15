@@ -72,7 +72,7 @@ Notes:
 | Route | Description | Notes |
 |---|---|---|
 | `/newsletters` | PDF archive list by year/month | Requires PDF upload management |
-| `/site/resources` | Curated link library by category | YAML-driven (see below) |
+| `/site/resources` | Curated link library by category | ✅ Live — DB-backed, managed via Librarian console |
 | `/gallery` | Member photo gallery | Requires image upload + storage |
 | `/symposium` | Virginia Woodturning Symposium info | Static or linked |
 | `/dues` | Membership tiers + PayPal integration | PayPal Buttons API |

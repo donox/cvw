@@ -51,6 +51,8 @@ Build and maintain a membership management web application for CVW (Central Virg
 | 2026-03-13 | show_on_public flag on Program | Controls which programs appear on public next-meeting page |
 | 2026-03-13 | Public site at /site/ prefix | Internal / at root already taken by dashboard redirect |
 | 2026-03-15 | Financial enhancements deferred — plan doc circulated | No bookkeeping library needed; single-entry is sufficient at CVW scale |
+| 2026-03-15 | Resource library backed by DB table, not YAML | Form-per-entry editor is equivalent work to YAML + editor; DB fits existing patterns and is usable by non-technical officers |
+| 2026-03-15 | `librarian` role added; Volunteer dropdown in nav | Volunteer roles are a distinct nav group from officer consoles; dropdown supports future additions |
 
 ---
 
@@ -127,6 +129,16 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [x] Home page (`/site/`) — next program + upcoming events
 - [x] About, Officers, Calendar, Next Meeting, Skill Center, Contact pages
 - [x] Next Meeting page driven by `show_on_public` programs
+- [x] Resources page (`/site/resources`) — grouped by category, active items only
+
+### Librarian Console
+- [x] Resource model (category, title, url, description, sort_order, active)
+- [x] CRUD at `/librarian/resources/` — librarian + admin roles
+- [x] Category datalist for autocomplete (derive from existing rows, allow new)
+- [x] Active toggle — controls visibility on public site
+- [x] `librarian` role added to ROLE_PERMISSIONS and ROLES
+- [x] "Volunteer ▾" CSS dropdown in internal nav (librarian + admin)
+- [x] 93 resources seeded from centralvawoodturners.org (`scripts/seed_resources.py`)
 
 ---
 
