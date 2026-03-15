@@ -19,6 +19,7 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
     "program":    ["programs", "dashboard"],
     "financial":  ["financial", "dashboard"],
     "exec":       ["exec", "members", "groups", "programs", "dashboard"],
+    "librarian":  ["librarian", "dashboard"],
     "admin":      ["*"],
 }
 

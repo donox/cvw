@@ -1,0 +1,46 @@
+{% extends "base_public.html" %}
+{% block title %}Resources — Central Virginia Woodturners{% endblock %}
+{% block content %}
+<h1 style="margin-bottom:0.25rem">Woodturning Resources</h1>
+<p style="color:#666; margin-bottom:1.5rem">
+    A curated library of links, PDFs, and videos for CVW members and visitors.
+</p>
+
+{% if not by_category %}
+<p style="color:#888">No resources are available yet — check back soon.</p>
+{% endif %}
+
+{# Category jump links #}
+{% if by_category %}
+<nav style="background:#f5ede4; border-radius:6px; padding:0.75rem 1rem; margin-bottom:1.75rem; font-size:0.9rem">
+    <strong>Jump to:</strong>
+    {% for category in by_category %}
+        <a href="#cat-{{ loop.index }}" style="margin-left:0.75rem; color:#5a3e28">{{ category }}</a>
+    {% endfor %}
+</nav>
+{% endif %}
+
+{% for category, items in by_category.items() %}
+<h2 id="cat-{{ loop.index }}"
+    style="font-size:1.15rem; color:#5a3e28; border-bottom:2px solid #d4a96a;
+           padding-bottom:0.3rem; margin:1.75rem 0 0.75rem">
+    {{ category }}
+</h2>
+<ul style="margin:0 0 0.5rem; padding-left:1.25rem; line-height:1.9">
+{% for r in items %}
+    <li>
+        <a href="{{ r.url }}" target="_blank" rel="noopener"
+           style="color:#0066cc; font-weight:500">{{ r.title }}</a>
+        {% if r.description %}
+        — <span style="color:#555; font-size:0.9rem">{{ r.description }}</span>
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
+{% endfor %}
+
+<p style="margin-top:2rem; font-size:0.85rem; color:#888; border-top:1px solid #ddd; padding-top:1rem">
+    Missing a resource? Contact the librarian or any officer — see the
+    <a href="/site/contact" style="color:#5a3e28">Contact</a> page.
+</p>
+{% endblock %}

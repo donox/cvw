@@ -14,11 +14,13 @@ import app.models.org           # register with Base
 import app.models.financial     # register with Base
 import app.models.group         # register with Base
 import app.models.email_models  # register with Base
+import app.models.resource      # register with Base
 from app.dependencies import NotAuthenticatedException, PermissionDeniedException
 from app.routers import members, apply, programs, feedback, auth
 from app.routers import admin_console, financial, exec_, groups
 from app.routers import email_ as email_router
 from app.routers import public_ as public_router
+from app.routers import librarian as librarian_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -87,6 +89,7 @@ app.include_router(admin_console.router)
 app.include_router(groups.router)
 app.include_router(email_router.router)
 app.include_router(public_router.router)
+app.include_router(librarian_router.router)
 
 
 @app.get("/")

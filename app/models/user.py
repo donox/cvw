@@ -6,7 +6,7 @@ from app.database import Base
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-ROLES = ["admin", "membership", "program", "financial", "exec"]
+ROLES = ["admin", "membership", "program", "financial", "exec", "librarian"]
 
 
 class User(Base):

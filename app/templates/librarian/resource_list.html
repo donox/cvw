@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Resource Library{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Resource Library</h1>
+    <a href="/librarian/resources/new" class="btn btn-primary">+ Add Resource</a>
+</div>
+
+{% if not by_category %}
+<p style="color:#888">No resources yet. <a href="/librarian/resources/new">Add the first one.</a></p>
+{% endif %}
+
+{% for category, items in by_category.items() %}
+<h2 style="font-size:1.05rem; margin:1.5rem 0 0.4rem; color:#5a3e28; border-bottom:1px solid #ddd; padding-bottom:0.3rem">
+    {{ category }}
+    <span style="font-weight:normal; font-size:0.85rem; color:#999">({{ items|length }})</span>
+</h2>
+<table>
+    <thead>
+        <tr>
+            <th style="width:40%">Title</th>
+            <th style="width:35%">URL</th>
+            <th style="width:15%">Description</th>
+            <th style="width:10%; text-align:center">Active</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in items %}
+    <tr style="{% if not r.active %}opacity:0.45{% endif %}">
+        <td>{{ r.title }}</td>
+        <td style="font-size:0.82rem; word-break:break-all">
+            <a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.url[:60] }}{% if r.url|length > 60 %}…{% endif %}</a>
+        </td>
+        <td style="font-size:0.85rem; color:#666">{{ r.description or '' }}</td>
+        <td style="text-align:center">
+            <form method="post" action="/librarian/resources/{{ r.id }}/toggle" style="display:inline">
+                <button type="submit" class="btn btn-secondary" style="padding:0.15rem 0.5rem; font-size:0.8rem"
+                        title="{% if r.active %}Hide from public{% else %}Show on public site{% endif %}">
+                    {% if r.active %}🌐{% else %}⊘{% endif %}
+                </button>
+            </form>
+        </td>
+        <td style="white-space:nowrap">
+            <a href="/librarian/resources/{{ r.id }}/edit" class="btn btn-secondary" style="font-size:0.8rem; padding:0.15rem 0.55rem">Edit</a>
+            <form method="post" action="/librarian/resources/{{ r.id }}/delete" style="display:inline"
+                  onsubmit="return confirm('Delete {{ r.title|e }}?')">
+                <button type="submit" class="btn btn-danger" style="font-size:0.8rem; padding:0.15rem 0.55rem">Del</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endfor %}
+{% endblock %}

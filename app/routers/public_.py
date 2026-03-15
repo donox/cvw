@@ -6,10 +6,13 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from collections import defaultdict
+
 from app.database import get_db
 from app.models.officer import Officer
 from app.models.org import OrgEvent
 from app.models.program import Program
+from app.models.resource import Resource
 
 router = APIRouter(prefix="/site", tags=["public"])
 templates = Jinja2Templates(directory="app/templates")
@@ -92,6 +95,23 @@ def public_next_meeting(request: Request, db: Session = Depends(get_db)):
 @router.get("/skill-center", response_class=HTMLResponse)
 def public_skill_center(request: Request):
     return templates.TemplateResponse("public/skill_center.html", {"request": request})
+
+
+@router.get("/resources", response_class=HTMLResponse)
+def public_resources(request: Request, db: Session = Depends(get_db)):
+    resources = (
+        db.query(Resource)
+        .filter(Resource.active == True)
+        .order_by(Resource.category, Resource.sort_order, Resource.title)
+        .all()
+    )
+    by_category: dict[str, list] = defaultdict(list)
+    for r in resources:
+        by_category[r.category].append(r)
+    return templates.TemplateResponse("public/resources.html", {
+        "request": request,
+        "by_category": dict(sorted(by_category.items())),
+    })
 
 
 @router.get("/contact", response_class=HTMLResponse)

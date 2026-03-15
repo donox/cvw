@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{% if res %}Edit Resource{% else %}New Resource{% endif %}{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">{% if res %}Edit Resource{% else %}New Resource{% endif %}</h1>
+    <a href="/librarian/resources/" class="btn btn-secondary">← Library</a>
+</div>
+
+{% if errors %}
+<div class="flash flash-error">{% for e in errors %}<div>{{ e }}</div>{% endfor %}</div>
+{% endif %}
+
+{% set cur_category    = res.category    if res else (category    |default('')) %}
+{% set cur_title       = res.title       if res else (title       |default('')) %}
+{% set cur_url         = res.url         if res else (url         |default('')) %}
+{% set cur_description = res.description if res else (description |default('')) %}
+{% set cur_sort_order  = res.sort_order  if res else (sort_order  |default('0')) %}
+{% set cur_active      = res.active      if res else true %}
+
+<form method="post"
+      action="{% if res %}/librarian/resources/{{ res.id }}/edit{% else %}/librarian/resources/{% endif %}">
+
+    <datalist id="category-list">
+        {% for c in categories %}<option value="{{ c }}">{% endfor %}
+    </datalist>
+
+    <div class="form-group">
+        <label>Category</label>
+        <input type="text" name="category" required maxlength="100"
+               list="category-list"
+               value="{{ cur_category }}"
+               placeholder="e.g. Safety, Tools, Projects …">
+        <small style="color:#888">Choose an existing category or type a new one.</small>
+    </div>
+
+    <div class="form-group">
+        <label>Title</label>
+        <input type="text" name="title" required maxlength="200" value="{{ cur_title }}">
+    </div>
+
+    <div class="form-group">
+        <label>URL</label>
+        <input type="url" name="url" required maxlength="1000" value="{{ cur_url }}"
+               placeholder="https://…">
+    </div>
+
+    <div class="form-group">
+        <label>Description <span style="font-weight:normal; color:#888">(optional)</span></label>
+        <input type="text" name="description" maxlength="500" value="{{ cur_description or '' }}">
+    </div>
+
+    <div class="form-group">
+        <label>Sort Order <span style="font-weight:normal; color:#888">(lower = earlier within category)</span></label>
+        <input type="number" name="sort_order" min="0" max="9999" style="width:100px"
+               value="{{ cur_sort_order }}">
+    </div>
+
+    <div class="form-group">
+        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-weight:normal">
+            <input type="checkbox" name="active" value="on" style="width:auto"
+                   {% if cur_active %}checked{% endif %}>
+            Show on public website
+        </label>
+    </div>
+
+    <div style="display:flex; gap:0.5rem; margin-top:1.25rem">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/librarian/resources/" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}
