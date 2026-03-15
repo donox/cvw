@@ -84,16 +84,16 @@ The CVW Team</pre>
             <tr><td><code>email</code></td><td>Recipient's email address</td></tr>
             <tr><td><code>membership_type</code></td><td>Individual / Family / Affiliated / Honorary / Life</td></tr>
             <tr><td><code>status</code></td><td>Active / Prospective / Former</td></tr>
-            <tr><td><code>dues_paid</code></td><td>True or False (use in {% verbatim %}{% if %}{% endverbatim %} blocks)</td></tr>
+            <tr><td><code>dues_paid</code></td><td>True or False (use in <code>&#123;% if %&#125;</code> blocks)</td></tr>
         </table>
         <strong>Example:</strong>
         <pre style="background:#fff; border:1px solid #dde; border-radius:4px; padding:0.75rem; margin:0.5rem 0 0; font-size:0.85rem; white-space:pre-wrap">Hi {{ "{{ first_name }}" }},
 
-{% verbatim %}{% if not dues_paid %}
+{% raw %}{% if not dues_paid %}
 Your 2026 dues are still outstanding. Please renew at the next meeting or via PayPal.
 {% else %}
 Thank you — your dues are paid and your membership is current.
-{% endif %}{% endverbatim %}
+{% endif %}{% endraw %}
 
 Questions? Reply to this email or speak to the Membership VP at the next meeting.
 
