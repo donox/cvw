@@ -23,7 +23,10 @@
         <select id="tmpl-select" onchange="loadTemplate(this)">
             <option value="">— select template —</option>
             {% for t in email_templates %}
-            <option value="{{ t.id }}" data-subject="{{ t.subject }}" data-body="{{ t.body | e }}">{{ t.name }}</option>
+            <option value="{{ t.id }}"
+                    data-subject="{{ t.subject }}"
+                    data-body="{{ t.body | e }}"
+                    data-type="{{ t.template_type or 'simple' }}">{{ t.name }} {% if t.template_type == 'jinja2' %}(Jinja2){% endif %}</option>
             {% endfor %}
         </select>
     </div>
@@ -52,6 +55,19 @@
     </div>
 
     <div class="form-group">
+        <label>Rendering Mode</label>
+        <div style="display:flex; gap:1.5rem; margin-top:0.4rem">
+            <label style="display:flex; align-items:center; gap:0.4rem; font-weight:normal; cursor:pointer">
+                <input type="radio" name="template_type" value="simple" checked id="rt-simple">
+                Simple <span style="color:#888; font-size:0.85rem">(&#123;&#123; variable &#125;&#125; substitutions)</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:0.4rem; font-weight:normal; cursor:pointer">
+                <input type="radio" name="template_type" value="jinja2" id="rt-jinja2">
+                Jinja2 <span style="color:#888; font-size:0.85rem">(if/for/filters)</span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
         <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer">
             <input type="checkbox" name="per_member" value="on">
             Personalise (send individual emails with member substitutions)
@@ -70,6 +86,9 @@ function loadTemplate(sel) {
     if (!opt.value) return;
     document.getElementById('subject').value = opt.dataset.subject || '';
     document.getElementById('body').value = opt.dataset.body || '';
+    const type = opt.dataset.type || 'simple';
+    document.getElementById('rt-simple').checked = type === 'simple';
+    document.getElementById('rt-jinja2').checked = type === 'jinja2';
 }
 </script>
 {% endblock %}

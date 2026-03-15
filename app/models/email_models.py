@@ -10,7 +10,8 @@ class EmailTemplate(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, unique=True)
     subject = Column(String, nullable=False)
-    body = Column(String, nullable=False)  # plain-text; {{ first_name }} etc. supported
+    body = Column(String, nullable=False)
+    template_type = Column(String, default="simple")  # "simple" or "jinja2"
     created_by = Column(String)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())

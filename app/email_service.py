@@ -7,17 +7,25 @@ from typing import Optional
 
 from app.database import settings
 
+# Variables available to every template, keyed by the token/variable name.
+# Used both for rendering and for the UI help text.
+TEMPLATE_VARS = {
+    "first_name":      "Recipient's first name",
+    "last_name":       "Recipient's last name",
+    "full_name":       "First and last name combined",
+    "email":           "Recipient's email address",
+    "membership_type": "Individual / Family / Affiliated / Honorary / Life",
+    "status":          "Active / Prospective / Former",
+    "dues_paid":       "True or False — whether dues are paid for this year",
+}
+
 
 def _smtp_configured() -> bool:
     return bool(settings.SMTP_HOST and settings.SMTP_FROM)
 
 
 def send_email(to_addresses: list[str], subject: str, body: str) -> None:
-    """Send a plain-text email to a list of addresses.
-
-    Raises RuntimeError if SMTP is not configured.
-    Raises smtplib exceptions on connection/auth failures.
-    """
+    """Send a plain-text email to a list of addresses."""
     if not _smtp_configured():
         raise RuntimeError(
             "SMTP is not configured. Set SMTP_HOST and SMTP_FROM in .env."
@@ -38,15 +46,46 @@ def send_email(to_addresses: list[str], subject: str, body: str) -> None:
         server.sendmail(settings.SMTP_FROM, to_addresses, msg.as_string())
 
 
-def render_body(template_body: str, member) -> str:
-    """Simple {{ variable }} substitution against a Member object."""
-    return (
-        template_body
-        .replace("{{ first_name }}", member.first_name or "")
-        .replace("{{ last_name }}", member.last_name or "")
-        .replace("{{ full_name }}", f"{member.first_name} {member.last_name}")
-        .replace("{{ email }}", member.email or "")
-    )
+def _member_context(member) -> dict:
+    """Build the variable dict for a single member."""
+    return {
+        "first_name":      member.first_name or "",
+        "last_name":       member.last_name or "",
+        "full_name":       f"{member.first_name or ''} {member.last_name or ''}".strip(),
+        "email":           member.email or "",
+        "membership_type": member.membership_type or "",
+        "status":          member.status or "",
+        "dues_paid":       bool(member.dues_paid),
+    }
+
+
+def render_body(template_body: str, member, template_type: str = "simple") -> str:
+    """Render an email body for a single member.
+
+    template_type="simple"  — {{ variable }} literal substitution only.
+    template_type="jinja2"  — full Jinja2 rendering (if/for/filters etc.).
+
+    All recipients are members, so the context is always populated.
+    Members with no email are skipped before this is called.
+    Members with empty fields (e.g. no membership_type) produce empty strings.
+    """
+    ctx = _member_context(member)
+
+    if template_type == "jinja2":
+        try:
+            from jinja2 import Environment, Undefined
+            env = Environment(undefined=Undefined)
+            return env.from_string(template_body).render(**ctx)
+        except Exception as exc:
+            # Return body with an error header so a broken template is visible
+            return f"[Template error: {exc}]\n\n{template_body}"
+
+    # Simple mode: straight string replacement, {{ variable }} only
+    result = template_body
+    for key, value in ctx.items():
+        result = result.replace("{{ " + key + " }}", str(value))
+        result = result.replace("{{" + key + "}}", str(value))   # no-space variant
+    return result
 
 
 def send_to_members(
@@ -54,11 +93,12 @@ def send_to_members(
     subject: str,
     body_template: str,
     per_member_body: bool = False,
+    template_type: str = "simple",
 ) -> tuple[int, Optional[str]]:
     """Send email to a list of Member objects.
 
-    If per_member_body is True, renders the template for each member individually
-    (personalised greeting etc.).  Otherwise sends one combined message.
+    All recipients must be members (no arbitrary addresses).
+    Members without an email address are silently skipped.
 
     Returns (sent_count, error_detail_or_None).
     """
@@ -70,12 +110,12 @@ def send_to_members(
     for member in members:
         if not member.email:
             continue
-        body = render_body(body_template, member) if per_member_body else body_template
+        body = (render_body(body_template, member, template_type)
+                if per_member_body else body_template)
         try:
             send_email([member.email], subject, body)
             sent += 1
         except Exception as exc:
             errors.append(f"{member.email}: {exc}")
 
-    error_detail = "; ".join(errors) if errors else None
-    return sent, error_detail
+    return sent, "; ".join(errors) if errors else None

@@ -32,7 +32,9 @@ def _run_scheduled_email(scheduled_email_id: int) -> None:
             members = db.query(Member).filter(Member.status == "Active").all()
 
         sent, error = send_to_members(
-            members, template.subject, template.body, per_member_body=True
+            members, template.subject, template.body,
+            per_member_body=True,
+            template_type=template.template_type or "simple",
         )
         log = EmailLog(
             subject=template.subject,

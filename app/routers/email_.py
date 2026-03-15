@@ -43,8 +43,9 @@ def send_email_now(
     request: Request,
     subject: str = Form(...),
     body: str = Form(...),
-    group_id: str = Form(""),      # empty string = all active members
-    per_member: str = Form(""),    # checkbox
+    group_id: str = Form(""),
+    per_member: str = Form(""),
+    template_type: str = Form("simple"),
     _=auth,
     db: Session = Depends(get_db),
 ):
@@ -62,7 +63,9 @@ def send_email_now(
         group = None
 
     personalize = per_member == "on"
-    sent, error = send_to_members(members, subject, body, per_member_body=personalize)
+    sent, error = send_to_members(members, subject, body,
+                                  per_member_body=personalize,
+                                  template_type=template_type)
 
     user = request.state.user
     log = EmailLog(
@@ -118,6 +121,7 @@ def create_template(
     name: str = Form(...),
     subject: str = Form(...),
     body: str = Form(...),
+    template_type: str = Form("simple"),
     _=auth,
     db: Session = Depends(get_db),
 ):
@@ -128,11 +132,13 @@ def create_template(
         return templates.TemplateResponse("email/template_form.html", {
             "request": request, "tmpl": None, "errors": errors,
             "name": name, "subject": subject, "body": body,
+            "template_type": template_type,
         }, status_code=422)
 
     user = request.state.user
     tmpl = EmailTemplate(
         name=name.strip(), subject=subject.strip(), body=body,
+        template_type=template_type,
         created_by=user.username if user else "",
     )
     db.add(tmpl)
@@ -156,6 +162,7 @@ def update_template(
     name: str = Form(...),
     subject: str = Form(...),
     body: str = Form(...),
+    template_type: str = Form("simple"),
     _=auth,
     db: Session = Depends(get_db),
 ):
@@ -165,6 +172,7 @@ def update_template(
     tmpl.name = name.strip()
     tmpl.subject = subject.strip()
     tmpl.body = body
+    tmpl.template_type = template_type
     db.commit()
     return RedirectResponse(url="/email/templates", status_code=303)
 
