@@ -78,30 +78,17 @@ Notes:
 | `/dues` | Membership tiers + PayPal integration | PayPal Buttons API |
 | `/members-only` | Protected content for logged-in members | Auth already exists |
 
-#### Resources page approach
+#### Resources page — implemented
 
-The existing WordPress Resources page has ~15 categories of links (PDFs, videos, external websites). The proposed approach:
+**Status:** ✅ Live. 93 resources seeded from the WordPress site across 14 categories.
 
-- **Storage: YAML file** (`data/resources.yaml`). Each entry has a category, title, URL, and optional description. Example:
+The initial plan proposed a YAML file (`data/resources.yaml`) on the grounds that resources change infrequently and YAML is version-controlled without needing an admin UI. This was **rejected** after discussion:
 
-  ```yaml
-  - category: "Getting Started"
-    title: "AAW Turning Fundamentals"
-    url: "https://example.com/fundamentals"
-    description: "Introductory video series from the AAW"
+- A "simple editor" that lets officers edit raw YAML still requires YAML knowledge and correct indentation — not suitable for a non-technical librarian.
+- A form-per-entry browser editor (add/edit/delete individual resources) is equivalent in UI work whether the backing store is YAML or a DB table. The DB version is more robust and fits the existing app patterns.
+- The marginal savings of YAML (one migration, one model file) did not outweigh the usability cost.
 
-  - category: "Wood Sources"
-    title: "Local suppliers list (PDF)"
-    url: "/static/pdfs/wood_sources.pdf"
-  ```
-
-- **Why YAML, not a DB table:** Resources change infrequently (a few times a year). YAML is human-editable by any officer with file access, version-controlled in git, and requires no admin UI to manage. A DB table would add a full CRUD console for minimal benefit at CVW's scale.
-
-- **The `/site/resources` route** reads the YAML file at request time, groups entries by category, and renders them. No migration needed.
-
-- **PDFs:** Linked PDFs are stored in `static/pdfs/` and served by FastAPI's StaticFiles mount. Uploading new PDFs requires server file access (same as editing YAML) — deferred to Phase 3 if an upload UI is needed.
-
-- **Who maintains it:** Any officer or developer with git access edits `data/resources.yaml` and redeploys. If a browser-based editor is needed later, a simple admin CRUD UI can be added without changing the public route.
+**Actual approach:** `Resource` DB table (category, title, url, description, sort_order, active) managed via the Librarian console at `/librarian/resources/`. The `librarian` role and a "Volunteer ▾" nav dropdown were added at the same time to support future volunteer-role consoles.
 
 ---
 
