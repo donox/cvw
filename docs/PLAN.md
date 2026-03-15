@@ -6,7 +6,7 @@ Living document tracking decisions, directions, and status of ongoing developmen
 
 ## Current Direction
 
-Build and maintain a membership management web application for CVW (Central Virginia Woodturners), with a possible future extension to replace the public-facing website. See [PUBLIC_SITE_PLAN.md](PUBLIC_SITE_PLAN.md) for the public site option.
+Build and maintain a membership management web application for CVW (Central Virginia Woodturners), with a public-facing website at `/site/` (Phase 1 live). See [PUBLIC_SITE_PLAN.md](PUBLIC_SITE_PLAN.md) for the public site roadmap and [FINANCIAL_PLAN.md](FINANCIAL_PLAN.md) for planned financial enhancements.
 
 ---
 
@@ -22,6 +22,8 @@ Build and maintain a membership management web application for CVW (Central Virg
 | PDF | fpdf2 | Pure Python, no system dependencies |
 | QR codes | qrcode[pil] | Program feedback QR generation |
 | Settings | pydantic-settings via .env | Twelve-factor config |
+| Email | smtplib (stdlib) | No external dependency; SMTP config in .env |
+| Scheduling | APScheduler 3.x + SQLAlchemy jobstore | Persistent scheduled email jobs |
 
 ---
 
@@ -41,6 +43,14 @@ Build and maintain a membership management web application for CVW (Central Virg
 | 2026-03-12 | email nullable on Member | Honorary members often have no email address |
 | 2026-03-12 | Officer.member_id nullable | Vacant positions must be representable |
 | 2026-03-12 | Docker deferred until production deploy | No benefit during active development |
+| 2026-03-13 | Member Groups (many-to-many) for email targeting | Allows sending to subsets without changing member records |
+| 2026-03-13 | APScheduler with SQLAlchemy jobstore for scheduled email | Jobs survive server restarts |
+| 2026-03-13 | Dual email rendering: simple (string replace) vs. Jinja2 | Simple is safer for non-technical users; Jinja2 available when needed |
+| 2026-03-13 | User linked to Member via member_id FK | Enables personalised defaults (test email address) and audit trails |
+| 2026-03-13 | must_change_password flag on User | Forces password change at first login for new accounts |
+| 2026-03-13 | show_on_public flag on Program | Controls which programs appear on public next-meeting page |
+| 2026-03-13 | Public site at /site/ prefix | Internal / at root already taken by dashboard redirect |
+| 2026-03-15 | Financial enhancements deferred — plan doc circulated | No bookkeeping library needed; single-entry is sufficient at CVW scale |
 
 ---
 
@@ -87,20 +97,64 @@ Build and maintain a membership management web application for CVW (Central Virg
 
 ### Admin Console
 - [x] User management (list, create, edit, activate/deactivate)
+- [x] User → Member link (member select replaces free-text name)
+- [x] Forced password change on first login (`must_change_password` flag)
 - [x] Dashboard card grid (role-aware)
-- [x] Planning documents viewer
+- [x] Planning documents viewer (`docs/*.md`)
+
+### Member Groups
+- [x] MemberGroup model with many-to-many to Member
+- [x] Group CRUD (`/groups/`) — membership VP + admin
+- [x] Client-side member filter on group edit form
+- [x] Groups usable as email targets in compose and scheduled email
+
+### Email Console
+- [x] Compose & send — to all active members or a named group
+- [x] Per-member personalisation mode (individual sends with substitutions)
+- [x] Dual rendering: Simple (`{{ variable }}` replace) and Jinja2 (if/for/filters)
+- [x] Email templates — CRUD, name, subject, body, rendering mode
+- [x] Test email button on template edit page (sends to author with sample data)
+- [x] Scheduled email — APScheduler cron jobs, persisted in DB, active/inactive toggle
+- [x] Email log — records every send with recipient count, status, errors
+- [x] Available template variables: first_name, last_name, full_name, email, membership_type, status, dues_paid
+
+### Programs (additions)
+- [x] `show_on_public` flag — quick toggle on program list
+- [x] Programs with flag drive public next-meeting page
+
+### Public Website (Phase 1)
+- [x] Base public template (`base_public.html`) — CVW brown/tan palette, mobile responsive
+- [x] Home page (`/site/`) — next program + upcoming events
+- [x] About, Officers, Calendar, Next Meeting, Skill Center, Contact pages
+- [x] Next Meeting page driven by `show_on_public` programs
 
 ---
 
 ## Pending / Backlog
 
+### Member Management
 - [ ] Pagination on member list (currently loads all ~109 members)
 - [ ] Email member(s) directly from member detail page
+
+### Programs
 - [ ] Program console — add auth to remaining routes
 - [ ] Feedback summary report per program (currently just averages on detail page)
-- [ ] PayPal dues payment integration
+
+### Financial Console
+- [ ] Chart of Accounts — DB-managed categories replacing hardcoded lists
+- [ ] Fiscal year awareness — configurable start, year selector on dashboard
+- [ ] Reports page — Income & Expense Summary, Month-by-Month, Transaction Ledger
+- [ ] Budget — optional actual vs. budget comparison
+- [ ] CSV export of filtered transactions
+- [ ] (Optional) PDF reports via fpdf2
+- See [FINANCIAL_PLAN.md](FINANCIAL_PLAN.md) for full discussion
+
+### Infrastructure
 - [ ] Production deployment (Docker + nginx/Caddy + domain)
-- [ ] Public-facing website (see PUBLIC_SITE_PLAN.md)
+- [ ] PayPal dues payment integration (requires public server + PayPal dev account)
+
+### Public Website
+- [ ] Phase 2: newsletters, resources, gallery (see PUBLIC_SITE_PLAN.md)
 
 ---
 

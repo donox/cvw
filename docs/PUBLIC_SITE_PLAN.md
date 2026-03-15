@@ -1,6 +1,6 @@
 # Option A — CVW Public Website Integrated with CVWdata
 
-**Status:** Proposed — under discussion
+**Status:** Phase 1 live at `/site/` — Phase 2 pending officer discussion
 **Last updated:** 2026-03-15
 
 ---
@@ -49,18 +49,23 @@ The existing WordPress site (centralvawoodturners.org) has the following pages:
 
 All new routes would use a `public` or `www` prefix (or no prefix) and require no login.
 
-### Phase 1 — Low effort, high value
+### Phase 1 — ✅ Complete (live at `/site/`)
 
-| Route | Description | Data source |
+| Route | Description | Status |
 |---|---|---|
-| `/` (redesigned) | Home — next meeting, club intro | OrgEvent, static text |
-| `/about` | Club info, mission, meeting location | Static + Officers DB |
-| `/officers` | Current officers and volunteer staff | Officer model (already seeded) |
-| `/calendar` | Upcoming events / meeting schedule | OrgEvent model |
-| `/next-meeting` | Next single meeting detail with agenda | OrgEvent model |
-| `/apply` | Membership application | ✅ Already exists |
-| `/contact` | Contact form routing to officers by role | Static form + email |
-| `/skill-center` | Skill session info | Static page |
+| `/site/` | Home — next program + upcoming events | ✅ Live |
+| `/site/about` | Club info, mission, meeting location | ✅ Live |
+| `/site/officers` | Current officers and volunteer staff | ✅ Live |
+| `/site/calendar` | Upcoming events / meeting schedule | ✅ Live |
+| `/site/next-meeting` | Programs with `show_on_public` flag | ✅ Live |
+| `/apply` | Membership application | ✅ Pre-existing |
+| `/site/contact` | Contact page (static, no form submission yet) | ✅ Live |
+| `/site/skill-center` | Skill session info (static) | ✅ Live |
+
+Notes:
+- Uses `base_public.html` with CVW brown/tan palette, mobile-responsive
+- Next Meeting page driven by `Program.show_on_public` flag (toggled on program list)
+- Contact form does not yet submit email (Phase 2)
 
 ### Phase 2 — Medium effort
 
@@ -127,10 +132,10 @@ Use Python's `smtplib` or `fastapi-mail` with SMTP credentials in `.env`. Route 
 
 ## Suggested Next Steps
 
-1. **Discuss with officers** — Share this plan at an executive meeting. Get buy-in before building.
-2. **Prototype Phase 1** — Build the public home, officers, and calendar pages as a prototype running alongside the internal app. Low risk, useful for demonstrating the concept.
-3. **Decide on content ownership** — Identify who owns each section and how they'll update it.
-4. **Set a cutover target** — If approved, aim for a cutover date after Phase 1 is stable and Phase 2 is at least 80% complete.
+1. **Review Phase 1** — Walk through the live `/site/` pages with officers. Get feedback.
+2. **Decide on Phase 2 priorities** — Newsletters and gallery require the most effort; resources and dues page are simpler.
+3. **Decide on content ownership** — Static pages (About, Skill Center, Resources) need someone to update them. With FastAPI/Jinja2 this means editing template files — not as easy as WordPress.
+4. **Set a cutover target** — If approved, aim to replace the WordPress site after Phase 2 is at least 80% complete.
 
 ---
 
