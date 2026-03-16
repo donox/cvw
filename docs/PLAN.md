@@ -131,6 +131,19 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [x] Next Meeting page driven by `show_on_public` programs
 - [x] Resources page (`/site/resources`) — grouped by category, active items only
 
+### Event Registration & Attendance
+- [x] `EventRegistration` model — confirmed/waitlist/cancelled, cancel token, member or visitor
+- [x] `Attendance` model — member checklist + visitor name/email, recorded_by (future kiosk: null)
+- [x] OrgEvent additions: `zoom_url`, `registration_enabled`, `capacity`, `registration_note`
+- [x] Officer: attendance entry per event (member checklist with filter + visitor freeform)
+- [x] Officer: registrations view — confirmed list, waitlist, officer cancel
+- [x] Officer cancel auto-promotes next waitlisted person and sends email
+- [x] Public: `/site/events/{id}/register` — member path (email lookup) and visitor path
+- [x] Public: attendance type choice (In Person / Remote) when zoom_url is set
+- [x] Public: self-cancel via token link in confirmation email
+- [x] Emails: confirmed, waitlisted, promoted off waitlist (all via existing SMTP)
+- [x] Calendar shows "Sign up" button and "Zoom available" indicator
+
 ### Librarian Console
 - [x] Resource model (category, title, url, description, sort_order, active)
 - [x] CRUD at `/librarian/resources/` — librarian + admin roles
