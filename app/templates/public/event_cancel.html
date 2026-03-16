@@ -1,0 +1,62 @@
+{% extends "base_public.html" %}
+{% block title %}Cancel Registration{% endblock %}
+{% block content %}
+
+{% if already_done %}
+<h1 style="margin-bottom:0.75rem">Registration not found</h1>
+<p style="font-family:sans-serif; color:#666">
+    This cancellation link is invalid or has already been used.
+</p>
+<p><a href="/site/calendar" style="color:#5a3e28; font-family:sans-serif">← Back to calendar</a></p>
+
+{% elif cancelled %}
+<div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:6px;
+            padding:1.25rem 1.5rem; margin-bottom:1.5rem; font-family:sans-serif">
+    <strong style="color:#155724">Your registration has been cancelled.</strong>
+    {% if event %}
+    <p style="margin:0.4rem 0 0; color:#155724">
+        You've been removed from <strong>{{ event.title }}</strong>.
+        If you were confirmed, the next person on the waitlist has been notified.
+    </p>
+    {% endif %}
+</div>
+<p><a href="/site/calendar" style="color:#5a3e28; font-family:sans-serif">← Back to calendar</a></p>
+
+{% else %}
+<h1 style="margin-bottom:0.5rem">Cancel Registration</h1>
+<p style="font-family:sans-serif; color:#666; margin-bottom:1.25rem">
+    Are you sure you want to cancel your registration for:
+</p>
+
+<div style="background:#f9f4ef; border:1px solid #e8ddd0; border-radius:6px;
+            padding:1rem 1.25rem; margin-bottom:1.5rem; font-family:sans-serif">
+    <strong>{{ event.title }}</strong><br>
+    <span style="color:#5a3e28">{{ event.date.strftime('%A, %B %-d, %Y') }}</span>
+    {% if event.start_time %}
+    at {{ event.start_time }}{% if event.end_time %} – {{ event.end_time }}{% endif %}
+    {% endif %}
+    {% if event.location %}<br>{{ event.location }}{% endif %}
+    <br><br>
+    <span style="font-size:0.9rem; color:#666">Registered as: <strong>{{ reg.name }}</strong></span><br>
+    <span style="font-size:0.9rem; color:#666">Status: <strong>{{ reg.status }}</strong></span>
+</div>
+
+{% if reg.status == 'confirmed' %}
+<p style="font-family:sans-serif; font-size:0.9rem; color:#856404; margin-bottom:1.25rem">
+    ⚠ Cancelling will free your confirmed spot.
+    The next person on the waitlist will automatically be confirmed and notified.
+</p>
+{% endif %}
+
+<form method="post" action="/site/register/cancel/{{ reg.cancel_token }}"
+      style="display:flex; gap:0.75rem; flex-wrap:wrap">
+    <button type="submit" class="pub-btn pub-btn-primary"
+            style="background:#cc2200; font-size:0.95rem">
+        Yes, cancel my registration
+    </button>
+    <a href="/site/calendar" class="pub-btn pub-btn-outline"
+       style="font-size:0.95rem; line-height:1.6">Keep my registration</a>
+</form>
+{% endif %}
+
+{% endblock %}

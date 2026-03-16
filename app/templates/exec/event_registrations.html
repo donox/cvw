@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Registrations — {{ event.title }}{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem">
+    <h1 style="margin:0">Registrations: {{ event.title }}</h1>
+    <div style="display:flex; gap:0.5rem">
+        <a href="/exec/schedule/{{ event.id }}/attendance" class="btn btn-secondary">Attendance</a>
+        <a href="/exec/schedule" class="btn btn-secondary">← Schedule</a>
+    </div>
+</div>
+<p style="color:#666; margin-bottom:1.25rem">
+    {{ event.date }} &nbsp;·&nbsp; {{ event.event_type }}
+    {% if event.capacity %}
+        &nbsp;·&nbsp; Capacity: {{ event.capacity }}
+        &nbsp;·&nbsp; Confirmed: {{ confirmed|length }}
+        &nbsp;·&nbsp; Waitlist: {{ waitlist|length }}
+    {% else %}
+        &nbsp;·&nbsp; {{ confirmed|length }} registered (no capacity limit)
+    {% endif %}
+</p>
+
+{# ── Confirmed ────────────────────────────────────────────────────────────── #}
+<h2 style="font-size:1rem; margin-bottom:0.5rem">
+    Confirmed <span style="font-weight:normal; color:#888">({{ confirmed|length }})</span>
+</h2>
+{% if confirmed %}
+<table style="margin-bottom:1.5rem">
+    <thead>
+        <tr><th>Name</th><th>Email</th><th>How</th><th>Registered</th><th>Notes</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for r in confirmed %}
+    <tr>
+        <td>{{ r.name }}{% if r.member_id %} <span class="badge badge-active" style="font-size:0.72rem">member</span>{% endif %}</td>
+        <td style="font-size:0.85rem">{{ r.email }}</td>
+        <td style="font-size:0.85rem">{{ r.attendance_type }}</td>
+        <td style="font-size:0.82rem; color:#666; white-space:nowrap">{{ r.registered_at.strftime('%b %-d') if r.registered_at else '—' }}</td>
+        <td style="font-size:0.82rem; color:#666">{{ r.notes or '' }}</td>
+        <td>
+            <form method="post"
+                  action="/exec/schedule/{{ event.id }}/registrations/{{ r.id }}/cancel"
+                  style="display:inline"
+                  onsubmit="return confirm('Cancel registration for {{ r.name|e }}? This will promote the next waitlisted person.')">
+                <button type="submit" class="btn btn-danger"
+                        style="padding:0.15rem 0.55rem; font-size:0.8rem">Cancel</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888; font-size:0.9rem; margin-bottom:1.5rem">No confirmed registrations.</p>
+{% endif %}
+
+{# ── Waitlist ──────────────────────────────────────────────────────────────── #}
+{% if event.capacity %}
+<h2 style="font-size:1rem; margin-bottom:0.5rem">
+    Waitlist <span style="font-weight:normal; color:#888">({{ waitlist|length }})</span>
+</h2>
+{% if waitlist %}
+<table style="margin-bottom:1.5rem">
+    <thead>
+        <tr><th>#</th><th>Name</th><th>Email</th><th>How</th><th>Signed up</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for r in waitlist %}
+    <tr>
+        <td style="color:#888">#{{ r.waitlist_position }}</td>
+        <td>{{ r.name }}{% if r.member_id %} <span class="badge badge-active" style="font-size:0.72rem">member</span>{% endif %}</td>
+        <td style="font-size:0.85rem">{{ r.email }}</td>
+        <td style="font-size:0.85rem">{{ r.attendance_type }}</td>
+        <td style="font-size:0.82rem; color:#666; white-space:nowrap">{{ r.registered_at.strftime('%b %-d') if r.registered_at else '—' }}</td>
+        <td>
+            <form method="post"
+                  action="/exec/schedule/{{ event.id }}/registrations/{{ r.id }}/cancel"
+                  style="display:inline"
+                  onsubmit="return confirm('Remove {{ r.name|e }} from the waitlist?')">
+                <button type="submit" class="btn btn-secondary"
+                        style="padding:0.15rem 0.55rem; font-size:0.8rem">Remove</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888; font-size:0.9rem; margin-bottom:1.5rem">Waitlist is empty.</p>
+{% endif %}
+{% endif %}
+
+{# ── Cancelled (collapsed) ────────────────────────────────────────────────── #}
+{% if cancelled %}
+<details>
+    <summary style="cursor:pointer; color:#888; font-size:0.9rem">
+        Cancelled ({{ cancelled|length }})
+    </summary>
+    <table style="margin-top:0.5rem; opacity:0.6">
+        <thead><tr><th>Name</th><th>Email</th><th>How</th></tr></thead>
+        <tbody>
+        {% for r in cancelled %}
+        <tr>
+            <td>{{ r.name }}</td>
+            <td style="font-size:0.85rem">{{ r.email }}</td>
+            <td style="font-size:0.85rem">{{ r.attendance_type }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</details>
+{% endif %}
+
+<div style="margin-top:1.5rem">
+    <a href="/site/events/{{ event.id }}/register" target="_blank" class="btn btn-secondary">
+        🌐 Public registration form ↗
+    </a>
+</div>
+{% endblock %}

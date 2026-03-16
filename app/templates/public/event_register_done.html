@@ -1,0 +1,51 @@
+{% extends "base_public.html" %}
+{% block title %}Registration Confirmed — {{ event.title }}{% endblock %}
+{% block content %}
+
+{% if reg.status == 'confirmed' %}
+<div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:6px;
+            padding:1.25rem 1.5rem; margin-bottom:1.5rem; font-family:sans-serif">
+    <strong style="font-size:1.1rem; color:#155724">✓ You're registered!</strong>
+    <p style="margin:0.4rem 0 0; color:#155724">
+        A confirmation has been sent to <strong>{{ reg.email }}</strong>.
+    </p>
+</div>
+{% else %}
+<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:6px;
+            padding:1.25rem 1.5rem; margin-bottom:1.5rem; font-family:sans-serif">
+    <strong style="font-size:1.1rem; color:#856404">You're on the waitlist at position #{{ reg.waitlist_position }}</strong>
+    <p style="margin:0.4rem 0 0; color:#856404">
+        We'll email <strong>{{ reg.email }}</strong> if a spot opens up.
+    </p>
+</div>
+{% endif %}
+
+<h2 style="font-size:1.1rem; margin-bottom:0.5rem">{{ event.title }}</h2>
+<dl style="font-family:sans-serif; font-size:0.95rem; line-height:1.9">
+    <dt style="font-weight:600; color:#5a3e28">Date</dt>
+    <dd>{{ event.date.strftime('%A, %B %-d, %Y') }}
+        {% if event.start_time %} at {{ event.start_time }}{% if event.end_time %} – {{ event.end_time }}{% endif %}{% endif %}
+    </dd>
+    {% if event.location %}
+    <dt style="font-weight:600; color:#5a3e28">Location</dt>
+    <dd>{{ event.location }}</dd>
+    {% endif %}
+    {% if reg.status == 'confirmed' and reg.attendance_type == 'Remote' and event.zoom_url %}
+    <dt style="font-weight:600; color:#5a3e28">Zoom</dt>
+    <dd><a href="{{ event.zoom_url }}" target="_blank" rel="noopener">{{ event.zoom_url }}</a></dd>
+    {% endif %}
+    <dt style="font-weight:600; color:#5a3e28">Name</dt>
+    <dd>{{ reg.name }}</dd>
+    <dt style="font-weight:600; color:#5a3e28">How attending</dt>
+    <dd>{{ reg.attendance_type }}</dd>
+</dl>
+
+<p style="margin-top:1.5rem; font-family:sans-serif; font-size:0.9rem; color:#666">
+    If your plans change, you can
+    <a href="/site/register/cancel/{{ reg.cancel_token }}" style="color:#cc2200">cancel your registration</a>.
+</p>
+
+<p style="margin-top:1rem">
+    <a href="/site/calendar" style="color:#5a3e28; font-family:sans-serif">← Back to calendar</a>
+</p>
+{% endblock %}

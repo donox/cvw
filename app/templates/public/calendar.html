@@ -13,18 +13,34 @@
                 <th>Type</th>
                 <th>Time</th>
                 <th>Location</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
         {% for ev in events %}
         <tr>
             <td style="white-space:nowrap; font-family:sans-serif">{{ ev.date.strftime('%a, %b %-d, %Y') }}</td>
-            <td>{{ ev.title }}</td>
+            <td>
+                {{ ev.title }}
+                {% if ev.zoom_url %}
+                <span style="font-size:0.78rem; color:#5a3e28; font-family:sans-serif"> · Zoom available</span>
+                {% endif %}
+                {% if ev.description %}
+                <div style="font-size:0.85rem; color:#666; font-family:sans-serif; margin-top:0.1rem">{{ ev.description }}</div>
+                {% endif %}
+            </td>
             <td style="font-family:sans-serif; font-size:0.88rem; color:#666">{{ ev.event_type }}</td>
             <td style="font-family:sans-serif; font-size:0.88rem; white-space:nowrap">
                 {% if ev.start_time %}{{ ev.start_time }}{% if ev.end_time %} – {{ ev.end_time }}{% endif %}{% endif %}
             </td>
             <td style="font-family:sans-serif; font-size:0.88rem; color:#666">{{ ev.location or '' }}</td>
+            <td>
+                {% if ev.registration_enabled %}
+                <a href="/site/events/{{ ev.id }}/register"
+                   class="pub-btn pub-btn-outline"
+                   style="font-size:0.82rem; padding:0.25rem 0.7rem; white-space:nowrap">Sign up</a>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
         </tbody>

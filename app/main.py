@@ -14,7 +14,8 @@ import app.models.org           # register with Base
 import app.models.financial     # register with Base
 import app.models.group         # register with Base
 import app.models.email_models  # register with Base
-import app.models.resource      # register with Base
+import app.models.resource             # register with Base
+import app.models.event_registration   # register with Base
 from app.dependencies import NotAuthenticatedException, PermissionDeniedException
 from app.routers import members, apply, programs, feedback, auth
 from app.routers import admin_console, financial, exec_, groups

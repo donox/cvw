@@ -51,7 +51,39 @@
             <textarea id="description" name="description" rows="3"
                       style="width:100%; max-width:600px; resize:vertical">{{ event.description if event else '' }}</textarea>
         </div>
+        <div style="margin-top:0.75rem">
+            <label for="zoom_url">Zoom URL <span style="font-weight:normal; color:#888">(optional)</span></label>
+            <input type="url" id="zoom_url" name="zoom_url" placeholder="https://zoom.us/j/…"
+                   value="{{ event.zoom_url if event and event.zoom_url is not none else '' }}"
+                   style="max-width:500px">
+        </div>
     </fieldset>
+
+    <fieldset>
+        <legend>Registration / Sign-up</legend>
+        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-weight:normal; margin-top:0">
+            <input type="checkbox" name="registration_enabled" value="on" style="width:auto"
+                   {% if event and event.registration_enabled %}checked{% endif %}
+                   onchange="document.getElementById('reg-fields').style.display=this.checked?'':'none'">
+            Enable public sign-up form for this event
+        </label>
+        <div id="reg-fields" style="{% if not (event and event.registration_enabled) %}display:none;{% endif %} margin-top:0.75rem">
+            <div style="max-width:160px">
+                <label for="capacity">Capacity <span style="font-weight:normal; color:#888">(blank = unlimited)</span></label>
+                <input type="number" id="capacity" name="capacity" min="1" max="999"
+                       value="{{ event.capacity if event and event.capacity is not none else '' }}"
+                       style="width:100px">
+            </div>
+            <div style="margin-top:0.75rem">
+                <label for="registration_note">Note shown on sign-up form</label>
+                <input type="text" id="registration_note" name="registration_note"
+                       value="{{ event.registration_note if event and event.registration_note is not none else '' }}"
+                       placeholder="e.g. Limited to 8 lathes — bring your own tools"
+                       style="max-width:500px">
+            </div>
+        </div>
+    </fieldset>
+
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">{{ "Save" if event else "Add Event" }}</button>
         <a href="/exec/schedule" class="btn btn-secondary">Cancel</a>

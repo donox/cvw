@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Attendance — {{ event.title }}{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem">
+    <h1 style="margin:0">Attendance: {{ event.title }}</h1>
+    <a href="/exec/schedule" class="btn btn-secondary">← Schedule</a>
+</div>
+<p style="color:#666; margin-bottom:1.25rem">
+    {{ event.date }} &nbsp;·&nbsp; {{ event.event_type }}
+    {% if event.location %} &nbsp;·&nbsp; {{ event.location }}{% endif %}
+</p>
+
+{# ── Members ──────────────────────────────────────────────────────────────── #}
+<h2 style="font-size:1rem; margin-bottom:0.5rem">
+    Members
+    <span style="font-weight:normal; color:#888; font-size:0.875rem">({{ checked_ids|length }} checked)</span>
+</h2>
+
+<input type="text" id="member-filter" placeholder="Filter by name…"
+       oninput="filterMembers(this.value)"
+       style="margin-bottom:0.75rem; max-width:300px">
+
+<form method="post" action="/exec/schedule/{{ event.id }}/attendance">
+<div style="columns:3; column-gap:1.5rem; margin-bottom:1rem" id="member-list">
+    {% for m in members %}
+    <div class="member-row" data-name="{{ (m.last_name + ' ' + m.first_name)|lower }}"
+         style="break-inside:avoid; padding:0.2rem 0">
+        <label style="font-weight:normal; cursor:pointer; display:flex; align-items:center; gap:0.4rem">
+            <input type="checkbox" name="member_ids" value="{{ m.id }}"
+                   {% if m.id in checked_ids %}checked{% endif %}
+                   style="width:auto">
+            {{ m.last_name }}, {{ m.first_name }}
+        </label>
+    </div>
+    {% endfor %}
+</div>
+<button type="submit" class="btn btn-primary">Save Member Attendance</button>
+</form>
+
+{# ── Visitors ─────────────────────────────────────────────────────────────── #}
+<h2 style="font-size:1rem; margin-top:2rem; margin-bottom:0.5rem">
+    Visitors
+    <span style="font-weight:normal; color:#888; font-size:0.875rem">({{ visitors|length }})</span>
+</h2>
+
+{% if visitors %}
+<table style="margin-bottom:1rem; max-width:600px">
+    <thead><tr><th>Name</th><th>Email</th><th></th></tr></thead>
+    <tbody>
+    {% for v in visitors %}
+    <tr>
+        <td>{{ v.visitor_name or '—' }}</td>
+        <td style="font-size:0.88rem; color:#555">{{ v.visitor_email or '—' }}</td>
+        <td>
+            <form method="post"
+                  action="/exec/schedule/{{ event.id }}/attendance/{{ v.id }}/delete"
+                  style="display:inline"
+                  onsubmit="return confirm('Remove this visitor?')">
+                <button type="submit" class="btn btn-danger"
+                        style="padding:0.15rem 0.55rem; font-size:0.8rem">Remove</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888; font-size:0.9rem">No visitors recorded.</p>
+{% endif %}
+
+<details style="margin-top:0.5rem">
+    <summary style="cursor:pointer; font-size:0.9rem; color:#0066cc">+ Add visitor</summary>
+    <form method="post" action="/exec/schedule/{{ event.id }}/attendance/visitor/add"
+          style="margin-top:0.75rem; display:flex; gap:0.75rem; flex-wrap:wrap; align-items:flex-end; max-width:600px">
+        <div style="flex:1; min-width:160px">
+            <label style="font-size:0.88rem; color:#555; margin-bottom:0.25rem; display:block">Name *</label>
+            <input type="text" name="visitor_name" required placeholder="Full name">
+        </div>
+        <div style="flex:1; min-width:200px">
+            <label style="font-size:0.88rem; color:#555; margin-bottom:0.25rem; display:block">Email</label>
+            <input type="email" name="visitor_email" placeholder="optional">
+        </div>
+        <button type="submit" class="btn btn-secondary">Add</button>
+    </form>
+</details>
+
+{# ── Summary ──────────────────────────────────────────────────────────────── #}
+<div style="margin-top:2rem; background:#f9f9f9; border:1px solid #eee; border-radius:6px;
+            padding:0.75rem 1rem; display:inline-block; font-size:0.9rem">
+    <strong>Total attendance:</strong>
+    {{ checked_ids|length }} member(s) + {{ visitors|length }} visitor(s)
+    = {{ checked_ids|length + visitors|length }}
+</div>
+
+{% if event.registration_enabled %}
+<p style="margin-top:1rem">
+    <a href="/exec/schedule/{{ event.id }}/registrations" class="btn btn-secondary">
+        View Registrations ({{ event.registrations|selectattr('status', 'ne', 'cancelled')|list|length }})
+    </a>
+</p>
+{% endif %}
+
+<script>
+function filterMembers(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('.member-row').forEach(function(row) {
+        row.style.display = row.dataset.name.includes(q) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

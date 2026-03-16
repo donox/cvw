@@ -11,6 +11,7 @@ from app.dependencies import require_permission
 from app.models.member import Member
 from app.models.officer import Officer, OFFICER_TITLES, OFFICER_CATEGORIES
 from app.models.org import OrgEvent, OrgTodo, EVENT_TYPES, TODO_CATEGORIES, TODO_STATUSES, TODO_PRIORITIES
+from app.models.event_registration import EventRegistration, Attendance, ATTENDANCE_TYPES
 
 router = APIRouter(prefix="/exec", tags=["exec"])
 templates = Jinja2Templates(directory="app/templates")
@@ -156,6 +157,10 @@ def create_event(
     end_time: Optional[str] = Form(None),
     location: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
+    zoom_url: Optional[str] = Form(None),
+    registration_enabled: Optional[str] = Form(None),
+    capacity: Optional[str] = Form(None),
+    registration_note: Optional[str] = Form(None),
     _=Depends(require_permission("exec")),
     db: Session = Depends(get_db),
 ):
@@ -164,6 +169,10 @@ def create_event(
         date=date.fromisoformat(date_),
         start_time=start_time or None, end_time=end_time or None,
         location=location or None, description=description or None,
+        zoom_url=zoom_url or None,
+        registration_enabled=(registration_enabled == "on"),
+        capacity=int(capacity) if capacity and capacity.strip().isdigit() else None,
+        registration_note=registration_note or None,
     ))
     db.commit()
     return RedirectResponse(url="/exec/schedule", status_code=303)
@@ -189,6 +198,10 @@ def update_event(
     end_time: Optional[str] = Form(None),
     location: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
+    zoom_url: Optional[str] = Form(None),
+    registration_enabled: Optional[str] = Form(None),
+    capacity: Optional[str] = Form(None),
+    registration_note: Optional[str] = Form(None),
     _=Depends(require_permission("exec")),
     db: Session = Depends(get_db),
 ):
@@ -202,6 +215,10 @@ def update_event(
     event.end_time = end_time or None
     event.location = location or None
     event.description = description or None
+    event.zoom_url = zoom_url or None
+    event.registration_enabled = (registration_enabled == "on")
+    event.capacity = int(capacity) if capacity and capacity.strip().isdigit() else None
+    event.registration_note = registration_note or None
     db.commit()
     return RedirectResponse(url="/exec/schedule", status_code=303)
 
@@ -213,6 +230,122 @@ def delete_event(event_id: int, _=Depends(require_permission("exec")), db: Sessi
         db.delete(event)
         db.commit()
     return RedirectResponse(url="/exec/schedule", status_code=303)
+
+
+# ── Attendance ─────────────────────────────────────────────────────────────────
+
+@router.get("/schedule/{event_id}/attendance", response_class=HTMLResponse)
+def attendance_form(event_id: int, request: Request, _=auth, db: Session = Depends(get_db)):
+    event = db.get(OrgEvent, event_id)
+    if not event:
+        raise HTTPException(status_code=404)
+    members = (
+        db.query(Member)
+        .filter(Member.status == "Active")
+        .order_by(Member.last_name, Member.first_name)
+        .all()
+    )
+    existing = db.query(Attendance).filter(Attendance.org_event_id == event_id).all()
+    checked_ids = {a.member_id for a in existing if a.member_id}
+    visitors = [a for a in existing if not a.member_id]
+    return templates.TemplateResponse("exec/event_attendance.html", {
+        "request": request, "event": event, "members": members,
+        "checked_ids": checked_ids, "visitors": visitors,
+        "attendance_types": ATTENDANCE_TYPES,
+    })
+
+
+@router.post("/schedule/{event_id}/attendance", response_class=RedirectResponse)
+def save_attendance(
+    event_id: int,
+    request: Request,
+    member_ids: list[int] = Form(default=[]),
+    _=auth,
+    db: Session = Depends(get_db),
+):
+    event = db.get(OrgEvent, event_id)
+    if not event:
+        raise HTTPException(status_code=404)
+    user = request.state.user
+    # Replace all member attendance records for this event
+    db.query(Attendance).filter(
+        Attendance.org_event_id == event_id,
+        Attendance.member_id.isnot(None),
+    ).delete()
+    for mid in member_ids:
+        db.add(Attendance(
+            org_event_id=event_id,
+            member_id=mid,
+            recorded_by=user.username if user else None,
+        ))
+    db.commit()
+    return RedirectResponse(url=f"/exec/schedule/{event_id}/attendance", status_code=303)
+
+
+@router.post("/schedule/{event_id}/attendance/visitor/add", response_class=RedirectResponse)
+def add_visitor_attendance(
+    event_id: int,
+    request: Request,
+    visitor_name: str = Form(...),
+    visitor_email: str = Form(""),
+    _=auth,
+    db: Session = Depends(get_db),
+):
+    event = db.get(OrgEvent, event_id)
+    if not event:
+        raise HTTPException(status_code=404)
+    user = request.state.user
+    db.add(Attendance(
+        org_event_id=event_id,
+        visitor_name=visitor_name.strip(),
+        visitor_email=visitor_email.strip() or None,
+        recorded_by=user.username if user else None,
+    ))
+    db.commit()
+    return RedirectResponse(url=f"/exec/schedule/{event_id}/attendance", status_code=303)
+
+
+@router.post("/schedule/{event_id}/attendance/{att_id}/delete", response_class=RedirectResponse)
+def delete_attendance(event_id: int, att_id: int, _=auth, db: Session = Depends(get_db)):
+    att = db.get(Attendance, att_id)
+    if att and att.org_event_id == event_id:
+        db.delete(att)
+        db.commit()
+    return RedirectResponse(url=f"/exec/schedule/{event_id}/attendance", status_code=303)
+
+
+# ── Registrations (officer view) ──────────────────────────────────────────────
+
+@router.get("/schedule/{event_id}/registrations", response_class=HTMLResponse)
+def registrations_list(event_id: int, request: Request, _=auth, db: Session = Depends(get_db)):
+    event = db.get(OrgEvent, event_id)
+    if not event:
+        raise HTTPException(status_code=404)
+    confirmed = [r for r in event.registrations if r.status == "confirmed"]
+    waitlist  = sorted(
+        [r for r in event.registrations if r.status == "waitlist"],
+        key=lambda r: r.waitlist_position or 0,
+    )
+    cancelled = [r for r in event.registrations if r.status == "cancelled"]
+    return templates.TemplateResponse("exec/event_registrations.html", {
+        "request": request, "event": event,
+        "confirmed": confirmed, "waitlist": waitlist, "cancelled": cancelled,
+    })
+
+
+@router.post("/schedule/{event_id}/registrations/{reg_id}/cancel", response_class=RedirectResponse)
+def officer_cancel_registration(
+    event_id: int, reg_id: int,
+    request: Request,
+    _=auth,
+    db: Session = Depends(get_db),
+):
+    from app.registration_service import do_cancel
+    reg = db.get(EventRegistration, reg_id)
+    if reg and reg.org_event_id == event_id and reg.status != "cancelled":
+        base_url = str(request.base_url).rstrip("/")
+        do_cancel(reg, db, base_url)
+    return RedirectResponse(url=f"/exec/schedule/{event_id}/registrations", status_code=303)
 
 
 # ── Todo ──────────────────────────────────────────────────────────────────────

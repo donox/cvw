@@ -8,28 +8,39 @@
 
 <table>
     <thead>
-        <tr><th>Date</th><th>Type</th><th>Title</th><th>Time</th><th>Location</th><th></th></tr>
+        <tr><th>Date</th><th>Type</th><th>Title</th><th>Time</th><th>Location</th><th>Reg</th><th></th></tr>
     </thead>
     <tbody>
         {% for e in events %}
         <tr {% if e.date < today %}style="color:#aaa"{% endif %}>
-            <td>{{ e.date }}</td>
-            <td>{{ e.event_type }}</td>
+            <td style="white-space:nowrap">{{ e.date }}</td>
+            <td style="font-size:0.88rem">{{ e.event_type }}</td>
             <td>{{ e.title }}</td>
-            <td>
+            <td style="white-space:nowrap; font-size:0.88rem">
                 {% if e.start_time %}{{ e.start_time }}{% if e.end_time %} – {{ e.end_time }}{% endif %}{% else %}—{% endif %}
             </td>
-            <td>{{ e.location or '—' }}</td>
-            <td>
-                <a href="/exec/schedule/{{ e.id }}/edit" class="btn btn-secondary">Edit</a>
+            <td style="font-size:0.88rem">{{ e.location or '—' }}</td>
+            <td style="white-space:nowrap; font-size:0.82rem; text-align:center">
+                {% if e.registration_enabled %}
+                <a href="/exec/schedule/{{ e.id }}/registrations" title="View registrations">
+                    📋 {{ e.registrations|selectattr('status','ne','cancelled')|list|length }}
+                </a>
+                {% else %}—{% endif %}
+            </td>
+            <td style="white-space:nowrap">
+                <a href="/exec/schedule/{{ e.id }}/attendance" class="btn btn-secondary"
+                   style="font-size:0.8rem; padding:0.15rem 0.55rem">Attend</a>
+                <a href="/exec/schedule/{{ e.id }}/edit" class="btn btn-secondary"
+                   style="font-size:0.8rem; padding:0.15rem 0.55rem">Edit</a>
                 <form method="post" action="/exec/schedule/{{ e.id }}/delete" style="display:inline"
                       onsubmit="return confirm('Delete this event?')">
-                    <button class="btn btn-danger">Delete</button>
+                    <button class="btn btn-danger"
+                            style="font-size:0.8rem; padding:0.15rem 0.55rem">Del</button>
                 </form>
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="6" style="color:#888">No events scheduled.</td></tr>
+        <tr><td colspan="7" style="color:#888">No events scheduled.</td></tr>
         {% endfor %}
     </tbody>
 </table>

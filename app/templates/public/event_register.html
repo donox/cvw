@@ -1,0 +1,134 @@
+{% extends "base_public.html" %}
+{% block title %}Register — {{ event.title }}{% endblock %}
+{% block content %}
+<h1 style="margin-bottom:0.25rem">{{ event.title }}</h1>
+<p style="font-family:sans-serif; color:#5a3e28; margin-bottom:0.25rem">
+    {{ event.date.strftime('%A, %B %-d, %Y') }}
+    {% if event.start_time %} at {{ event.start_time }}{% if event.end_time %} – {{ event.end_time }}{% endif %}{% endif %}
+    {% if event.location %} &nbsp;·&nbsp; {{ event.location }}{% endif %}
+</p>
+{% if event.zoom_url %}
+<p style="font-family:sans-serif; font-size:0.9rem; color:#555">
+    Remote option available via Zoom.
+</p>
+{% endif %}
+
+{% if event.registration_note %}
+<div style="background:#f5ede4; border-left:4px solid #5a3e28; border-radius:0 6px 6px 0;
+            padding:0.75rem 1rem; margin:1rem 0; font-family:sans-serif; font-size:0.95rem">
+    {{ event.registration_note }}
+</div>
+{% endif %}
+
+{% if spots_left is not none %}
+    {% if spots_left <= 0 %}
+    <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:4px;
+                padding:0.6rem 1rem; margin-bottom:1rem; font-family:sans-serif; font-size:0.9rem">
+        This event is full. You can still register and you'll be placed on the waitlist.
+    </div>
+    {% elif spots_left <= 3 %}
+    <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:4px;
+                padding:0.6rem 1rem; margin-bottom:1rem; font-family:sans-serif; font-size:0.9rem">
+        Only {{ spots_left }} spot{{ 's' if spots_left != 1 else '' }} remaining.
+    </div>
+    {% endif %}
+{% endif %}
+
+{% if errors %}
+<div class="flash flash-error" style="font-family:sans-serif">
+    {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+</div>
+{% endif %}
+
+<form method="post" action="/site/events/{{ event.id }}/register"
+      style="max-width:560px; font-family:sans-serif">
+
+    {# ── Member / Visitor selector ── #}
+    <div style="margin-bottom:1.25rem">
+        <strong style="display:block; margin-bottom:0.5rem">I am:</strong>
+        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; margin-bottom:0.4rem; font-weight:normal">
+            <input type="radio" name="registrant_type" value="member" id="rt-member"
+                   {% if form.get('registrant_type','member') == 'member' %}checked{% endif %}
+                   onchange="showSection('member')" style="width:auto">
+            A CVW member
+        </label>
+        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-weight:normal">
+            <input type="radio" name="registrant_type" value="visitor" id="rt-visitor"
+                   {% if form.get('registrant_type') == 'visitor' %}checked{% endif %}
+                   onchange="showSection('visitor')" style="width:auto">
+            A visitor / guest
+        </label>
+    </div>
+
+    {# ── Member section ── #}
+    <div id="section-member" {% if form.get('registrant_type') == 'visitor' %}style="display:none"{% endif %}>
+        <div style="margin-bottom:1rem">
+            <label style="display:block; margin-bottom:0.3rem; font-weight:600">
+                Email address <span style="font-weight:normal; color:#888">(as on file with CVW)</span>
+            </label>
+            <input type="email" name="member_email"
+                   value="{{ form.get('member_email','') }}"
+                   placeholder="you@example.com"
+                   style="max-width:360px">
+        </div>
+    </div>
+
+    {# ── Visitor section ── #}
+    <div id="section-visitor" {% if form.get('registrant_type','member') != 'visitor' %}style="display:none"{% endif %}>
+        <div style="margin-bottom:1rem">
+            <label style="display:block; margin-bottom:0.3rem; font-weight:600">Full name</label>
+            <input type="text" name="visitor_name"
+                   value="{{ form.get('visitor_name','') }}"
+                   placeholder="Your name"
+                   style="max-width:360px">
+        </div>
+        <div style="margin-bottom:1rem">
+            <label style="display:block; margin-bottom:0.3rem; font-weight:600">Email address</label>
+            <input type="email" name="visitor_email"
+                   value="{{ form.get('visitor_email','') }}"
+                   placeholder="you@example.com"
+                   style="max-width:360px">
+            <small style="color:#888; display:block; margin-top:0.25rem">
+                Used for your confirmation and if a waitlist spot opens up.
+            </small>
+        </div>
+    </div>
+
+    {# ── Attendance type ── #}
+    {% if event.zoom_url %}
+    <div style="margin-bottom:1rem">
+        <strong style="display:block; margin-bottom:0.4rem">How will you attend?</strong>
+        {% for at in attendance_types %}
+        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;
+                       margin-bottom:0.3rem; font-weight:normal">
+            <input type="radio" name="attendance_type" value="{{ at }}" style="width:auto"
+                   {% if form.get('attendance_type', 'In Person') == at %}checked{% endif %}>
+            {{ at }}
+        </label>
+        {% endfor %}
+    </div>
+    {% else %}
+    <input type="hidden" name="attendance_type" value="In Person">
+    {% endif %}
+
+    {# ── Notes ── #}
+    <div style="margin-bottom:1.25rem">
+        <label style="display:block; margin-bottom:0.3rem; font-weight:600">
+            Notes <span style="font-weight:normal; color:#888">(optional)</span>
+        </label>
+        <textarea name="notes" rows="2"
+                  style="max-width:480px; resize:vertical">{{ form.get('notes','') }}</textarea>
+    </div>
+
+    <button type="submit" class="pub-btn pub-btn-primary" style="font-size:1rem; padding:0.6rem 1.5rem">
+        Register
+    </button>
+</form>
+
+<script>
+function showSection(type) {
+    document.getElementById('section-member').style.display  = type === 'member'  ? '' : 'none';
+    document.getElementById('section-visitor').style.display = type === 'visitor' ? '' : 'none';
+}
+</script>
+{% endblock %}
