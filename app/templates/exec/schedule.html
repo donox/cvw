@@ -8,7 +8,7 @@
 
 <table>
     <thead>
-        <tr><th>Date</th><th>Type</th><th>Title</th><th>Time</th><th>Location</th><th>Reg</th><th></th></tr>
+        <tr><th>Date</th><th>Type</th><th>Title</th><th>Time</th><th>Location</th><th>Pub</th><th>Reg</th><th></th></tr>
     </thead>
     <tbody>
         {% for e in events %}
@@ -20,6 +20,9 @@
                 {% if e.start_time %}{{ e.start_time }}{% if e.end_time %} – {{ e.end_time }}{% endif %}{% else %}—{% endif %}
             </td>
             <td style="font-size:0.88rem">{{ e.location or '—' }}</td>
+            <td style="text-align:center; font-size:0.88rem">
+                {% if e.show_on_public %}🌐{% endif %}
+            </td>
             <td style="white-space:nowrap; font-size:0.82rem; text-align:center">
                 {% if e.registration_enabled %}
                 <a href="/exec/schedule/{{ e.id }}/registrations" title="View registrations">
@@ -40,7 +43,7 @@
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="7" style="color:#888">No events scheduled.</td></tr>
+        <tr><td colspan="8" style="color:#888">No events scheduled.</td></tr>
         {% endfor %}
     </tbody>
 </table>

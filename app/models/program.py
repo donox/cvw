@@ -15,7 +15,10 @@ class Program(Base):
     attendee_count = Column(Integer)
     notes = Column(String)
     show_on_public = Column(Boolean, default=False)
+    org_event_id = Column(Integer, ForeignKey("org_events.id"), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
+
+    org_event = relationship("OrgEvent", backref="programs")
 
     comments = relationship(
         "ProgramComment", back_populates="program", cascade="all, delete-orphan"

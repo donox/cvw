@@ -161,6 +161,7 @@ def create_event(
     registration_enabled: Optional[str] = Form(None),
     capacity: Optional[str] = Form(None),
     registration_note: Optional[str] = Form(None),
+    show_on_public: Optional[str] = Form(None),
     _=Depends(require_permission("exec")),
     db: Session = Depends(get_db),
 ):
@@ -173,6 +174,7 @@ def create_event(
         registration_enabled=(registration_enabled == "on"),
         capacity=int(capacity) if capacity and capacity.strip().isdigit() else None,
         registration_note=registration_note or None,
+        show_on_public=(show_on_public == "on"),
     ))
     db.commit()
     return RedirectResponse(url="/exec/schedule", status_code=303)
@@ -202,6 +204,7 @@ def update_event(
     registration_enabled: Optional[str] = Form(None),
     capacity: Optional[str] = Form(None),
     registration_note: Optional[str] = Form(None),
+    show_on_public: Optional[str] = Form(None),
     _=Depends(require_permission("exec")),
     db: Session = Depends(get_db),
 ):
@@ -219,6 +222,7 @@ def update_event(
     event.registration_enabled = (registration_enabled == "on")
     event.capacity = int(capacity) if capacity and capacity.strip().isdigit() else None
     event.registration_note = registration_note or None
+    event.show_on_public = (show_on_public == "on")
     db.commit()
     return RedirectResponse(url="/exec/schedule", status_code=303)
 

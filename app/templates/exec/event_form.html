@@ -60,6 +60,15 @@
     </fieldset>
 
     <fieldset>
+        <legend>Public Website</legend>
+        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-weight:normal; margin-top:0">
+            <input type="checkbox" name="show_on_public" value="on" style="width:auto"
+                   {% if event and event.show_on_public %}checked{% endif %}>
+            Show on public "Upcoming Events" page
+        </label>
+    </fieldset>
+
+    <fieldset>
         <legend>Registration / Sign-up</legend>
         <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-weight:normal; margin-top:0">
             <input type="checkbox" name="registration_enabled" value="on" style="width:auto"

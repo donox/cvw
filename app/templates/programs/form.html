@@ -44,10 +44,22 @@
             <textarea id="notes" name="notes" rows="3" style="width:100%; max-width:600px; resize:vertical">{{ notes if notes is defined else (program.notes if program else '') }}</textarea>
         </div>
         <div style="margin-top:0.75rem">
+            <label for="org_event_id">Linked Event <span style="font-weight:normal; color:#888">(optional — ties this program to a calendar event)</span></label>
+            <select id="org_event_id" name="org_event_id" style="max-width:420px">
+                <option value="">— none —</option>
+                {% for ev in org_events %}
+                <option value="{{ ev.id }}"
+                    {% if program and program.org_event_id == ev.id %}selected{% endif %}>
+                    {{ ev.date }} · {{ ev.title }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="margin-top:0.75rem">
             <label style="display:flex; align-items:center; gap:0.5rem; font-weight:normal; cursor:pointer">
                 <input type="checkbox" name="show_on_public" value="on"
                        {% if program and program.show_on_public %}checked{% endif %}>
-                Show on public website "Next Meeting" page
+                Show on public website "Upcoming Events" page (via linked event)
             </label>
         </div>
     </fieldset>

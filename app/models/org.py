@@ -32,6 +32,7 @@ class OrgEvent(Base):
     registration_enabled = Column(Boolean, default=False)
     capacity             = Column(Integer,  nullable=True)   # None = unlimited
     registration_note    = Column(String(500), nullable=True)
+    show_on_public       = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
 
 

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db, settings
 from app.dependencies import require_permission
+from app.models.org import OrgEvent
 from app.models.program import Program, ProgramComment
 
 router = APIRouter(prefix="/programs", tags=["programs"])
@@ -44,9 +45,10 @@ def list_programs(request: Request, _=auth, db: Session = Depends(get_db)):
 
 
 @router.get("/new", response_class=HTMLResponse)
-def new_program_form(request: Request, _=auth):
+def new_program_form(request: Request, _=auth, db: Session = Depends(get_db)):
+    org_events = db.query(OrgEvent).order_by(OrgEvent.date.desc()).limit(40).all()
     return templates.TemplateResponse("programs/form.html", {
-        "request": request, "program": None, "errors": []
+        "request": request, "program": None, "errors": [], "org_events": org_events,
     })
 
 
@@ -60,6 +62,7 @@ def create_program(
     attendee_count: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
     show_on_public: Optional[str] = Form(None),
+    org_event_id: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
     errors = []
@@ -73,11 +76,13 @@ def create_program(
         errors.append("Subject is required.")
 
     if errors:
+        org_events = db.query(OrgEvent).order_by(OrgEvent.date.desc()).limit(40).all()
         return templates.TemplateResponse(
             "programs/form.html",
             {"request": request, "program": None, "errors": errors,
              "date": date_, "subject": subject, "presenter": presenter,
-             "cost": cost, "attendee_count": attendee_count, "notes": notes},
+             "cost": cost, "attendee_count": attendee_count, "notes": notes,
+             "org_events": org_events},
             status_code=422,
         )
 
@@ -89,6 +94,7 @@ def create_program(
         attendee_count=int(attendee_count) if attendee_count and attendee_count.strip() not in ("", "None") else None,
         notes=notes or None,
         show_on_public=show_on_public == "on",
+        org_event_id=int(org_event_id) if org_event_id and org_event_id.strip().isdigit() else None,
     )
     db.add(program)
     db.commit()
@@ -107,8 +113,9 @@ def program_detail(program_id: int, request: Request, _=auth, db: Session = Depe
 @router.get("/{program_id}/edit", response_class=HTMLResponse)
 def edit_program_form(program_id: int, request: Request, _=auth, db: Session = Depends(get_db)):
     program = _get_or_404(db, program_id)
+    org_events = db.query(OrgEvent).order_by(OrgEvent.date.desc()).limit(40).all()
     return templates.TemplateResponse("programs/form.html", {
-        "request": request, "program": program, "errors": []
+        "request": request, "program": program, "errors": [], "org_events": org_events,
     })
 
 
@@ -131,6 +138,7 @@ def update_program(
     attendee_count: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
     show_on_public: Optional[str] = Form(None),
+    org_event_id: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
     program = _get_or_404(db, program_id)
@@ -145,9 +153,10 @@ def update_program(
         errors.append("Subject is required.")
 
     if errors:
+        org_events = db.query(OrgEvent).order_by(OrgEvent.date.desc()).limit(40).all()
         return templates.TemplateResponse(
             "programs/form.html",
-            {"request": request, "program": program, "errors": errors},
+            {"request": request, "program": program, "errors": errors, "org_events": org_events},
             status_code=422,
         )
 
@@ -158,6 +167,7 @@ def update_program(
     program.attendee_count = int(attendee_count) if attendee_count and attendee_count.strip() not in ("", "None") else None
     program.notes = notes or None
     program.show_on_public = show_on_public == "on"
+    program.org_event_id = int(org_event_id) if org_event_id and org_event_id.strip().isdigit() else None
     db.commit()
     return RedirectResponse(url=f"/programs/{program_id}", status_code=303)
 
