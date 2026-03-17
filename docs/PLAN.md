@@ -53,6 +53,10 @@ Build and maintain a membership management web application for CVW (Central Virg
 | 2026-03-15 | Financial enhancements deferred — plan doc circulated | No bookkeeping library needed; single-entry is sufficient at CVW scale |
 | 2026-03-15 | Resource library backed by DB table, not YAML | Form-per-entry editor is equivalent work to YAML + editor; DB fits existing patterns and is usable by non-technical officers |
 | 2026-03-15 | `librarian` role added; Volunteer dropdown in nav | Volunteer roles are a distinct nav group from officer consoles; dropdown supports future additions |
+| 2026-03-17 | Automated daily backups via APScheduler; admin console at `/admin/backup/` | SQLite backup API for consistency; staged restore pattern (apply on restart); `scripts/backup.py` and `scripts/restore.py` for emergency use; retention configurable from console |
+| 2026-03-16 | `OrgEvent.show_on_public` flag drives public "Upcoming Events" page | OrgEvent is the primary calendar model; Programs are a refinement (feedback QR, ratings); `show_on_public` belongs on OrgEvent |
+| 2026-03-16 | Optional `org_event_id` FK on Program links to OrgEvent | Program is a refinement of OrgEvent; programs can display alongside event details on Upcoming Events page |
+| 2026-03-16 | Renamed "Next Meeting" → "Upcoming Events" on public site | Page now shows all upcoming flagged OrgEvents, not just one; allows multiple programs/events to be visible |
 
 ---
 
@@ -121,14 +125,15 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [x] Available template variables: first_name, last_name, full_name, email, membership_type, status, dues_paid
 
 ### Programs (additions)
-- [x] `show_on_public` flag — quick toggle on program list
-- [x] Programs with flag drive public next-meeting page
+- [x] `show_on_public` flag — kept on Program for officer reference
+- [x] Optional `org_event_id` FK — link a Program to a calendar OrgEvent
+- [x] Program details appear on public Upcoming Events page when linked to a flagged OrgEvent
 
 ### Public Website (Phase 1)
 - [x] Base public template (`base_public.html`) — CVW brown/tan palette, mobile responsive
 - [x] Home page (`/site/`) — next program + upcoming events
 - [x] About, Officers, Calendar, Next Meeting, Skill Center, Contact pages
-- [x] Next Meeting page driven by `show_on_public` programs
+- [x] Upcoming Events page (`/site/upcoming-events`) driven by `OrgEvent.show_on_public`; shows linked Program details
 - [x] Resources page (`/site/resources`) — grouped by category, active items only
 
 ### Event Registration & Attendance
@@ -175,11 +180,26 @@ Build and maintain a membership management web application for CVW (Central Virg
 - See [FINANCIAL_PLAN.md](FINANCIAL_PLAN.md) for full discussion
 
 ### Infrastructure
+- [x] Automated daily database backups (APScheduler, 2 AM, 30-day retention)
+- [x] Admin backup console — manual backup, restore, download, retention setting
+- [x] Emergency standalone scripts (`scripts/backup.py`, `scripts/restore.py`)
+- [ ] Off-site backup delivery (e.g., copy to S3 or SFTP after daily backup — deferred to production)
 - [ ] Production deployment (Docker + nginx/Caddy + domain)
 - [ ] PayPal dues payment integration (requires public server + PayPal dev account)
 
 ### Public Website
 - [ ] Phase 2: newsletters, resources, gallery (see PUBLIC_SITE_PLAN.md)
+
+### Executive Console
+- [ ] Reconsider non-officer event ownership for registration control (currently officer-only; future: event coordinator role or per-event owner)
+
+---
+
+## Open Questions / Items for Discussion
+
+| # | Topic | Summary |
+|---|---|---|
+| 1 | Long-term maintenance by non-technical admins | Admin UI covers routine content (settings, blocks, members, events). Structural changes (new pages, new fields, nav) should be delegated to Claude Code via plain-English requests. See [MAINTENANCE.md](MAINTENANCE.md) for draft guide and open questions. Key decisions needed: production server choice, remote access method, Claude Code licensing, and who fills the maintainer role. |
 
 ---
 

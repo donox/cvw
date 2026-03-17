@@ -16,12 +16,18 @@ import app.models.group         # register with Base
 import app.models.email_models  # register with Base
 import app.models.resource             # register with Base
 import app.models.event_registration   # register with Base
+import app.models.site_content         # register with Base
 from app.dependencies import NotAuthenticatedException, PermissionDeniedException
 from app.routers import members, apply, programs, feedback, auth
 from app.routers import admin_console, financial, exec_, groups
 from app.routers import email_ as email_router
 from app.routers import public_ as public_router
 from app.routers import librarian as librarian_router
+from app.routers import admin_backup as backup_router
+
+# Apply any staged restore BEFORE opening DB connections
+from app.backup_service import apply_pending_restore
+apply_pending_restore()
 
 Base.metadata.create_all(bind=engine)
 
@@ -91,6 +97,7 @@ app.include_router(groups.router)
 app.include_router(email_router.router)
 app.include_router(public_router.router)
 app.include_router(librarian_router.router)
+app.include_router(backup_router.router)
 
 
 @app.get("/")
@@ -133,3 +140,66 @@ def _seed_admin():
 
 
 _seed_admin()
+
+
+def _seed_site_content():
+    from app.models.site_content import SiteSetting, ContentBlock
+    db = SessionLocal()
+    try:
+        settings_data = [
+            ("meeting_day",      "Meeting Day / Frequency",    "Third Tuesday of each month"),
+            ("meeting_time",     "Meeting Time",               "6:00 PM – 9:00 PM"),
+            ("meeting_location", "Meeting Location",           "Crimora Community Center, Crimora, Virginia"),
+            ("meeting_format",   "Meeting Format",
+             "Demonstration by invited presenter or club member, Show and Tell by members, open gallery, Q&A, announcements"),
+            ("dues_individual",  "Individual Annual Dues",     "$50"),
+            ("dues_family",      "Family Annual Dues",         "$50"),
+            ("dues_affiliated",  "Affiliated Annual Dues",     "$20"),
+            ("dues_young_adult", "Young Adult / Student Dues", "$20"),
+            ("dues_honorary",    "Honorary Dues",              "Free"),
+            ("backup_keep_count", "Backups to Keep",            "30"),
+        ]
+        for key, label, value in settings_data:
+            if not db.get(SiteSetting, key):
+                db.add(SiteSetting(key=key, label=label, value=value))
+
+        blocks_data = [
+            ("about_who_we_are", "About — Who We Are",
+             "Central Virginia Woodturners (CVW) is a chapter of the "
+             "[American Association of Woodturners (AAW)](https://woodturner.org), "
+             "based in the Crimora, Virginia area. Founded by a small group of enthusiasts, "
+             "CVW has grown into a community of turners who range from complete beginners to "
+             "nationally recognised artists.\n\n"
+             "We meet monthly for programs featuring demonstrations, Show and Tell, and discussions. "
+             "Members regularly share tips, tools, and timber from the meeting floor — and the "
+             "friendly atmosphere makes every meeting a great place to learn."),
+            ("about_membership_intro", "About — Membership Section Intro",
+             "Annual dues support club programs, library resources, and the Skills Center."),
+            ("skill_center_what", "Skill Center — What Is It?",
+             "The CVW Skill Center is a member resource offering hands-on lathe time, tool use, and "
+             "one-on-one mentoring from experienced turners. Whether you are learning for the first "
+             "time or refining a specific technique, the Skill Center provides a supportive, "
+             "well-equipped environment."),
+            ("skill_center_expect", "Skill Center — What to Expect",
+             "A typical Skill Center session accommodates a small group of members working on "
+             "individual projects with guidance available from the Skills Center Director and "
+             "volunteer mentors. Lathes, basic turning tools, and safety equipment are provided. "
+             "Participants are encouraged to bring their own tools as they progress.\n\n"
+             "Topics covered include:\n\n"
+             "- Safe lathe operation and tool handling\n"
+             "- Bowl and spindle turning fundamentals\n"
+             "- Tool sharpening and maintenance\n"
+             "- Finishing techniques — oils, lacquers, and waxes\n"
+             "- Hollowing and advanced forms\n"
+             "- Member-requested skill topics"),
+        ]
+        for key, title, body in blocks_data:
+            if not db.get(ContentBlock, key):
+                db.add(ContentBlock(key=key, title=title, body=body))
+
+        db.commit()
+    finally:
+        db.close()
+
+
+_seed_site_content()

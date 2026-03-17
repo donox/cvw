@@ -94,6 +94,36 @@ def remove_job(scheduled_email_id: int) -> None:
         scheduler.remove_job(jid)
 
 
+def _run_daily_backup() -> None:
+    """Create a daily backup and prune old ones."""
+    from app.backup_service import create_backup, prune_backups
+    from app.database import SessionLocal
+    from app.models.site_content import SiteSetting
+
+    db = SessionLocal()
+    try:
+        s = db.get(SiteSetting, "backup_keep_count")
+        keep = int(s.value) if s and s.value and s.value.isdigit() else 30
+    finally:
+        db.close()
+
+    try:
+        info = create_backup()
+        pruned = prune_backups(keep)
+        print(f"[backup] ✓ {info.filename} ({info.size_display})"
+              + (f", pruned {pruned}" if pruned else ""))
+    except Exception as exc:
+        print(f"[backup] Error: {exc}")
+
+
 def start_scheduler(app=None) -> None:
     scheduler.start()
     _load_all_jobs()
+    scheduler.add_job(
+        _run_daily_backup,
+        trigger="cron",
+        id="cvw_daily_backup",
+        replace_existing=True,
+        hour=2,
+        minute=0,
+    )

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Database Backups{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Database Backups</h1>
+    <a href="/admin/" class="btn btn-secondary">Admin</a>
+</div>
+
+{% if restore_pending %}
+<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:6px;
+            padding:0.9rem 1.25rem; margin-bottom:1.25rem; color:#856404">
+    <strong>⚠ Restore staged.</strong>
+    A database restore is ready to apply. The server must be restarted to complete it.
+    <a href="/admin/docs/MAINTENANCE.md" style="color:#856404">See Maintenance Guide</a>
+    for restart instructions.
+</div>
+{% endif %}
+
+{% if saved == 'backup' %}
+<div style="background:#e8f5e9; border:1px solid #a5d6a7; border-radius:4px;
+            padding:0.6rem 1rem; margin-bottom:1rem; color:#2e7d32">
+    Manual backup created successfully.
+</div>
+{% elif saved == 'settings' %}
+<div style="background:#e8f5e9; border:1px solid #a5d6a7; border-radius:4px;
+            padding:0.6rem 1rem; margin-bottom:1rem; color:#2e7d32">
+    Settings saved.
+</div>
+{% elif saved == 'restore' %}
+<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:4px;
+            padding:0.6rem 1rem; margin-bottom:1rem; color:#856404">
+    Restore staged. Restart the server to apply.
+</div>
+{% endif %}
+
+{# ── Status ── #}
+<div class="detail-grid" style="margin-bottom:1.5rem">
+    <section>
+        <h2>Status</h2>
+        <dl>
+            <dt>Backups stored</dt>
+            <dd>{{ backups | length }}</dd>
+            <dt>Keeping last</dt>
+            <dd>{{ keep_count }}</dd>
+            <dt>Most recent backup</dt>
+            <dd>{% if backups %}{{ backups[0].created_at.strftime('%Y-%m-%d %H:%M') }}
+                ({{ backups[0].size_display }}){% else %}None yet{% endif %}</dd>
+            <dt>Next automatic backup</dt>
+            <dd>{% if next_run %}{{ next_run.strftime('%Y-%m-%d %H:%M %Z') }}{% else %}Unknown{% endif %}</dd>
+        </dl>
+    </section>
+    <section>
+        <h2>Manual Backup</h2>
+        <p style="font-size:0.9rem; color:#555; margin-bottom:0.75rem">
+            Create a backup immediately, outside the automatic schedule.
+            Good practice before making significant changes.
+        </p>
+        <form method="post" action="/admin/backup/create">
+            <button type="submit" class="btn btn-primary">Create Backup Now</button>
+        </form>
+    </section>
+</div>
+
+{# ── Retention setting ── #}
+<div style="background:#f9f9f9; border:1px solid #eee; border-radius:6px;
+            padding:0.75rem 1rem; margin-bottom:1.5rem">
+    <form method="post" action="/admin/backup/settings"
+          style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap">
+        <label for="backup_keep_count" style="margin:0; font-weight:600">Keep last</label>
+        <input type="number" id="backup_keep_count" name="backup_keep_count"
+               value="{{ keep_count }}" min="1" max="365"
+               style="width:80px; display:inline-block">
+        <span style="color:#555">backups (older ones are deleted automatically)</span>
+        <button type="submit" class="btn btn-secondary" style="margin-left:auto">Save</button>
+    </form>
+</div>
+
+{# ── Backup list ── #}
+{% if backups %}
+<table>
+    <thead>
+        <tr>
+            <th>Date / Time</th>
+            <th>File</th>
+            <th style="text-align:right">Size</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for b in backups %}
+    <tr>
+        <td style="white-space:nowrap">{{ b.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td style="font-family:monospace; font-size:0.82rem; color:#555">{{ b.filename }}</td>
+        <td style="text-align:right; font-family:sans-serif; font-size:0.88rem; color:#666">
+            {{ b.size_display }}
+        </td>
+        <td style="white-space:nowrap; text-align:right">
+            <a href="/admin/backup/{{ b.filename }}/download"
+               class="btn btn-secondary" style="font-size:0.82rem; padding:0.2rem 0.6rem">
+                Download
+            </a>
+            <form method="post" action="/admin/backup/{{ b.filename }}/restore"
+                  style="display:inline"
+                  onsubmit="return confirm('Stage a restore from {{ b.created_at.strftime('%Y-%m-%d %H:%M') }}?\n\nThis will NOT take effect until the server is restarted.')">
+                <button class="btn btn-secondary"
+                        style="font-size:0.82rem; padding:0.2rem 0.6rem">Restore</button>
+            </form>
+            <form method="post" action="/admin/backup/{{ b.filename }}/delete"
+                  style="display:inline"
+                  onsubmit="return confirm('Delete this backup? This cannot be undone.')">
+                <button class="btn btn-danger"
+                        style="font-size:0.82rem; padding:0.2rem 0.6rem">Del</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">No backups yet. The first automatic backup will run tonight, or create one now.</p>
+{% endif %}
+
+<div style="margin-top:1.5rem; font-size:0.85rem; color:#888; border-top:1px solid #eee; padding-top:1rem">
+    Backups are stored at <code>data/backups/</code> on the server.
+    Download copies regularly for off-site storage.
+    For emergency restore when this console is unavailable, see
+    <a href="/admin/docs/MAINTENANCE.md">Maintenance Guide</a>.
+</div>
+{% endblock %}
