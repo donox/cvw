@@ -5,17 +5,7 @@
 
 <div class="pub-section">
     <h2>Who We Are</h2>
-    <p>
-        Central Virginia Woodturners (CVW) is a chapter of the
-        <a href="https://woodturner.org" target="_blank" rel="noopener">American Association of Woodturners (AAW)</a>,
-        based in the Richmond, Virginia area. Founded by a small group of enthusiasts, CVW has grown into
-        a community of turners who range from complete beginners to nationally recognised artists.
-    </p>
-    <p>
-        We meet monthly for programs featuring demonstrations, gallery shows, and discussions. Members
-        regularly share tips, tools, and timber from the meeting floor — and the friendly atmosphere makes
-        every meeting a great place to learn.
-    </p>
+    {{ block_who_we_are | safe }}
 </div>
 
 <div class="pub-section">
@@ -23,13 +13,13 @@
     <div class="meeting-info">
         <dl>
             <dt>Frequency</dt>
-            <dd>Monthly — generally the third Saturday of each month</dd>
+            <dd>{{ s.meeting_day }}</dd>
             <dt>Time</dt>
-            <dd>9:00 AM – 12:00 PM</dd>
+            <dd>{{ s.meeting_time }}</dd>
             <dt>Location</dt>
-            <dd>Deep Run Park Recreation Center, Henrico County, Virginia</dd>
+            <dd>{{ s.meeting_location }}</dd>
             <dt>Format</dt>
-            <dd>Demonstration by invited presenter or club member, open gallery, Q&amp;A, announcements</dd>
+            <dd>{{ s.meeting_format }}</dd>
         </dl>
     </div>
     <p>
@@ -40,14 +30,15 @@
 
 <div class="pub-section">
     <h2>Membership</h2>
-    <p>Annual dues support club programs, library resources, and the Skills Center. Membership tiers:</p>
-    <table>
-        <thead><tr><th>Type</th><th>Who</th></tr></thead>
+    {{ block_membership_intro | safe }}
+    <table style="margin-top:0.75rem">
+        <thead><tr><th>Type</th><th>Who</th><th>Annual Dues</th></tr></thead>
         <tbody>
-            <tr><td>Individual</td><td>Single adult member</td></tr>
-            <tr><td>Family</td><td>Household — includes one additional family member</td></tr>
-            <tr><td>Affiliated</td><td>Members of other AAW chapters attending as guests</td></tr>
-            <tr><td>Honorary</td><td>Granted by officer vote for distinguished service</td></tr>
+            <tr><td>Individual</td><td>Single adult member</td><td>{{ s.dues_individual }}</td></tr>
+            <tr><td>Family</td><td>Household membership</td><td>{{ s.dues_family }}</td></tr>
+            <tr><td>Affiliated</td><td>Members of other AAW chapters</td><td>{{ s.dues_affiliated }}</td></tr>
+            <tr><td>Young Adult / Student</td><td>Young adult or student member</td><td>{{ s.dues_young_adult }}</td></tr>
+            <tr><td>Honorary</td><td>Granted by officer vote for distinguished service</td><td>{{ s.dues_honorary }}</td></tr>
         </tbody>
     </table>
     <p style="margin-top:1rem">

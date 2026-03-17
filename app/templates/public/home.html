@@ -2,16 +2,25 @@
 {% block title %}Central Virginia Woodturners{% endblock %}
 {% block content %}
 
-{% if next_program %}
+{% if next_event %}
 <div class="pub-hero">
-    <h2>Next Meeting</h2>
-    <p class="hero-title">{{ next_program.subject }}</p>
+    <h2>Coming Up</h2>
+    <p class="hero-title">{{ next_event.title }}</p>
     <p class="hero-meta">
-        {{ next_program.date.strftime('%A, %B %-d, %Y') }}
-        {% if next_program.presenter %}&nbsp;·&nbsp; Presenter: {{ next_program.presenter }}{% endif %}
+        {{ next_event.date.strftime('%A, %B %-d, %Y') }}
+        {% if next_event.start_time %}&nbsp;·&nbsp; {{ next_event.start_time }}{% endif %}
+        {% if next_event.location %}&nbsp;·&nbsp; {{ next_event.location }}{% endif %}
+        {# If a linked program has a presenter, show it #}
+        {% for prog in next_event.programs %}
+        {% if prog.presenter %}&nbsp;·&nbsp; Presenter: {{ prog.presenter }}{% endif %}
+        {% endfor %}
     </p>
     <p style="margin-top:0.75rem">
-        <a href="/site/next-meeting" class="pub-btn pub-btn-primary">Meeting Details</a>
+        <a href="/site/upcoming-events" class="pub-btn pub-btn-primary">Event Details</a>
+        {% if next_event.registration_enabled %}
+        &nbsp;
+        <a href="/site/events/{{ next_event.id }}/register" class="pub-btn pub-btn-outline">Sign Up</a>
+        {% endif %}
     </p>
 </div>
 {% endif %}
@@ -36,10 +45,10 @@
 </div>
 
 <div class="pub-cards">
-    <a href="/site/next-meeting" class="pub-card">
+    <a href="/site/upcoming-events" class="pub-card">
         <div class="pub-card-icon">📅</div>
-        <p class="pub-card-title">Next Meeting</p>
-        <p class="pub-card-desc">Program details, presenter, and agenda for the upcoming meeting.</p>
+        <p class="pub-card-title">Upcoming Events</p>
+        <p class="pub-card-desc">Program details, presenter, and agenda for upcoming meetings and events.</p>
     </a>
     <a href="/site/calendar" class="pub-card">
         <div class="pub-card-icon">🗓</div>

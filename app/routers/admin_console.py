@@ -7,10 +7,22 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+import markdown as md_lib
+
 from app.database import get_db
 from app.dependencies import require_permission
 from app.models.member import Member
+from app.models.site_content import SiteSetting, ContentBlock
 from app.models.user import User, ROLES
+
+
+def _get_settings(db: Session) -> dict:
+    return {r.key: r.value or "" for r in db.query(SiteSetting).all()}
+
+
+def _render_block(key: str, db: Session) -> str:
+    block = db.get(ContentBlock, key)
+    return md_lib.markdown(block.body or "", extensions=["nl2br"]) if block else ""
 
 DOCS_DIR = Path(__file__).resolve().parent.parent.parent / "docs"
 
@@ -188,3 +200,57 @@ def update_user(
         user.hashed_password = User.hash_password(password)
     db.commit()
     return RedirectResponse(url="/admin/users", status_code=303)
+
+
+# ── Site Content ──────────────────────────────────────────────────────────────
+
+@router.get("/content/settings", response_class=HTMLResponse)
+def content_settings(request: Request, _=auth, db: Session = Depends(get_db)):
+    settings = db.query(SiteSetting).order_by(SiteSetting.key).all()
+    return templates.TemplateResponse("admin/content_settings.html", {
+        "request": request, "settings": settings,
+    })
+
+
+@router.post("/content/settings", response_class=RedirectResponse)
+async def save_settings(request: Request, _=auth, db: Session = Depends(get_db)):
+    form = await request.form()
+    for setting in db.query(SiteSetting).all():
+        new_val = form.get(f"setting_{setting.key}", "").strip()
+        setting.value = new_val
+    db.commit()
+    return RedirectResponse(url="/admin/content/settings?saved=1", status_code=303)
+
+
+@router.get("/content/blocks", response_class=HTMLResponse)
+def content_blocks(request: Request, _=auth, db: Session = Depends(get_db)):
+    blocks = db.query(ContentBlock).order_by(ContentBlock.key).all()
+    return templates.TemplateResponse("admin/content_blocks.html", {
+        "request": request, "blocks": blocks,
+    })
+
+
+@router.get("/content/blocks/{key}/edit", response_class=HTMLResponse)
+def edit_block_form(key: str, request: Request, _=auth, db: Session = Depends(get_db)):
+    block = db.get(ContentBlock, key)
+    if not block:
+        raise HTTPException(status_code=404)
+    preview = md_lib.markdown(block.body or "", extensions=["nl2br"])
+    return templates.TemplateResponse("admin/content_block_edit.html", {
+        "request": request, "block": block, "preview": preview,
+    })
+
+
+@router.post("/content/blocks/{key}/edit", response_class=RedirectResponse)
+def save_block(
+    key: str,
+    body: str = Form(""),
+    _=auth,
+    db: Session = Depends(get_db),
+):
+    block = db.get(ContentBlock, key)
+    if not block:
+        raise HTTPException(status_code=404)
+    block.body = body
+    db.commit()
+    return RedirectResponse(url="/admin/content/blocks", status_code=303)

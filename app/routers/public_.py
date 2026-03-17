@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 
 from collections import defaultdict
 
+import markdown as md_lib
+
 from app.database import get_db
 from app.models.event_registration import EventRegistration, ATTENDANCE_TYPES
 from app.models.member import Member
@@ -15,6 +17,16 @@ from app.models.officer import Officer
 from app.models.org import OrgEvent
 from app.models.program import Program
 from app.models.resource import Resource
+from app.models.site_content import SiteSetting, ContentBlock
+
+
+def _settings(db: Session) -> dict:
+    return {r.key: r.value or "" for r in db.query(SiteSetting).all()}
+
+
+def _block(key: str, db: Session) -> str:
+    b = db.get(ContentBlock, key)
+    return md_lib.markdown(b.body or "", extensions=["nl2br"]) if b else ""
 
 router = APIRouter(prefix="/site", tags=["public"])
 templates = Jinja2Templates(directory="app/templates")
@@ -23,11 +35,11 @@ templates = Jinja2Templates(directory="app/templates")
 @router.get("/", response_class=HTMLResponse)
 def public_home(request: Request, db: Session = Depends(get_db)):
     today = date.today()
-    # Soonest upcoming program flagged for public display
-    next_program = (
-        db.query(Program)
-        .filter(Program.show_on_public == True, Program.date >= today)
-        .order_by(Program.date)
+    # Soonest upcoming event flagged for public display
+    next_event = (
+        db.query(OrgEvent)
+        .filter(OrgEvent.show_on_public == True, OrgEvent.date >= today)
+        .order_by(OrgEvent.date)
         .first()
     )
     # Up to 6 upcoming events for the teaser calendar
@@ -40,14 +52,20 @@ def public_home(request: Request, db: Session = Depends(get_db)):
     )
     return templates.TemplateResponse("public/home.html", {
         "request": request,
-        "next_program": next_program,
+        "next_event": next_event,
         "upcoming_events": upcoming_events,
     })
 
 
 @router.get("/about", response_class=HTMLResponse)
-def public_about(request: Request):
-    return templates.TemplateResponse("public/about.html", {"request": request})
+def public_about(request: Request, db: Session = Depends(get_db)):
+    s = _settings(db)
+    return templates.TemplateResponse("public/about.html", {
+        "request": request,
+        "s": s,
+        "block_who_we_are":       _block("about_who_we_are", db),
+        "block_membership_intro": _block("about_membership_intro", db),
+    })
 
 
 @router.get("/officers", response_class=HTMLResponse)
@@ -74,29 +92,33 @@ def public_calendar(request: Request, db: Session = Depends(get_db)):
         .order_by(OrgEvent.date)
         .all()
     )
+    s = _settings(db)
     return templates.TemplateResponse("public/calendar.html", {
+        "request": request, "events": events, "s": s,
+    })
+
+
+@router.get("/upcoming-events", response_class=HTMLResponse)
+def public_upcoming_events(request: Request, db: Session = Depends(get_db)):
+    today = date.today()
+    events = (
+        db.query(OrgEvent)
+        .filter(OrgEvent.show_on_public == True, OrgEvent.date >= today)
+        .order_by(OrgEvent.date)
+        .all()
+    )
+    return templates.TemplateResponse("public/upcoming_events.html", {
         "request": request, "events": events,
     })
 
 
-@router.get("/next-meeting", response_class=HTMLResponse)
-def public_next_meeting(request: Request, db: Session = Depends(get_db)):
-    today = date.today()
-    # All upcoming programs marked for public display, ordered by date
-    programs = (
-        db.query(Program)
-        .filter(Program.show_on_public == True, Program.date >= today)
-        .order_by(Program.date)
-        .all()
-    )
-    return templates.TemplateResponse("public/next_meeting.html", {
-        "request": request, "programs": programs,
-    })
-
-
 @router.get("/skill-center", response_class=HTMLResponse)
-def public_skill_center(request: Request):
-    return templates.TemplateResponse("public/skill_center.html", {"request": request})
+def public_skill_center(request: Request, db: Session = Depends(get_db)):
+    return templates.TemplateResponse("public/skill_center.html", {
+        "request": request,
+        "block_what":   _block("skill_center_what", db),
+        "block_expect": _block("skill_center_expect", db),
+    })
 
 
 @router.get("/events/{event_id}/register", response_class=HTMLResponse)

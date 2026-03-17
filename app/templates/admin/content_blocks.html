@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Content Blocks{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Content Blocks</h1>
+    <div style="display:flex; gap:0.5rem">
+        <a href="/admin/content/settings" class="btn btn-secondary">Site Settings</a>
+        <a href="/admin/" class="btn btn-secondary">Admin</a>
+    </div>
+</div>
+
+<p style="color:#555; font-size:0.9rem; margin-bottom:1.25rem">
+    Narrative text sections displayed on public pages. Supports
+    <strong>Markdown</strong>: **bold**, *italic*, [links](url), bullet lists (- item).
+</p>
+
+<table>
+    <thead>
+        <tr><th>Block</th><th>Key</th><th>Last Updated</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for b in blocks %}
+    <tr>
+        <td>{{ b.title }}</td>
+        <td style="font-family:monospace; font-size:0.82rem; color:#888">{{ b.key }}</td>
+        <td style="font-size:0.85rem; color:#888">
+            {{ b.updated_at.strftime('%Y-%m-%d') if b.updated_at else '—' }}
+        </td>
+        <td>
+            <a href="/admin/content/blocks/{{ b.key }}/edit" class="btn btn-secondary"
+               style="font-size:0.85rem; padding:0.25rem 0.7rem">Edit</a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
