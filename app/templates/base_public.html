@@ -115,6 +115,11 @@
         <a href="/apply">Join Us</a>
         <a href="/site/contact">Contact</a>
         <a href="/site/about">About</a>
+        {% if request.state.member_site_authed or request.state.user %}
+        <a href="/site/logout" style="margin-left:auto; opacity:0.75">Sign Out</a>
+        {% else %}
+        <a href="/site/login" style="margin-left:auto; opacity:0.75">Member Login</a>
+        {% endif %}
     </div>
 </nav>
 <main class="pub-main">

@@ -16,7 +16,7 @@ import app.models.group         # register with Base
 import app.models.email_models  # register with Base
 import app.models.resource             # register with Base
 import app.models.event_registration   # register with Base
-import app.models.site_content         # register with Base
+import app.models.site_content         # register with Base (SiteSetting, ContentBlock, PublicPage)
 from app.dependencies import NotAuthenticatedException, PermissionDeniedException
 from app.routers import members, apply, programs, feedback, auth
 from app.routers import admin_console, financial, exec_, groups
@@ -50,6 +50,7 @@ app = FastAPI(title="CVW Membership Database", lifespan=lifespan)
 class UserMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         request.state.user = None
+        request.state.member_site_authed = False
         try:
             user_id = request.session.get("user_id")
             if user_id:
@@ -61,6 +62,9 @@ class UserMiddleware(BaseHTTPMiddleware):
                         request.state.user = user
                 finally:
                     db.close()
+            request.state.member_site_authed = bool(
+                request.session.get("member_site_authed")
+            )
         except Exception:
             pass
         return await call_next(request)
@@ -147,6 +151,7 @@ def _seed_site_content():
     db = SessionLocal()
     try:
         settings_data = [
+            ("member_site_password", "Member Site Password",        ""),
             ("meeting_day",      "Meeting Day / Frequency",    "Third Tuesday of each month"),
             ("meeting_time",     "Meeting Time",               "6:00 PM – 9:00 PM"),
             ("meeting_location", "Meeting Location",           "Crimora Community Center, Crimora, Virginia"),
@@ -196,6 +201,22 @@ def _seed_site_content():
         for key, title, body in blocks_data:
             if not db.get(ContentBlock, key):
                 db.add(ContentBlock(key=key, title=title, body=body))
+
+        # Public pages — all start as unrestricted; admin toggles members_only
+        from app.models.site_content import PublicPage
+        pages_data = [
+            ("home",            "Home"),
+            ("about",           "About"),
+            ("officers",        "Leadership / Officers"),
+            ("calendar",        "Calendar"),
+            ("upcoming-events", "Upcoming Events"),
+            ("skill-center",    "Skill Center"),
+            ("resources",       "Resources"),
+            ("contact",         "Contact"),
+        ]
+        for slug, label in pages_data:
+            if not db.get(PublicPage, slug):
+                db.add(PublicPage(slug=slug, label=label, members_only=False))
 
         db.commit()
     finally:

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Member Access Control{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Member Access Control</h1>
+    <div style="display:flex; gap:0.5rem">
+        <a href="/admin/content/settings" class="btn btn-secondary">Site Settings</a>
+        <a href="/admin/content/blocks" class="btn btn-secondary">Content Blocks</a>
+        <a href="/admin/" class="btn btn-secondary">Admin</a>
+    </div>
+</div>
+
+{% if request.query_params.get('saved') %}
+<div style="background:#e8f5e9; border:1px solid #a5d6a7; border-radius:4px; padding:0.6rem 1rem;
+            margin-bottom:1rem; color:#2e7d32; font-size:0.9rem">
+    Access settings saved.
+</div>
+{% endif %}
+
+<form method="post" action="/admin/content/access">
+
+    <div class="card" style="margin-bottom:1.5rem">
+        <h2 style="font-size:1.05rem; margin:0 0 0.5rem">Member Password</h2>
+        <p style="color:#555; font-size:0.9rem; margin:0 0 0.75rem">
+            Visitors must enter this password to view members-only pages.
+            Leave blank to disable member login (all restricted pages become inaccessible with a notice).
+        </p>
+        <div style="display:flex; gap:0.75rem; align-items:center; max-width:420px">
+            <input type="text" name="member_site_password"
+                   value="{{ member_password }}"
+                   placeholder="(not set)"
+                   style="flex:1; font-family:monospace">
+            <span style="font-size:0.85rem; color:#888">stored in plain text</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 style="font-size:1.05rem; margin:0 0 0.5rem">Page Restrictions</h2>
+        <p style="color:#555; font-size:0.9rem; margin:0 0 0.75rem">
+            Check a page to require member login. Officers already signed in to the internal
+            console always have access regardless of this setting.
+        </p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:2.5rem; text-align:center">Restrict</th>
+                    <th>Page</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for page in pages %}
+            <tr>
+                <td style="text-align:center">
+                    <input type="checkbox" name="page_{{ page.slug }}"
+                           {% if page.members_only %}checked{% endif %}
+                           style="width:1.1rem; height:1.1rem; cursor:pointer">
+                </td>
+                <td style="font-weight:600">{{ page.label }}</td>
+                <td style="font-family:monospace; font-size:0.85rem; color:#666">
+                    /site/{% if page.slug != 'home' %}{{ page.slug }}{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-actions" style="margin-top:1.25rem">
+        <button type="submit" class="btn btn-primary">Save Access Settings</button>
+    </div>
+</form>
+{% endblock %}

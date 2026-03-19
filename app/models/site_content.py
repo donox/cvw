@@ -1,6 +1,15 @@
-from sqlalchemy import Column, DateTime, String, func
+from sqlalchemy import Boolean, Column, DateTime, String, func
 
 from app.database import Base
+
+
+class PublicPage(Base):
+    """A public site page that can be toggled to members-only access."""
+    __tablename__ = "public_pages"
+
+    slug         = Column(String, primary_key=True)   # e.g. "resources"
+    label        = Column(String, nullable=False)      # human name for admin UI
+    members_only = Column(Boolean, nullable=False, default=False)
 
 
 class SiteSetting(Base):

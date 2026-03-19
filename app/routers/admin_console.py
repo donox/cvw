@@ -12,7 +12,7 @@ import markdown as md_lib
 from app.database import get_db
 from app.dependencies import require_permission
 from app.models.member import Member
-from app.models.site_content import SiteSetting, ContentBlock
+from app.models.site_content import SiteSetting, ContentBlock, PublicPage
 from app.models.user import User, ROLES
 
 
@@ -254,3 +254,28 @@ def save_block(
     block.body = body
     db.commit()
     return RedirectResponse(url="/admin/content/blocks", status_code=303)
+
+
+# ── Member Access Control ─────────────────────────────────────────────────────
+
+@router.get("/content/access", response_class=HTMLResponse)
+def content_access(request: Request, _=auth, db: Session = Depends(get_db)):
+    pages = db.query(PublicPage).order_by(PublicPage.label).all()
+    pwd_setting = db.get(SiteSetting, "member_site_password")
+    return templates.TemplateResponse("admin/content_access.html", {
+        "request": request,
+        "pages": pages,
+        "member_password": pwd_setting.value if pwd_setting else "",
+    })
+
+
+@router.post("/content/access", response_class=RedirectResponse)
+async def save_access(request: Request, _=auth, db: Session = Depends(get_db)):
+    form = await request.form()
+    for page in db.query(PublicPage).all():
+        page.members_only = f"page_{page.slug}" in form
+    pwd_setting = db.get(SiteSetting, "member_site_password")
+    if pwd_setting is not None:
+        pwd_setting.value = form.get("member_site_password", "").strip()
+    db.commit()
+    return RedirectResponse(url="/admin/content/access?saved=1", status_code=303)
