@@ -188,7 +188,9 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [ ] PayPal dues payment integration (requires public server + PayPal dev account)
 
 ### Public Website
-- [ ] Phase 2: newsletters, resources, gallery (see PUBLIC_SITE_PLAN.md)
+- [x] Members-only access — per-page flags + shared password; admin UI at `/admin/content/access`
+- [x] Per-event registration restriction — `zoom_members_only` / `members_only` on OrgEvent; enforced in form and server-side
+- [ ] Phase 2: newsletters, gallery (see PUBLIC_SITE_PLAN.md)
 
 ### Executive Console
 - [ ] Reconsider non-officer event ownership for registration control (currently officer-only; future: event coordinator role or per-event owner)

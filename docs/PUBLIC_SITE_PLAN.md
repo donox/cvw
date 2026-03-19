@@ -76,7 +76,37 @@ Notes:
 | `/gallery` | Member photo gallery | Requires image upload + storage |
 | `/symposium` | Virginia Woodturning Symposium info | Static or linked |
 | `/dues` | Membership tiers + PayPal integration | PayPal Buttons API |
-| `/members-only` | Protected content for logged-in members | Auth already exists |
+| `/members-only` | Per-page access restriction + shared member password | ✅ Live — see below |
+
+#### Members-only access — implemented
+
+**Status:** ✅ Live.
+
+The WordPress site had a single password-protected page. The approach here is more flexible:
+
+- **`PublicPage` model** — one DB row per public page, each with a `members_only` bool flag. Seeded with all current pages; all start as unrestricted (open).
+- **Shared member password** stored as a `SiteSetting` (`member_site_password`). Visitors enter this password at `/site/login`; the session is marked `member_site_authed`.
+- **Admin UI** at `/admin/content/access` — checkboxes to toggle each page + password field.
+- **Internal officers** (anyone logged into the officer console) bypass the member login automatically.
+- No per-member accounts are needed for public access; a single club-wide password is sufficient at CVW scale.
+
+There is no dedicated `/members-only` URL — any page can be restricted. The "Members Only" area is whatever the admin marks as restricted.
+
+#### Per-event registration restriction — implemented
+
+**Status:** ✅ Live.
+
+Some events (especially monthly meetings) allow visitor in-person attendance but restrict Zoom to members. Others may be members-only entirely. A single `registration_restriction` field on `OrgEvent` covers both cases:
+
+| Value | Behaviour |
+|---|---|
+| `None` (default) | Open to all |
+| `zoom_members_only` | Visitors can register In Person only; Remote option disabled in form and rejected server-side |
+| `members_only` | Visitor option hidden from registration form; server rejects visitor submissions |
+
+- Set per event via the exec event form (dropdown in the Registration fieldset).
+- Calendar and Upcoming Events pages show "Members Only" badge and Zoom qualifier where applicable.
+- Designed for the monthly meeting: Zoom is members-only, in-person is open.
 
 #### Resources page — implemented
 
