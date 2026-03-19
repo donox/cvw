@@ -12,6 +12,12 @@ EVENT_TYPES = [
     "Other",
 ]
 
+REGISTRATION_RESTRICTIONS = [
+    ("",                  "Open to all"),
+    ("zoom_members_only", "Zoom restricted to members"),
+    ("members_only",      "Members only"),
+]
+
 TODO_CATEGORIES = ["Planning", "Outreach", "Admin", "Program", "Membership", "Other"]
 TODO_STATUSES = ["Open", "In Progress", "Done"]
 TODO_PRIORITIES = ["Low", "Normal", "High"]
@@ -28,11 +34,12 @@ class OrgEvent(Base):
     end_time = Column(String)
     location = Column(String)
     description = Column(String)
-    zoom_url             = Column(String(500), nullable=True)
-    registration_enabled = Column(Boolean, default=False)
-    capacity             = Column(Integer,  nullable=True)   # None = unlimited
-    registration_note    = Column(String(500), nullable=True)
-    show_on_public       = Column(Boolean, default=False)
+    zoom_url                 = Column(String(500), nullable=True)
+    registration_enabled     = Column(Boolean, default=False)
+    capacity                 = Column(Integer,  nullable=True)   # None = unlimited
+    registration_note        = Column(String(500), nullable=True)
+    registration_restriction = Column(String(20),  nullable=True)  # None/"zoom_members_only"/"members_only"
+    show_on_public           = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
 
 

@@ -10,7 +10,7 @@ from app.database import get_db
 from app.dependencies import require_permission
 from app.models.member import Member
 from app.models.officer import Officer, OFFICER_TITLES, OFFICER_CATEGORIES
-from app.models.org import OrgEvent, OrgTodo, EVENT_TYPES, TODO_CATEGORIES, TODO_STATUSES, TODO_PRIORITIES
+from app.models.org import OrgEvent, OrgTodo, EVENT_TYPES, REGISTRATION_RESTRICTIONS, TODO_CATEGORIES, TODO_STATUSES, TODO_PRIORITIES
 from app.models.event_registration import EventRegistration, Attendance, ATTENDANCE_TYPES
 
 router = APIRouter(prefix="/exec", tags=["exec"])
@@ -144,7 +144,8 @@ def schedule_list(request: Request, _=auth, db: Session = Depends(get_db)):
 @router.get("/schedule/new", response_class=HTMLResponse)
 def new_event_form(request: Request, _=auth):
     return templates.TemplateResponse("exec/event_form.html", {
-        "request": request, "event": None, "event_types": EVENT_TYPES, "errors": [],
+        "request": request, "event": None, "event_types": EVENT_TYPES,
+        "registration_restrictions": REGISTRATION_RESTRICTIONS, "errors": [],
     })
 
 
@@ -161,6 +162,7 @@ def create_event(
     registration_enabled: Optional[str] = Form(None),
     capacity: Optional[str] = Form(None),
     registration_note: Optional[str] = Form(None),
+    registration_restriction: Optional[str] = Form(None),
     show_on_public: Optional[str] = Form(None),
     _=Depends(require_permission("exec")),
     db: Session = Depends(get_db),
@@ -174,6 +176,7 @@ def create_event(
         registration_enabled=(registration_enabled == "on"),
         capacity=int(capacity) if capacity and capacity.strip().isdigit() else None,
         registration_note=registration_note or None,
+        registration_restriction=registration_restriction or None,
         show_on_public=(show_on_public == "on"),
     ))
     db.commit()
@@ -186,7 +189,8 @@ def edit_event_form(event_id: int, request: Request, _=auth, db: Session = Depen
     if not event:
         raise HTTPException(status_code=404)
     return templates.TemplateResponse("exec/event_form.html", {
-        "request": request, "event": event, "event_types": EVENT_TYPES, "errors": [],
+        "request": request, "event": event, "event_types": EVENT_TYPES,
+        "registration_restrictions": REGISTRATION_RESTRICTIONS, "errors": [],
     })
 
 
@@ -204,6 +208,7 @@ def update_event(
     registration_enabled: Optional[str] = Form(None),
     capacity: Optional[str] = Form(None),
     registration_note: Optional[str] = Form(None),
+    registration_restriction: Optional[str] = Form(None),
     show_on_public: Optional[str] = Form(None),
     _=Depends(require_permission("exec")),
     db: Session = Depends(get_db),
@@ -222,6 +227,7 @@ def update_event(
     event.registration_enabled = (registration_enabled == "on")
     event.capacity = int(capacity) if capacity and capacity.strip().isdigit() else None
     event.registration_note = registration_note or None
+    event.registration_restriction = registration_restriction or None
     event.show_on_public = (show_on_public == "on")
     db.commit()
     return RedirectResponse(url="/exec/schedule", status_code=303)

@@ -83,6 +83,22 @@
                        value="{{ event.capacity if event and event.capacity is not none else '' }}"
                        style="width:100px">
             </div>
+            <div style="margin-top:0.75rem; max-width:320px">
+                <label for="registration_restriction">Who can register?</label>
+                <select id="registration_restriction" name="registration_restriction">
+                    {% for val, label in registration_restrictions %}
+                    <option value="{{ val }}"
+                        {% if event and event.registration_restriction == val %}selected
+                        {% elif not event and val == '' %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small style="color:#888; display:block; margin-top:0.25rem">
+                    "Zoom restricted" allows visitors to register in-person only.
+                    "Members only" blocks all visitor registration.
+                </small>
+            </div>
             <div style="margin-top:0.75rem">
                 <label for="registration_note">Note shown on sign-up form</label>
                 <input type="text" id="registration_note" name="registration_note"

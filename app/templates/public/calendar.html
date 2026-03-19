@@ -23,7 +23,14 @@
             <td>
                 {{ ev.title }}
                 {% if ev.zoom_url %}
-                <span style="font-size:0.78rem; color:#5a3e28; font-family:sans-serif"> · Zoom available</span>
+                <span style="font-size:0.78rem; color:#5a3e28; font-family:sans-serif">
+                    · Zoom available{% if ev.registration_restriction == 'zoom_members_only' %} (members){% endif %}
+                </span>
+                {% endif %}
+                {% if ev.registration_restriction == 'members_only' %}
+                <span style="font-size:0.75rem; font-family:sans-serif; font-weight:600;
+                             background:#5a3e28; color:#fff; border-radius:3px;
+                             padding:0.1rem 0.4rem; margin-left:0.3rem">Members Only</span>
                 {% endif %}
                 {% if ev.description %}
                 <div style="font-size:0.85rem; color:#666; font-family:sans-serif; margin-top:0.1rem">{{ ev.description }}</div>

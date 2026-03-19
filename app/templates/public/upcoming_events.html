@@ -18,15 +18,27 @@
                 {% if ev.location %}&nbsp;·&nbsp; {{ ev.location }}{% endif %}
             </div>
         </div>
-        {% if ev.registration_enabled %}
-        <a href="/site/events/{{ ev.id }}/register" class="pub-btn pub-btn-primary"
-           style="white-space:nowrap; align-self:center">Sign Up</a>
-        {% endif %}
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem; align-self:center">
+            {% if ev.registration_restriction == 'members_only' %}
+            <span style="font-family:sans-serif; font-size:0.78rem; font-weight:600;
+                         background:#5a3e28; color:#fff; border-radius:3px; padding:0.15rem 0.5rem;
+                         white-space:nowrap">
+                Members Only
+            </span>
+            {% endif %}
+            {% if ev.registration_enabled %}
+            <a href="/site/events/{{ ev.id }}/register" class="pub-btn pub-btn-primary"
+               style="white-space:nowrap">Sign Up</a>
+            {% endif %}
+        </div>
     </div>
 
     {% if ev.zoom_url %}
     <p style="font-family:sans-serif; font-size:0.9rem; margin:0.5rem 0 0; color:#5a3e28">
         Remote attendance available via Zoom.
+        {% if ev.registration_restriction == 'zoom_members_only' %}
+        <span style="font-weight:600">(Members only for Zoom)</span>
+        {% endif %}
     </p>
     {% endif %}
 
@@ -68,7 +80,7 @@
 {% endfor %}
 
 <p style="font-family:sans-serif; font-size:0.9rem; color:#888">
-    Guests are welcome. <a href="/apply">Join CVW</a> to attend all our programs and events.
+    Guests are welcome at open events. <a href="/apply">Join CVW</a> to attend all programs and events.
 </p>
 
 {% else %}

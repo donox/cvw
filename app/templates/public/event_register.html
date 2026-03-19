@@ -10,7 +10,26 @@
 {% if event.zoom_url %}
 <p style="font-family:sans-serif; font-size:0.9rem; color:#555">
     Remote option available via Zoom.
+    {% if restriction == 'zoom_members_only' %}
+    <strong style="color:#5a3e28">(CVW members only)</strong>
+    {% endif %}
 </p>
+{% endif %}
+
+{# ── Restriction notices ── #}
+{% if restriction == 'members_only' %}
+<div style="background:#f5ede4; border-left:4px solid #5a3e28; border-radius:0 6px 6px 0;
+            padding:0.75rem 1rem; margin:1rem 0; font-family:sans-serif; font-size:0.95rem">
+    <strong>Members only.</strong>
+    Registration for this event is limited to CVW members.
+    <a href="/apply">Not a member yet? Join CVW.</a>
+</div>
+{% elif restriction == 'zoom_members_only' %}
+<div style="background:#f5ede4; border-left:4px solid #5a3e28; border-radius:0 6px 6px 0;
+            padding:0.75rem 1rem; margin:1rem 0; font-family:sans-serif; font-size:0.95rem">
+    Remote (Zoom) attendance is available to <strong>CVW members only</strong>.
+    Visitors are welcome to attend in person at the venue.
+</div>
 {% endif %}
 
 {% if event.registration_note %}
@@ -49,15 +68,20 @@
         <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; margin-bottom:0.4rem; font-weight:normal">
             <input type="radio" name="registrant_type" value="member" id="rt-member"
                    {% if form.get('registrant_type','member') == 'member' %}checked{% endif %}
-                   onchange="showSection('member')" style="width:auto">
+                   onchange="onRegistrantChange()" style="width:auto">
             A CVW member
         </label>
+        {% if restriction != 'members_only' %}
         <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-weight:normal">
             <input type="radio" name="registrant_type" value="visitor" id="rt-visitor"
                    {% if form.get('registrant_type') == 'visitor' %}checked{% endif %}
-                   onchange="showSection('visitor')" style="width:auto">
+                   onchange="onRegistrantChange()" style="width:auto">
             A visitor / guest
         </label>
+        {% else %}
+        {# members_only: keep hidden input so form still submits with "member" #}
+        <input type="hidden" name="registrant_type" value="member">
+        {% endif %}
     </div>
 
     {# ── Member section ── #}
@@ -74,6 +98,7 @@
     </div>
 
     {# ── Visitor section ── #}
+    {% if restriction != 'members_only' %}
     <div id="section-visitor" {% if form.get('registrant_type','member') != 'visitor' %}style="display:none"{% endif %}>
         <div style="margin-bottom:1rem">
             <label style="display:block; margin-bottom:0.3rem; font-weight:600">Full name</label>
@@ -93,17 +118,25 @@
             </small>
         </div>
     </div>
+    {% endif %}
 
     {# ── Attendance type ── #}
     {% if event.zoom_url %}
     <div style="margin-bottom:1rem">
         <strong style="display:block; margin-bottom:0.4rem">How will you attend?</strong>
         {% for at in attendance_types %}
-        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;
-                       margin-bottom:0.3rem; font-weight:normal">
+        <label id="at-label-{{ loop.index }}"
+               style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;
+                      margin-bottom:0.3rem; font-weight:normal">
             <input type="radio" name="attendance_type" value="{{ at }}" style="width:auto"
+                   id="at-{{ loop.index }}"
                    {% if form.get('attendance_type', 'In Person') == at %}checked{% endif %}>
             {{ at }}
+            {% if at == 'Remote' and restriction == 'zoom_members_only' %}
+            <span id="zoom-members-note" style="font-size:0.85rem; color:#5a3e28; font-style:italic">
+                — members only
+            </span>
+            {% endif %}
         </label>
         {% endfor %}
     </div>
@@ -126,9 +159,31 @@
 </form>
 
 <script>
-function showSection(type) {
-    document.getElementById('section-member').style.display  = type === 'member'  ? '' : 'none';
-    document.getElementById('section-visitor').style.display = type === 'visitor' ? '' : 'none';
+const restriction = {{ restriction | tojson }};
+
+function onRegistrantChange() {
+    const isVisitor = document.getElementById('rt-visitor')?.checked;
+    const memberSec  = document.getElementById('section-member');
+    const visitorSec = document.getElementById('section-visitor');
+    if (memberSec)  memberSec.style.display  = isVisitor ? 'none' : '';
+    if (visitorSec) visitorSec.style.display = isVisitor ? '' : 'none';
+
+    // For zoom_members_only: disable Remote radio when visitor is selected
+    if (restriction === 'zoom_members_only') {
+        document.querySelectorAll('input[name="attendance_type"]').forEach(radio => {
+            if (radio.value === 'Remote') {
+                radio.disabled = isVisitor;
+                // If visitor selects Remote, auto-switch to In Person
+                if (isVisitor && radio.checked) {
+                    const inPerson = document.querySelector('input[name="attendance_type"][value="In Person"]');
+                    if (inPerson) inPerson.checked = true;
+                }
+            }
+        });
+    }
 }
+
+// Run on load in case visitor path is pre-selected (error re-render)
+onRegistrantChange();
 </script>
 {% endblock %}
