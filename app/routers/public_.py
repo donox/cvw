@@ -383,7 +383,7 @@ def public_contact(request: Request, db: Session = Depends(get_db)):
         return redir
     officers = (
         db.query(Officer)
-        .filter(Officer.active == True)
+        .filter(Officer.active == True, Officer.category == "Elected")
         .order_by(Officer.title)
         .all()
     )
