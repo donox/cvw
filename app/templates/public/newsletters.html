@@ -1,0 +1,44 @@
+{% extends "base_public.html" %}
+{% block title %}Newsletters — Central Virginia Woodturners{% endblock %}
+{% block content %}
+<h1 style="margin-bottom:0.25rem">Newsletters</h1>
+<p style="color:#666; margin-bottom:1.75rem; font-family:sans-serif; font-size:0.95rem">
+    CVW newsletters, most recent first. Click a title to view in your browser, or use the download link.
+</p>
+
+{% if not newsletters %}
+<p style="color:#888; font-family:sans-serif">No newsletters have been posted yet — check back soon.</p>
+{% else %}
+<table>
+    <thead>
+        <tr>
+            <th>Newsletter</th>
+            <th style="width:7rem; text-align:center">View</th>
+            <th style="width:7rem; text-align:center">Download</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for nl in newsletters %}
+        <tr>
+            <td>{{ nl.name }}</td>
+            <td style="text-align:center">
+                <a href="{{ nl.url }}" target="_blank" rel="noopener"
+                   class="pub-btn pub-btn-outline"
+                   style="padding:0.3rem 0.8rem; font-size:0.85rem">View</a>
+            </td>
+            <td style="text-align:center">
+                <a href="{{ nl.url }}" download="{{ nl.filename }}"
+                   class="pub-btn pub-btn-outline"
+                   style="padding:0.3rem 0.8rem; font-size:0.85rem">Download</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<p style="margin-top:2rem; font-size:0.85rem; color:#888; border-top:1px solid #ddd; padding-top:1rem">
+    Looking for an older newsletter? Contact us on the
+    <a href="/site/contact" style="color:#5a3e28">Contact</a> page.
+</p>
+{% endblock %}

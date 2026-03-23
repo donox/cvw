@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -43,6 +44,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="CVW Membership Database", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
 # ── Middleware ────────────────────────────────────────────────────────────────
@@ -212,6 +214,7 @@ def _seed_site_content():
             ("upcoming-events", "Upcoming Events"),
             ("skill-center",    "Skill Center"),
             ("resources",       "Resources"),
+            ("newsletters",     "Newsletters"),
             ("contact",         "Contact"),
         ]
         for slug, label in pages_data:

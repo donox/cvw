@@ -1,5 +1,6 @@
 """Public-facing website routes — no login required."""
 from datetime import date
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -9,6 +10,8 @@ from sqlalchemy.orm import Session
 from collections import defaultdict
 
 import markdown as md_lib
+
+NEWSLETTERS_DIR = Path("app/static/newsletters")
 
 from app.database import get_db
 from app.models.event_registration import EventRegistration, ATTENDANCE_TYPES
@@ -374,6 +377,21 @@ def public_resources(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse("public/resources.html", {
         "request": request,
         "by_category": dict(sorted(by_category.items())),
+    })
+
+
+@router.get("/newsletters", response_class=HTMLResponse)
+def public_newsletters(request: Request, db: Session = Depends(get_db)):
+    if redir := _member_check("newsletters", request, db):
+        return redir
+    files = sorted(
+        [f for f in NEWSLETTERS_DIR.glob("*.pdf")],
+        key=lambda f: f.name,
+        reverse=True,
+    )
+    newsletters = [{"name": f.stem, "filename": f.name, "url": f"/static/newsletters/{f.name}"} for f in files]
+    return templates.TemplateResponse("public/newsletters.html", {
+        "request": request, "newsletters": newsletters,
     })
 
 
