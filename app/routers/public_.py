@@ -12,6 +12,7 @@ from collections import defaultdict
 import markdown as md_lib
 
 NEWSLETTERS_DIR = Path("app/static/newsletters")
+PUBLIC_GUIDES_DIR = Path("docs/guides/public")
 
 from app.database import get_db
 from app.models.event_registration import EventRegistration, ATTENDANCE_TYPES
@@ -380,6 +381,62 @@ def public_resources(request: Request, db: Session = Depends(get_db)):
     })
 
 
+@router.get("/contact/officer/{officer_id}", response_class=HTMLResponse)
+def contact_officer_form(officer_id: int, request: Request, db: Session = Depends(get_db)):
+    from app.models.officer import Officer
+    officer = db.get(Officer, officer_id)
+    if not officer or not officer.active or not officer.member or not officer.member.email:
+        raise HTTPException(status_code=404)
+    return templates.TemplateResponse("public/contact_officer.html", {
+        "request": request, "officer": officer, "sent": False, "errors": [], "form": {},
+    })
+
+
+@router.post("/contact/officer/{officer_id}", response_class=HTMLResponse)
+def contact_officer_send(
+    officer_id: int,
+    request: Request,
+    sender_name: str = Form(""),
+    sender_email: str = Form(""),
+    message: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    from app.models.officer import Officer
+    from app.email_service import send_email, _smtp_configured
+    officer = db.get(Officer, officer_id)
+    if not officer or not officer.active or not officer.member or not officer.member.email:
+        raise HTTPException(status_code=404)
+
+    errors = []
+    form_data = {"sender_name": sender_name, "sender_email": sender_email, "message": message}
+    if not sender_name.strip():
+        errors.append("Please enter your name.")
+    if not sender_email.strip():
+        errors.append("Please enter your email address.")
+    if not message.strip():
+        errors.append("Please enter a message.")
+
+    if errors:
+        return templates.TemplateResponse("public/contact_officer.html", {
+            "request": request, "officer": officer, "sent": False,
+            "errors": errors, "form": form_data,
+        }, status_code=422)
+
+    if _smtp_configured():
+        body = (
+            f"Message sent via the CVW website contact form.\n\n"
+            f"To: {officer.title}\n"
+            f"From: {sender_name.strip()} <{sender_email.strip()}>\n\n"
+            f"{message.strip()}\n\n"
+            f"---\nReply directly to {sender_email.strip()} to respond."
+        )
+        send_email([officer.member.email], f"CVW Contact: {officer.title}", body)
+
+    return templates.TemplateResponse("public/contact_officer.html", {
+        "request": request, "officer": officer, "sent": True, "errors": [], "form": {},
+    })
+
+
 @router.get("/newsletters", response_class=HTMLResponse)
 def public_newsletters(request: Request, db: Session = Depends(get_db)):
     if redir := _member_check("newsletters", request, db):
@@ -392,6 +449,36 @@ def public_newsletters(request: Request, db: Session = Depends(get_db)):
     newsletters = [{"name": f.stem, "filename": f.name, "url": f"/static/newsletters/{f.name}"} for f in files]
     return templates.TemplateResponse("public/newsletters.html", {
         "request": request, "newsletters": newsletters,
+    })
+
+
+@router.get("/guides", response_class=HTMLResponse)
+def public_guides(request: Request, db: Session = Depends(get_db)):
+    if redir := _member_check("guides", request, db):
+        return redir
+    guides = sorted(
+        [{"name": f.stem.replace("_", " ").title(), "filename": f.name}
+         for f in PUBLIC_GUIDES_DIR.glob("*.md")],
+        key=lambda g: g["name"]
+    )
+    return templates.TemplateResponse("public/guides.html", {
+        "request": request, "guides": guides,
+    })
+
+
+@router.get("/guides/{filename}", response_class=HTMLResponse)
+def public_guide_view(filename: str, request: Request, db: Session = Depends(get_db)):
+    if redir := _member_check("guides", request, db):
+        return redir
+    import markdown as md_lib2
+    path = (PUBLIC_GUIDES_DIR / filename).resolve()
+    if not path.exists() or path.suffix != ".md" or not path.is_relative_to(PUBLIC_GUIDES_DIR.resolve()):
+        raise HTTPException(status_code=404)
+    content_html = md_lib2.markdown(path.read_text(), extensions=["tables", "toc", "fenced_code"])
+    return templates.TemplateResponse("public/guide_view.html", {
+        "request": request,
+        "title": path.stem.replace("_", " ").title(),
+        "content_html": content_html,
     })
 
 

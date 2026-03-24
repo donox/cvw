@@ -25,6 +25,7 @@ from app.routers import email_ as email_router
 from app.routers import public_ as public_router
 from app.routers import librarian as librarian_router
 from app.routers import admin_backup as backup_router
+from app.routers import guides as guides_router
 
 # Apply any staged restore BEFORE opening DB connections
 from app.backup_service import apply_pending_restore
@@ -104,6 +105,7 @@ app.include_router(email_router.router)
 app.include_router(public_router.router)
 app.include_router(librarian_router.router)
 app.include_router(backup_router.router)
+app.include_router(guides_router.router)
 
 
 @app.get("/")
@@ -215,6 +217,7 @@ def _seed_site_content():
             ("skill-center",    "Skill Center"),
             ("resources",       "Resources"),
             ("newsletters",     "Newsletters"),
+            ("guides",          "Guides"),
             ("contact",         "Contact"),
         ]
         for slug, label in pages_data:

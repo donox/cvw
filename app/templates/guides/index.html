@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Guides{% endblock %}
+{% block content %}
+<h1>Guides</h1>
+
+{% if not sections %}
+<p style="color:#888">No guides are available yet.</p>
+{% else %}
+{% for section in sections %}
+<h2 style="margin-top:1.75rem; font-size:1.1rem; text-transform:uppercase;
+           letter-spacing:0.05em; color:#5a3e28; border-bottom:2px solid #e0cdb8;
+           padding-bottom:0.3rem">{{ section.label }}</h2>
+<ul style="list-style:none; padding:0; margin:0 0 0.5rem">
+    {% for doc in section.docs %}
+    <li style="padding:0.4rem 0; border-bottom:1px solid #f0f0f0">
+        <a href="/guides/{{ doc.folder }}/{{ doc.filename }}"
+           style="color:#0066cc">{{ doc.name }}</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endfor %}
+{% endif %}
+{% endblock %}

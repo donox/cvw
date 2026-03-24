@@ -1,0 +1,60 @@
+{% extends "base_public.html" %}
+{% block title %}Contact {{ officer.title }} — Central Virginia Woodturners{% endblock %}
+{% block content %}
+<p style="margin-bottom:1.5rem">
+    <a href="/site/contact" style="color:#5a3e28; font-family:sans-serif; font-size:0.9rem">← Back to Contact</a>
+</p>
+
+<h1 style="margin-bottom:0.2rem">Contact {{ officer.title }}</h1>
+{% if officer.member %}
+<p style="color:#666; font-family:sans-serif; font-size:0.95rem; margin-bottom:1.75rem">
+    Your message will be forwarded to the current {{ officer.title }}.
+</p>
+{% endif %}
+
+{% if sent %}
+<div style="background:#eaf5ea; border:1px solid #6aaf6a; border-radius:6px;
+            padding:1.25rem 1.5rem; font-family:sans-serif; margin-bottom:1.5rem">
+    <strong>Message sent.</strong> The {{ officer.title }} will be in touch with you shortly.
+</div>
+<p><a href="/site/contact" class="pub-btn pub-btn-outline">← Back to Contact</a></p>
+
+{% else %}
+
+{% if errors %}
+<div style="background:#fdf0f0; border:1px solid #d9534f; border-radius:6px;
+            padding:1rem 1.25rem; font-family:sans-serif; margin-bottom:1.25rem; font-size:0.9rem">
+    {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+</div>
+{% endif %}
+
+<form method="post" style="max-width:560px">
+    <div style="margin-bottom:1rem">
+        <label style="display:block; font-family:sans-serif; font-size:0.88rem;
+                      font-weight:600; margin-bottom:0.3rem; color:#5a3e28">Your Name</label>
+        <input type="text" name="sender_name" value="{{ form.sender_name or '' }}"
+               required style="width:100%; padding:0.5rem 0.75rem; border:1px solid #ccc;
+               border-radius:4px; font-size:1rem; font-family:sans-serif">
+    </div>
+    <div style="margin-bottom:1rem">
+        <label style="display:block; font-family:sans-serif; font-size:0.88rem;
+                      font-weight:600; margin-bottom:0.3rem; color:#5a3e28">Your Email Address</label>
+        <input type="email" name="sender_email" value="{{ form.sender_email or '' }}"
+               required style="width:100%; padding:0.5rem 0.75rem; border:1px solid #ccc;
+               border-radius:4px; font-size:1rem; font-family:sans-serif">
+    </div>
+    <div style="margin-bottom:1.25rem">
+        <label style="display:block; font-family:sans-serif; font-size:0.88rem;
+                      font-weight:600; margin-bottom:0.3rem; color:#5a3e28">Message</label>
+        <textarea name="message" rows="6" required
+                  style="width:100%; padding:0.5rem 0.75rem; border:1px solid #ccc;
+                  border-radius:4px; font-size:1rem; font-family:sans-serif;
+                  resize:vertical">{{ form.message or '' }}</textarea>
+    </div>
+    <div style="display:flex; gap:0.75rem; align-items:center">
+        <button type="submit" class="pub-btn pub-btn-primary">Send Message</button>
+        <a href="/site/contact" style="font-family:sans-serif; font-size:0.9rem; color:#888">Cancel</a>
+    </div>
+</form>
+{% endif %}
+{% endblock %}

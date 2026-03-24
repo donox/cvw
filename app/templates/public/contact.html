@@ -11,18 +11,17 @@
     <h2>Officers</h2>
     <div class="officer-grid">
     {% for o in officers %}
-    {% if o.member and o.member.email %}
-    <div class="officer-card">
+    {% if o.member %}
+    <div class="officer-card" style="display:flex; flex-direction:column; gap:0.4rem">
         <div class="officer-title">{{ o.title }}</div>
         <div class="officer-name">{{ o.member.first_name }} {{ o.member.last_name }}</div>
-        <div style="margin-top:0.4rem; font-family:sans-serif; font-size:0.875rem">
-            <a href="mailto:{{ o.member.email }}">{{ o.member.email }}</a>
+        {% if o.member.email %}
+        <div style="margin-top:auto; padding-top:0.4rem">
+            <a href="/site/contact/officer/{{ o.id }}"
+               class="pub-btn pub-btn-outline"
+               style="padding:0.3rem 0.8rem; font-size:0.82rem">Contact {{ o.title }}</a>
         </div>
-    </div>
-    {% elif o.member %}
-    <div class="officer-card">
-        <div class="officer-title">{{ o.title }}</div>
-        <div class="officer-name">{{ o.member.first_name }} {{ o.member.last_name }}</div>
+        {% endif %}
     </div>
     {% endif %}
     {% endfor %}

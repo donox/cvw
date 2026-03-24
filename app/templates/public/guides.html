@@ -1,0 +1,23 @@
+{% extends "base_public.html" %}
+{% block title %}Guides — Central Virginia Woodturners{% endblock %}
+{% block content %}
+<h1 style="margin-bottom:0.25rem">Guides</h1>
+<p style="color:#666; margin-bottom:1.75rem; font-family:sans-serif; font-size:0.95rem">
+    How-to guides and reference material for CVW members.
+</p>
+
+{% if not guides %}
+<p style="color:#888; font-family:sans-serif">No guides are available yet — check back soon.</p>
+{% else %}
+<ul style="list-style:none; padding:0; margin:0">
+{% for g in guides %}
+    <li style="border-bottom:1px solid #e8ddd0; padding:0.75rem 0">
+        <a href="/site/guides/{{ g.filename }}"
+           style="font-size:1.05rem; color:#5a3e28; font-weight:500; text-decoration:none">
+            {{ g.name }}
+        </a>
+    </li>
+{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

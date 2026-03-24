@@ -87,6 +87,16 @@
         .meeting-info dd { margin: 0.1rem 0 0; }
         dl { margin: 0; }
 
+        /* ── Nav dropdown ── */
+        .pub-nav-drop { position: relative; }
+        .pub-nav-drop > a::after { content: ' ▾'; font-size: 0.75em; }
+        .pub-nav-drop-menu { display: none; position: absolute; top: 100%; left: 0;
+                             background: #2e1f10; min-width: 160px; z-index: 200;
+                             border-radius: 0 0 4px 4px; padding: 0.25rem 0;
+                             box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .pub-nav-drop:hover .pub-nav-drop-menu { display: block; }
+        .pub-nav-drop-menu a { padding: 0.5rem 1rem; white-space: nowrap; display: block; }
+
         /* ── Print ── */
         @media print { .pub-nav, .pub-footer, .pub-btn { display: none; } }
 
@@ -111,8 +121,14 @@
         <a href="/site/officers">Leadership</a>
         <a href="/site/calendar">Calendar</a>
         <a href="/site/skill-center">Skill Center</a>
-        <a href="/site/newsletters">Newsletters</a>
-        <a href="/site/resources">Resources</a>
+        <div class="pub-nav-drop">
+            <a href="/site/resources">Resources</a>
+            <div class="pub-nav-drop-menu">
+                <a href="/site/resources">Woodturning Resources</a>
+                <a href="/site/newsletters">Newsletters</a>
+                <a href="/site/guides">Guides</a>
+            </div>
+        </div>
         <a href="/apply">Join Us</a>
         <a href="/site/contact">Contact</a>
         <a href="/site/about">About</a>
