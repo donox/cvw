@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}System{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem">
+    <h1 style="margin:0">System</h1>
+    <a href="/admin/" class="btn btn-secondary">← Admin</a>
+</div>
+
+{% if restore_pending %}
+<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:6px;
+            padding:0.9rem 1.25rem; margin-bottom:1.25rem; color:#856404">
+    <strong>⚠ Restore staged.</strong>
+    A database restore is ready — use <strong>Restart Server</strong> below to apply it.
+</div>
+{% endif %}
+
+{% if action == 'deploy' %}
+<div style="background:#f4f4f4; border:1px solid #ddd; border-radius:6px;
+            padding:1rem 1.25rem; margin-bottom:1.5rem">
+    <strong>Deploy output:</strong>
+    <pre style="margin:0.5rem 0 0; white-space:pre-wrap; font-size:0.88rem">{{ output }}</pre>
+    {% if 'Already up to date' in output %}
+    <p style="margin:0.75rem 0 0; color:#555; font-size:0.9rem">
+        No changes pulled. The server is already running the latest code.
+    </p>
+    {% else %}
+    <p style="margin:0.75rem 0 0; color:#2e7d32; font-size:0.9rem">
+        Changes pulled. Uvicorn is reloading — allow a few seconds for the update to take effect.
+        If new packages were added, a manual <code>docker compose up -d --build</code> is required on the server.
+    </p>
+    {% endif %}
+</div>
+{% elif action == 'restart' %}
+<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:6px;
+            padding:0.9rem 1.25rem; margin-bottom:1.5rem; color:#856404">
+    <strong>Server is restarting.</strong>
+    Wait 15–20 seconds, then <a href="/admin/system">reload this page</a>.
+</div>
+{% endif %}
+
+<div class="detail-grid">
+    <section>
+        <h2>Deploy Update</h2>
+        <p style="font-size:0.9rem; color:#555; margin-bottom:0.75rem">
+            Pull the latest code from GitHub. Uvicorn reloads automatically.
+            Use this after pushing new code.
+        </p>
+        <form method="post" action="/admin/system/deploy"
+              onsubmit="this.querySelector('button').disabled=true;
+                        this.querySelector('button').textContent='Pulling…'">
+            <button type="submit" class="btn btn-primary">Deploy Update</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Restart Server</h2>
+        <p style="font-size:0.9rem; color:#555; margin-bottom:0.75rem">
+            Restart the application container. Required to apply a staged database restore.
+            The server will be unavailable for ~15 seconds.
+        </p>
+        <form method="post" action="/admin/system/restart"
+              onsubmit="return confirm('Restart the server now? It will be unavailable for ~15 seconds.')">
+            <button type="submit" class="btn btn-danger">Restart Server</button>
+        </form>
+    </section>
+</div>
+{% endblock %}

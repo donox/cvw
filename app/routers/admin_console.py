@@ -1,3 +1,6 @@
+import os
+import signal
+import subprocess
 from pathlib import Path
 from typing import Optional
 
@@ -200,6 +203,46 @@ def update_user(
         user.hashed_password = User.hash_password(password)
     db.commit()
     return RedirectResponse(url="/admin/users", status_code=303)
+
+
+# ── System ────────────────────────────────────────────────────────────────────
+
+@router.get("/system", response_class=HTMLResponse)
+def system_index(request: Request, _=auth):
+    from app.backup_service import restore_pending_exists
+    return templates.TemplateResponse("admin/system.html", {
+        "request": request,
+        "restore_pending": restore_pending_exists(),
+        "action": None, "output": None,
+    })
+
+
+@router.post("/system/deploy", response_class=HTMLResponse)
+def system_deploy(request: Request, _=auth):
+    result = subprocess.run(
+        ["git", "pull"],
+        capture_output=True, text=True, cwd="/app"
+    )
+    output = result.stdout + result.stderr
+    from app.backup_service import restore_pending_exists
+    return templates.TemplateResponse("admin/system.html", {
+        "request": request,
+        "restore_pending": restore_pending_exists(),
+        "action": "deploy", "output": output.strip(),
+    })
+
+
+@router.post("/system/restart", response_class=HTMLResponse)
+def system_restart(request: Request, _=auth):
+    from app.backup_service import restore_pending_exists
+    response = templates.TemplateResponse("admin/system.html", {
+        "request": request,
+        "restore_pending": restore_pending_exists(),
+        "action": "restart", "output": "Server is restarting…",
+    })
+    # Kill the process after sending the response; Docker restarts the container.
+    os.kill(os.getpid(), signal.SIGTERM)
+    return response
 
 
 # ── Site Content ──────────────────────────────────────────────────────────────
