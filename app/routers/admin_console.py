@@ -234,15 +234,18 @@ def system_deploy(request: Request, _=auth):
 
 @router.post("/system/restart", response_class=HTMLResponse)
 def system_restart(request: Request, _=auth):
+    import threading
     from app.backup_service import restore_pending_exists
-    response = templates.TemplateResponse("admin/system.html", {
+    def _kill():
+        import time
+        time.sleep(2)
+        os.kill(os.getpid(), signal.SIGTERM)
+    threading.Thread(target=_kill, daemon=True).start()
+    return templates.TemplateResponse("admin/system.html", {
         "request": request,
         "restore_pending": restore_pending_exists(),
         "action": "restart", "output": "Server is restarting…",
     })
-    # Kill the process after sending the response; Docker restarts the container.
-    os.kill(os.getpid(), signal.SIGTERM)
-    return response
 
 
 # ── Site Content ──────────────────────────────────────────────────────────────
