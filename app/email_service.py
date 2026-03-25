@@ -1,6 +1,9 @@
-"""Email sending via smtplib.  Requires SMTP_HOST to be configured in .env."""
+"""Email sending via Mailgun API (preferred) or smtplib fallback."""
 import smtplib
 import ssl
+import urllib.parse
+import urllib.request
+from base64 import b64encode
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Optional
@@ -20,15 +23,46 @@ TEMPLATE_VARS = {
 }
 
 
+def _mailgun_configured() -> bool:
+    return bool(settings.MAILGUN_API_KEY and settings.MAILGUN_DOMAIN)
+
+
 def _smtp_configured() -> bool:
     return bool(settings.SMTP_HOST and settings.SMTP_FROM)
 
 
+def _from_address() -> str:
+    if _mailgun_configured() and settings.MAILGUN_FROM:
+        return settings.MAILGUN_FROM
+    return settings.SMTP_FROM
+
+
+def _send_via_mailgun(to_addresses: list[str], subject: str, body: str) -> None:
+    from_addr = settings.MAILGUN_FROM or f"info@{settings.MAILGUN_DOMAIN}"
+    data = urllib.parse.urlencode({
+        "from": from_addr,
+        "to": ", ".join(to_addresses),
+        "subject": subject,
+        "text": body,
+    }).encode()
+    credentials = b64encode(f"api:{settings.MAILGUN_API_KEY}".encode()).decode()
+    url = f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages"
+    req = urllib.request.Request(url, data=data, method="POST")
+    req.add_header("Authorization", f"Basic {credentials}")
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        if resp.status not in (200, 201):
+            raise RuntimeError(f"Mailgun API error: {resp.status}")
+
+
 def send_email(to_addresses: list[str], subject: str, body: str) -> None:
-    """Send a plain-text email to a list of addresses."""
+    """Send a plain-text email. Uses Mailgun API if configured, else SMTP."""
+    if _mailgun_configured():
+        _send_via_mailgun(to_addresses, subject, body)
+        return
+
     if not _smtp_configured():
         raise RuntimeError(
-            "SMTP is not configured. Set SMTP_HOST and SMTP_FROM in .env."
+            "Email is not configured. Set MAILGUN_API_KEY/MAILGUN_DOMAIN or SMTP_HOST in .env."
         )
 
     msg = MIMEMultipart("alternative")
@@ -119,8 +153,8 @@ def send_to_members(
 
     Returns (sent_count, error_detail_or_None).
     """
-    if not _smtp_configured():
-        return 0, "SMTP not configured"
+    if not _mailgun_configured() and not _smtp_configured():
+        return 0, "Email not configured"
 
     errors = []
     sent = 0

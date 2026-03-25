@@ -10,13 +10,18 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-this-in-production"
     ADMIN_INITIAL_PASSWORD: str = ""
 
-    # SMTP (leave SMTP_HOST empty to disable email sending)
+    # SMTP (leave SMTP_HOST empty to disable)
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = ""
     SMTP_STARTTLS: bool = True
+
+    # Mailgun API (preferred over SMTP — bypasses port blocks)
+    MAILGUN_API_KEY: str = ""
+    MAILGUN_DOMAIN: str = ""
+    MAILGUN_FROM: str = ""
 
     class Config:
         env_file = ".env"
