@@ -29,11 +29,14 @@ def email_index(request: Request, _=auth, db: Session = Depends(get_db)):
 # ── Compose & send ────────────────────────────────────────────────────────────
 
 @router.get("/compose", response_class=HTMLResponse)
-def compose_form(request: Request, _=auth, db: Session = Depends(get_db)):
+def compose_form(request: Request, member_id: str = Query(default=""), _=auth, db: Session = Depends(get_db)):
     groups = db.query(MemberGroup).order_by(MemberGroup.name).all()
     templates_list = db.query(EmailTemplate).order_by(EmailTemplate.name).all()
+    members = db.query(Member).filter(Member.email != None, Member.email != "").order_by(Member.last_name, Member.first_name).all()
+    single_member = db.get(Member, int(member_id)) if member_id else None
     return templates.TemplateResponse("email/compose.html", {
         "request": request, "groups": groups, "email_templates": templates_list,
+        "members": members, "single_member": single_member,
         "errors": [], "form": {}
     })
 
@@ -43,7 +46,9 @@ def send_email_now(
     request: Request,
     subject: str = Form(...),
     body: str = Form(...),
+    recipient_mode: str = Form("group"),
     group_id: str = Form(""),
+    member_id: str = Form(""),
     per_member: str = Form(""),
     template_type: str = Form("simple"),
     _=auth,
@@ -52,18 +57,22 @@ def send_email_now(
     from app.email_service import send_to_members
     from app.models.email_models import EmailLog
 
-    gid = int(group_id) if group_id else None
-    if gid:
-        group = db.get(MemberGroup, gid)
-        if not group:
-            raise HTTPException(status_code=404)
-        members = group.members
+    group = None
+    if recipient_mode == "member":
+        mid = int(member_id) if member_id else None
+        m = db.get(Member, mid) if mid else None
+        members_to_send = [m] if m and m.email else []
     else:
-        members = db.query(Member).filter(Member.status == "Active").all()
-        group = None
+        gid = int(group_id) if group_id else None
+        if gid:
+            group = db.get(MemberGroup, gid)
+            members_to_send = group.members if group else []
+        else:
+            members_to_send = db.query(Member).filter(Member.status == "Active").all()
+            gid = None
 
-    personalize = per_member == "on"
-    sent, error = send_to_members(members, subject, body,
+    personalize = per_member == "on" or recipient_mode == "member"
+    sent, error = send_to_members(members_to_send, subject, body,
                                   per_member_body=personalize,
                                   template_type=template_type)
 
@@ -71,7 +80,7 @@ def send_email_now(
     log = EmailLog(
         subject=subject,
         recipient_count=sent,
-        group_id=gid,
+        group_id=group.id if group else None,
         sent_by=user.username if user else "",
         status="sent" if not error else ("partial" if sent else "failed"),
         error_detail=error,
@@ -81,8 +90,10 @@ def send_email_now(
 
     groups = db.query(MemberGroup).order_by(MemberGroup.name).all()
     templates_list = db.query(EmailTemplate).order_by(EmailTemplate.name).all()
+    members = db.query(Member).filter(Member.email != None, Member.email != "").order_by(Member.last_name, Member.first_name).all()
     return templates.TemplateResponse("email/compose.html", {
         "request": request, "groups": groups, "email_templates": templates_list,
+        "members": members, "single_member": None,
         "errors": [], "form": {},
         "sent_count": sent, "send_error": error,
     })

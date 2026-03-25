@@ -33,12 +33,38 @@
 
     <div class="form-group">
         <label>Send To</label>
-        <select name="group_id">
-            <option value="">All Active Members</option>
-            {% for g in groups %}
-            <option value="{{ g.id }}">{{ g.name }} ({{ g.members|length }})</option>
-            {% endfor %}
-        </select>
+        <div style="display:flex; gap:1.5rem; margin-bottom:0.5rem">
+            <label style="display:flex; align-items:center; gap:0.4rem; font-weight:normal; cursor:pointer">
+                <input type="radio" name="recipient_mode" value="group" id="rm-group"
+                       {% if not single_member %}checked{% endif %}
+                       onchange="toggleRecipient()">
+                Group / All Members
+            </label>
+            <label style="display:flex; align-items:center; gap:0.4rem; font-weight:normal; cursor:pointer">
+                <input type="radio" name="recipient_mode" value="member" id="rm-member"
+                       {% if single_member %}checked{% endif %}
+                       onchange="toggleRecipient()">
+                Single Member
+            </label>
+        </div>
+        <div id="group-selector">
+            <select name="group_id">
+                <option value="">All Active Members</option>
+                {% for g in groups %}
+                <option value="{{ g.id }}">{{ g.name }} ({{ g.members|length }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div id="member-selector" style="display:none">
+            <select name="member_id">
+                <option value="">— select member —</option>
+                {% for m in members %}
+                <option value="{{ m.id }}" {% if single_member and single_member.id == m.id %}selected{% endif %}>
+                    {{ m.last_name }}, {{ m.first_name }} &lt;{{ m.email }}&gt;
+                </option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
 
     <div class="form-group">
@@ -90,5 +116,12 @@ function loadTemplate(sel) {
     document.getElementById('rt-simple').checked = type === 'simple';
     document.getElementById('rt-jinja2').checked = type === 'jinja2';
 }
+function toggleRecipient() {
+    const single = document.getElementById('rm-member').checked;
+    document.getElementById('group-selector').style.display = single ? 'none' : '';
+    document.getElementById('member-selector').style.display = single ? '' : 'none';
+}
+// Set initial state on page load
+toggleRecipient();
 </script>
 {% endblock %}

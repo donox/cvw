@@ -79,6 +79,9 @@
 
 <div class="form-actions">
     <a href="/members/{{ member.id }}/edit" class="btn btn-primary">Edit</a>
+    {% if member.email %}
+    <a href="/email/compose?member_id={{ member.id }}" class="btn btn-secondary">Send Email</a>
+    {% endif %}
     <a href="/members/" class="btn btn-secondary">Back</a>
 </div>
 {% endblock %}
