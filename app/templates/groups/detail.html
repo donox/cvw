@@ -18,14 +18,19 @@
 
 <p style="color:#888; font-size:0.9rem">Created by {{ group.created_by or '—' }}</p>
 
-<h2>Members ({{ group.members|length }})</h2>
-{% if group.members %}
+{% if group.is_dynamic %}
+<p style="color:#666; font-size:0.9rem; margin-bottom:0.5rem">
+    <em>Dynamic group — members computed from filter criteria.</em>
+</p>
+{% endif %}
+<h2>Members ({{ resolved_members|length }})</h2>
+{% if resolved_members %}
 <table>
     <thead>
         <tr><th>Name</th><th>Email</th><th>Type</th><th>Status</th></tr>
     </thead>
     <tbody>
-    {% for m in group.members|sort(attribute='last_name') %}
+    {% for m in resolved_members %}
     <tr>
         <td><a href="/members/{{ m.id }}">{{ m.last_name }}, {{ m.first_name }}</a></td>
         <td>{{ m.email or '—' }}</td>

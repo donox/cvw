@@ -183,7 +183,7 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [x] Automated daily database backups (APScheduler, 2 AM, 30-day retention)
 - [x] Admin backup console — manual backup, restore, download, retention setting
 - [x] Emergency standalone scripts (`scripts/backup.py`, `scripts/restore.py`)
-- [ ] Off-site backup delivery (e.g., copy to S3 or SFTP after daily backup — deferred to production)
+- [ ] Off-site backup delivery — Google Drive via rclone (see details below)
 - [ ] Production deployment (Docker + nginx/Caddy + domain)
 - [ ] PayPal dues payment integration (requires public server + PayPal dev account)
 
@@ -191,6 +191,49 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [x] Members-only access — per-page flags + shared password; admin UI at `/admin/content/access`
 - [x] Per-event registration restriction — `zoom_members_only` / `members_only` on OrgEvent; enforced in form and server-side
 - [ ] Phase 2: newsletters, gallery (see PUBLIC_SITE_PLAN.md)
+
+### Off-Site Backup — Google Drive (pending team decision)
+
+**Approach:** rclone + SQLite hot backup, scheduled on the host droplet (not inside Docker).
+
+**Key decisions needed:**
+- [ ] Confirm team is OK storing backups on a personal Google Drive account
+- [ ] Decide who owns the Google account used (ideally a shared club account)
+- [ ] Decide retention period (suggested: 30 days of daily backups)
+
+**Implementation steps (once decided):**
+1. **Google credentials** — create a Service Account in Google Cloud Console; share a Drive folder with the service account email. No browser login needed after setup.
+2. **Install rclone on the droplet**
+   ```bash
+   apt install rclone
+   rclone config  # one-time setup; creates a remote named "gdrive"
+   ```
+3. **Backup script** (`/opt/cvwapp/scripts/offsite_backup.sh`):
+   ```bash
+   #!/bin/bash
+   # Hot backup — consistent even with concurrent writes (WAL mode)
+   STAMP=$(date +%Y%m%d_%H%M)
+   sqlite3 /opt/cvwapp/data/cvw.db ".backup '/tmp/cvwapp_${STAMP}.db'"
+   rclone copy "/tmp/cvwapp_${STAMP}.db" gdrive:cvwapp-backups/
+   # Remove local temp file
+   rm "/tmp/cvwapp_${STAMP}.db"
+   # Prune Drive copies older than 30 days
+   rclone delete gdrive:cvwapp-backups/ --min-age 30d
+   ```
+4. **Schedule** — add host cron job (runs after the 2 AM APScheduler local backup):
+   ```bash
+   15 2 * * * bash /opt/cvwapp/scripts/offsite_backup.sh >> /var/log/cvwapp_backup.log 2>&1
+   ```
+
+**Database notes:**
+- SQLite is sufficient for CVW scale (2–3 concurrent users normally; burst during post-event report uploads)
+- Enable WAL mode for safer concurrent writes: `PRAGMA journal_mode=WAL`
+- SQLite's `.backup` command gives a consistent snapshot without stopping the app
+- **Migrate to PostgreSQL only if** `database is locked` errors appear in logs after group events — migration is straightforward when needed
+
+**Why not S3:** Google Drive is free at this scale and the club likely already has Google accounts. S3 would require AWS credentials and small monthly cost.
+
+---
 
 ### Executive Console
 - [ ] Reconsider non-officer event ownership for registration control (currently officer-only; future: event coordinator role or per-event owner)

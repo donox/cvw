@@ -66,7 +66,11 @@ def send_email_now(
         gid = int(group_id) if group_id else None
         if gid:
             group = db.get(MemberGroup, gid)
-            members_to_send = group.members if group else []
+            if group:
+                from app.models.group import resolve_members
+                members_to_send = resolve_members(group, db)
+            else:
+                members_to_send = []
         else:
             members_to_send = db.query(Member).filter(Member.status == "Active").all()
             gid = None
