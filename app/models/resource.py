@@ -11,9 +11,17 @@ class Resource(Base):
     id          = Column(Integer, primary_key=True)
     category    = Column(String(100), nullable=False, index=True)
     title       = Column(String(200), nullable=False)
-    url         = Column(String(1000), nullable=False)
+    url         = Column(String(1000), nullable=True)   # null when file_path is set
+    file_path   = Column(String(500), nullable=True)    # filename within static/resources/
     description = Column(String(500))
     sort_order  = Column(Integer, default=0)
     active      = Column(Boolean, default=True)
     created_at  = Column(DateTime, default=datetime.utcnow)
     updated_at  = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @property
+    def href(self) -> str:
+        """Resolved link — static path for uploads, raw url for external links."""
+        if self.file_path:
+            return f"/static/resources/{self.file_path}"
+        return self.url or ""
