@@ -16,9 +16,9 @@ class PermissionDeniedException(Exception):
 # Which areas each role can access (admin implicitly gets all)
 ROLE_PERMISSIONS: dict[str, list[str]] = {
     "membership": ["members", "groups", "email", "dashboard"],
-    "program":    ["programs", "dashboard"],
-    "financial":  ["financial", "dashboard"],
-    "exec":       ["exec", "members", "groups", "programs", "dashboard"],
+    "program":    ["programs", "members", "groups", "email", "dashboard"],
+    "financial":  ["financial", "members", "groups", "email", "dashboard"],
+    "exec":       ["exec", "members", "groups", "programs", "email", "dashboard"],
     "librarian":  ["librarian", "dashboard"],
     "admin":      ["*"],
 }

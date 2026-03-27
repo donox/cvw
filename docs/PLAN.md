@@ -164,7 +164,7 @@ Build and maintain a membership management web application for CVW (Central Virg
 
 ### Member Management
 - [ ] Pagination on member list (currently loads all ~109 members)
-- [ ] Email member(s) directly from member detail page
+- [x] Email member(s) directly from member detail page
 
 ### Programs
 - [ ] Program console — add auth to remaining routes
