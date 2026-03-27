@@ -25,3 +25,7 @@ class Resource(Base):
         if self.file_path:
             return f"/static/resources/{self.file_path}"
         return self.url or ""
+
+    @property
+    def is_upload(self) -> bool:
+        return bool(self.file_path)

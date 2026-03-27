@@ -127,7 +127,7 @@ async def create_resource(
     db.add(Resource(
         category=category.strip(),
         title=title.strip(),
-        url=url or None,
+        url=url,
         file_path=file_path,
         description=description.strip() or None,
         sort_order=int(sort_order) if sort_order.strip().isdigit() else 0,
@@ -186,7 +186,7 @@ async def update_resource(
         # Switching to URL — delete any existing file
         _delete_file(res.file_path)
         res.file_path = None
-        res.url = url.strip()
+        res.url = url.strip() or ""
     # else: source_type == "file" but no new file uploaded — keep existing file_path
 
     res.category    = category.strip()
