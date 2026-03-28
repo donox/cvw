@@ -34,10 +34,12 @@ def compose_form(request: Request, member_id: str = Query(default=""), _=auth, d
     templates_list = db.query(EmailTemplate).order_by(EmailTemplate.name).all()
     members = db.query(Member).filter(Member.email != None, Member.email != "").order_by(Member.last_name, Member.first_name).all()
     single_member = db.get(Member, int(member_id)) if member_id else None
+    from app.database import settings as app_settings
     return templates.TemplateResponse("email/compose.html", {
         "request": request, "groups": groups, "email_templates": templates_list,
         "members": members, "single_member": single_member,
-        "errors": [], "form": {}
+        "errors": [], "form": {},
+        "default_reply_to": app_settings.MAILGUN_REPLY_TO,
     })
 
 
@@ -46,6 +48,7 @@ def send_email_now(
     request: Request,
     subject: str = Form(...),
     body: str = Form(...),
+    reply_to: str = Form(""),
     recipient_mode: str = Form("group"),
     group_id: str = Form(""),
     member_id: str = Form(""),
@@ -78,7 +81,8 @@ def send_email_now(
     personalize = per_member == "on" or recipient_mode == "member"
     sent, error = send_to_members(members_to_send, subject, body,
                                   per_member_body=personalize,
-                                  template_type=template_type)
+                                  template_type=template_type,
+                                  reply_to=reply_to.strip() or None)
 
     user = request.state.user
     log = EmailLog(

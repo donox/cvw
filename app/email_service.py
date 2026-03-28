@@ -37,7 +37,8 @@ def _from_address() -> str:
     return settings.SMTP_FROM
 
 
-def _send_via_mailgun(to_addresses: list[str], subject: str, body: str) -> None:
+def _send_via_mailgun(to_addresses: list[str], subject: str, body: str,
+                      reply_to: Optional[str] = None) -> None:
     from_addr = settings.MAILGUN_FROM or f"info@{settings.MAILGUN_DOMAIN}"
     params = {
         "from": from_addr,
@@ -45,8 +46,9 @@ def _send_via_mailgun(to_addresses: list[str], subject: str, body: str) -> None:
         "subject": subject,
         "text": body,
     }
-    if settings.MAILGUN_REPLY_TO:
-        params["h:Reply-To"] = settings.MAILGUN_REPLY_TO
+    effective_reply_to = reply_to or settings.MAILGUN_REPLY_TO
+    if effective_reply_to:
+        params["h:Reply-To"] = effective_reply_to
     data = urllib.parse.urlencode(params, safe=':').encode()
     credentials = b64encode(f"api:{settings.MAILGUN_API_KEY}".encode()).decode()
     url = f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages"
@@ -57,10 +59,11 @@ def _send_via_mailgun(to_addresses: list[str], subject: str, body: str) -> None:
             raise RuntimeError(f"Mailgun API error: {resp.status}")
 
 
-def send_email(to_addresses: list[str], subject: str, body: str) -> None:
+def send_email(to_addresses: list[str], subject: str, body: str,
+               reply_to: Optional[str] = None) -> None:
     """Send a plain-text email. Uses Mailgun API if configured, else SMTP."""
     if _mailgun_configured():
-        _send_via_mailgun(to_addresses, subject, body)
+        _send_via_mailgun(to_addresses, subject, body, reply_to=reply_to)
         return
 
     if not _smtp_configured():
@@ -72,8 +75,9 @@ def send_email(to_addresses: list[str], subject: str, body: str) -> None:
     msg["Subject"] = subject
     msg["From"] = settings.SMTP_FROM
     msg["To"] = ", ".join(to_addresses)
-    if settings.MAILGUN_REPLY_TO:
-        msg["Reply-To"] = settings.MAILGUN_REPLY_TO
+    effective_reply_to = reply_to or settings.MAILGUN_REPLY_TO
+    if effective_reply_to:
+        msg["Reply-To"] = effective_reply_to
     msg.attach(MIMEText(body, "plain"))
 
     context = ssl.create_default_context()
@@ -150,6 +154,7 @@ def send_to_members(
     body_template: str,
     per_member_body: bool = False,
     template_type: str = "simple",
+    reply_to: Optional[str] = None,
 ) -> tuple[int, Optional[str]]:
     """Send email to a list of Member objects.
 
@@ -169,7 +174,7 @@ def send_to_members(
         body = (render_body(body_template, member, template_type)
                 if per_member_body else body_template)
         try:
-            send_email([member.email], subject, body)
+            send_email([member.email], subject, body, reply_to=reply_to)
             sent += 1
         except Exception as exc:
             errors.append(f"{member.email}: {exc}")

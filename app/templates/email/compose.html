@@ -68,6 +68,12 @@
     </div>
 
     <div class="form-group">
+        <label>Reply-To <span style="font-weight:normal; color:#888">(optional — leave blank to use default)</span></label>
+        <input type="email" name="reply_to" value="{{ form.get('reply_to', default_reply_to) }}"
+               placeholder="replies@example.com" style="max-width:340px">
+    </div>
+
+    <div class="form-group">
         <label>Subject</label>
         <input type="text" name="subject" id="subject" required
                value="{{ form.get('subject','') }}">
