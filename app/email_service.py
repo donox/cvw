@@ -47,7 +47,7 @@ def _send_via_mailgun(to_addresses: list[str], subject: str, body: str) -> None:
     }
     if settings.MAILGUN_REPLY_TO:
         params["h:Reply-To"] = settings.MAILGUN_REPLY_TO
-    data = urllib.parse.urlencode(params).encode()
+    data = urllib.parse.urlencode(params, quote_via=urllib.parse.quote).encode()
     credentials = b64encode(f"api:{settings.MAILGUN_API_KEY}".encode()).decode()
     url = f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages"
     req = urllib.request.Request(url, data=data, method="POST")
