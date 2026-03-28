@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Member Query{% endblock %}
+{% block content %}
+
+<style>
+@media print {
+    nav, .no-print { display: none !important; }
+    .print-header { display: block !important; }
+    body { font-size: 11pt; }
+    table { font-size: 10pt; }
+    a { color: inherit; text-decoration: none; }
+}
+.print-header { display: none; }
+</style>
+
+<div class="no-print" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Member Query</h1>
+    <a href="/members/" class="btn btn-secondary">← Members</a>
+</div>
+
+{# ── Filter form ── #}
+<form method="get" action="/members/query" class="no-print"
+      style="background:#f9f9f9; border:1px solid #e0e0e0; border-radius:6px;
+             padding:1rem 1.25rem; margin-bottom:1.25rem">
+    <div class="form-row">
+        <div>
+            <label>Name Search</label>
+            <input type="text" name="name_search" value="{{ f_name }}"
+                   placeholder="First or last name…" autocomplete="off">
+        </div>
+        <div>
+            <label>Status</label>
+            <select name="status">
+                <option value="">— any —</option>
+                {% for s in statuses %}
+                <option value="{{ s }}" {% if f_status == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Membership Type</label>
+            <select name="membership_type">
+                <option value="">— any —</option>
+                {% for t in membership_types %}
+                <option value="{{ t }}" {% if f_membership_type == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="form-row" style="margin-top:0.75rem">
+        <div>
+            <label>Dues Paid</label>
+            <select name="dues_paid">
+                <option value="">— any —</option>
+                <option value="yes" {% if f_dues_paid == 'yes' %}selected{% endif %}>Yes — paid</option>
+                <option value="no"  {% if f_dues_paid == 'no'  %}selected{% endif %}>No — unpaid</option>
+            </select>
+        </div>
+        <div>
+            <label>Skill Level</label>
+            <select name="skill_level">
+                <option value="">— any —</option>
+                {% for l in skill_levels %}
+                <option value="{{ l }}" {% if f_skill_level == l %}selected{% endif %}>{{ l }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Years Turning</label>
+            <select name="years_turning">
+                <option value="">— any —</option>
+                {% for y in years_turning_options %}
+                <option value="{{ y }}" {% if f_years_turning == y %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="form-row" style="margin-top:0.75rem">
+        <div>
+            <label>Volunteer Interest</label>
+            <select name="volunteer_interest">
+                <option value="">— any —</option>
+                <option value="yes" {% if f_volunteer_interest == 'yes' %}selected{% endif %}>Yes</option>
+                <option value="no"  {% if f_volunteer_interest == 'no'  %}selected{% endif %}>No</option>
+            </select>
+        </div>
+        <div></div>
+        <div></div>
+    </div>
+    {# preserve sort/dir across filter submissions #}
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="dir"  value="{{ dir }}">
+    <div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center">
+        <button type="submit" class="btn btn-primary">Apply Filters</button>
+        <a href="/members/query" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+{# ── Results header ── #}
+<div class="print-header">
+    <h2 style="margin:0 0 0.25rem">CVW Member Query Results</h2>
+    {% if filters %}
+    <p style="font-size:0.9rem; color:#555; margin:0 0 0.5rem">
+        Filters:
+        {% for k, v in filters.items() %}
+            <strong>{{ k | replace('_', ' ') | title }}:</strong> {{ v }}{% if not loop.last %} &nbsp;·&nbsp; {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
+    <p style="font-size:0.85rem; color:#888; margin:0 0 1rem">
+        {{ members|length }} member{{ 's' if members|length != 1 }} &nbsp;·&nbsp;
+        Printed {{ now.strftime('%Y-%m-%d') if now else '' }}
+    </p>
+</div>
+
+{# ── Action bar ── #}
+{% if members %}
+<div class="no-print" style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap">
+    <span style="color:#555; font-size:0.9rem">{{ members|length }} member{{ 's' if members|length != 1 }}</span>
+    <a href="/members/query?{{ request.url.query }}&format=csv"
+       class="btn btn-secondary">⬇ Export CSV</a>
+    <button onclick="window.print()" class="btn btn-secondary">🖨 Print</button>
+    <button onclick="document.getElementById('save-group-form').style.display=''"
+            class="btn btn-secondary" id="save-group-btn">💾 Save as Group</button>
+    <a href="/email/compose" class="btn btn-secondary">✉ Email&hellip;</a>
+</div>
+
+{# Save-as-Group inline form #}
+<form id="save-group-form" method="post" action="/groups/"
+      style="display:none; background:#f0f4ff; border:1px solid #c0cce8;
+             border-radius:6px; padding:0.75rem 1rem; margin-bottom:0.75rem">
+    <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap">
+        <label style="font-weight:600; white-space:nowrap">Group Name:</label>
+        <input type="text" name="name" required maxlength="100"
+               style="width:240px; margin:0" placeholder="e.g. Unpaid Active Members">
+        <input type="hidden" name="is_dynamic" value="">
+        {% for m in members %}
+        <input type="hidden" name="member_ids" value="{{ m.id }}">
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary"
+                onclick="document.getElementById('save-group-form').style.display='none'">Cancel</button>
+    </div>
+    <p style="margin:0.4rem 0 0; font-size:0.82rem; color:#666">
+        Creates a static group with the {{ members|length }} members currently shown.
+        After saving you can email the group from Email → Compose.
+    </p>
+</form>
+{% else %}
+<p style="color:#888">No members match the selected filters.</p>
+{% endif %}
+
+{# ── Sort macro ── #}
+{% macro qsort(col, label) %}
+    {% set active = sort == col %}
+    {% set next_dir = 'desc' if (active and dir == 'asc') else 'asc' %}
+    {% set arrow = ' ▲' if (active and dir == 'asc') else (' ▼' if (active and dir == 'desc') else '') %}
+    {% set params = [] %}
+    {% if f_name %}{% set _ = params.append('name_search=' ~ f_name) %}{% endif %}
+    {% if f_status %}{% set _ = params.append('status=' ~ f_status) %}{% endif %}
+    {% if f_membership_type %}{% set _ = params.append('membership_type=' ~ f_membership_type) %}{% endif %}
+    {% if f_dues_paid %}{% set _ = params.append('dues_paid=' ~ f_dues_paid) %}{% endif %}
+    {% if f_skill_level %}{% set _ = params.append('skill_level=' ~ f_skill_level) %}{% endif %}
+    {% if f_volunteer_interest %}{% set _ = params.append('volunteer_interest=' ~ f_volunteer_interest) %}{% endif %}
+    {% if f_years_turning %}{% set _ = params.append('years_turning=' ~ f_years_turning) %}{% endif %}
+    {% set _ = params.append('sort=' ~ col) %}
+    {% set _ = params.append('dir=' ~ next_dir) %}
+    <a href="/members/query?{{ params | join('&') }}"
+       style="color:inherit; text-decoration:{% if active %}underline{% else %}none{% endif %}">{{ label }}{{ arrow }}</a>
+{% endmacro %}
+
+{# ── Results table ── #}
+{% if members %}
+<table>
+    <thead>
+        <tr>
+            <th>{{ qsort('last_name', 'Last Name') }}</th>
+            <th>{{ qsort('first_name', 'First Name') }}</th>
+            <th>{{ qsort('email', 'Email') }}</th>
+            <th>{{ qsort('membership_type', 'Type') }}</th>
+            <th>{{ qsort('status', 'Status') }}</th>
+            <th>{{ qsort('dues_paid', 'Dues') }}</th>
+            <th>{{ qsort('skill_level', 'Skill') }}</th>
+            <th>{{ qsort('years_turning', 'Years') }}</th>
+            <th>{{ qsort('volunteer', 'Vol.') }}</th>
+            <th>Phone</th>
+            <th>City</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for m in members %}
+    <tr>
+        <td><a href="/members/{{ m.id }}">{{ m.last_name }}</a></td>
+        <td>{{ m.first_name }}</td>
+        <td style="font-size:0.85rem">{{ m.email or '' }}</td>
+        <td>{{ m.membership_type or '' }}</td>
+        <td>
+            <span class="badge badge-{{ (m.status or 'prospective')|lower }}">
+                {{ m.status or 'Prospective' }}
+            </span>
+        </td>
+        <td style="text-align:center">{{ '✓' if m.dues_paid else '' }}</td>
+        <td>{{ m.skill_level or '' }}</td>
+        <td style="white-space:nowrap">{{ m.years_turning or '' }}</td>
+        <td style="text-align:center">
+            {% if m.volunteer_interest == true %}Yes
+            {% elif m.volunteer_interest == false %}No
+            {% endif %}
+        </td>
+        <td style="font-size:0.85rem; white-space:nowrap">
+            {{ m.mobile_phone or m.home_phone or m.work_phone or '' }}
+        </td>
+        <td>{{ m.city or '' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% endblock %}

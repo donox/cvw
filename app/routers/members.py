@@ -1,10 +1,13 @@
+import csv
+import io
 from datetime import date, datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fpdf import FPDF
+from sqlalchemy import asc, case, desc as desc_
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -92,6 +95,56 @@ SORT_COLUMNS = {
     "status":          (Member.status, Member.last_name),
 }
 
+# Years Turning values in logical order for sorting
+_YEARS_ORDER = case(
+    (Member.years_turning == "Less than 1", 0),
+    (Member.years_turning == "1-3", 1),
+    (Member.years_turning == "3-5", 2),
+    (Member.years_turning == "5-10", 3),
+    (Member.years_turning == "10-20", 4),
+    (Member.years_turning == "20+", 5),
+    else_=99,
+)
+
+QUERY_SORT_COLUMNS = {
+    "last_name":       [Member.last_name, Member.first_name],
+    "first_name":      [Member.first_name, Member.last_name],
+    "email":           [Member.email],
+    "status":          [Member.status, Member.last_name],
+    "membership_type": [Member.membership_type, Member.last_name],
+    "dues_paid":       [Member.dues_paid, Member.last_name],
+    "skill_level":     [Member.skill_level, Member.last_name],
+    "years_turning":   [_YEARS_ORDER, Member.last_name],
+    "volunteer":       [Member.volunteer_interest, Member.last_name],
+    "created_at":      [Member.created_at],
+}
+
+
+def _apply_query_filters(q, status, membership_type, dues_paid, skill_level,
+                          volunteer_interest, years_turning, name_search):
+    if name_search:
+        q = q.filter(
+            (Member.last_name.ilike(f"%{name_search}%")) |
+            (Member.first_name.ilike(f"%{name_search}%"))
+        )
+    if status:
+        q = q.filter(Member.status == status)
+    if membership_type:
+        q = q.filter(Member.membership_type == membership_type)
+    if dues_paid == "yes":
+        q = q.filter(Member.dues_paid == True)
+    elif dues_paid == "no":
+        q = q.filter(Member.dues_paid == False)
+    if skill_level:
+        q = q.filter(Member.skill_level == skill_level)
+    if volunteer_interest == "yes":
+        q = q.filter(Member.volunteer_interest == True)
+    elif volunteer_interest == "no":
+        q = q.filter(Member.volunteer_interest == False)
+    if years_turning:
+        q = q.filter(Member.years_turning == years_turning)
+    return q
+
 
 @router.get("/", response_class=HTMLResponse)
 def list_members(
@@ -100,17 +153,101 @@ def list_members(
     db: Session = Depends(get_db),
     search: Optional[str] = None,
     sort: Optional[str] = None,
+    dir: Optional[str] = None,
 ):
     sort_key = sort if sort in SORT_COLUMNS else "last_name"
+    direction = "desc" if dir == "desc" else "asc"
     q = db.query(Member)
     if search:
         q = q.filter(Member.last_name.ilike(f"{search}%"))
-    members = q.order_by(*SORT_COLUMNS[sort_key]).all()
+    cols = SORT_COLUMNS[sort_key]
+    if direction == "desc":
+        cols = [desc_(c) for c in cols]
+    members = q.order_by(*cols).all()
     return templates.TemplateResponse("members/list.html", {
         "request": request,
         "members": members,
         "search": search or "",
         "sort": sort_key,
+        "dir": direction,
+    })
+
+
+@router.get("/query")
+def member_query(
+    request: Request,
+    _=auth,
+    db: Session = Depends(get_db),
+    name_search:       Optional[str] = None,
+    status:            Optional[str] = None,
+    membership_type:   Optional[str] = None,
+    dues_paid:         Optional[str] = None,
+    skill_level:       Optional[str] = None,
+    volunteer_interest: Optional[str] = None,
+    years_turning:     Optional[str] = None,
+    sort:              Optional[str] = None,
+    dir:               Optional[str] = None,
+    format:            Optional[str] = None,
+):
+    sort_key = sort if sort in QUERY_SORT_COLUMNS else "last_name"
+    direction = "desc" if dir == "desc" else "asc"
+
+    q = db.query(Member)
+    q = _apply_query_filters(q, status, membership_type, dues_paid,
+                              skill_level, volunteer_interest, years_turning, name_search)
+    cols = QUERY_SORT_COLUMNS[sort_key]
+    if direction == "desc":
+        cols = [desc_(c) for c in cols]
+    members = q.order_by(*cols).all()
+
+    if format == "csv":
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow(["Last Name", "First Name", "Email", "Type", "Status",
+                         "Dues Paid", "Skill Level", "Years Turning", "Volunteer",
+                         "Phone", "City"])
+        for m in members:
+            phone = m.mobile_phone or m.home_phone or m.work_phone or ""
+            writer.writerow([
+                m.last_name, m.first_name, m.email or "",
+                m.membership_type or "", m.status or "",
+                "Yes" if m.dues_paid else "No",
+                m.skill_level or "", m.years_turning or "",
+                "Yes" if m.volunteer_interest else ("No" if m.volunteer_interest is False else ""),
+                phone, m.city or "",
+            ])
+        buf.seek(0)
+        return StreamingResponse(
+            iter([buf.getvalue()]),
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=members_query.csv"},
+        )
+
+    filters = {k: v for k, v in {
+        "status": status, "membership_type": membership_type,
+        "dues_paid": dues_paid, "skill_level": skill_level,
+        "volunteer_interest": volunteer_interest, "years_turning": years_turning,
+        "name_search": name_search,
+    }.items() if v}
+
+    return templates.TemplateResponse("members/query.html", {
+        "request": request,
+        "members": members,
+        "filters": filters,
+        "sort": sort_key,
+        "dir": direction,
+        "now": datetime.utcnow(),
+        "statuses": STATUSES,
+        "membership_types": MEMBERSHIP_TYPES,
+        "skill_levels": SKILL_LEVELS,
+        "years_turning_options": YEARS_TURNING,
+        "f_name": name_search or "",
+        "f_status": status or "",
+        "f_membership_type": membership_type or "",
+        "f_dues_paid": dues_paid or "",
+        "f_skill_level": skill_level or "",
+        "f_volunteer_interest": volunteer_interest or "",
+        "f_years_turning": years_turning or "",
     })
 
 

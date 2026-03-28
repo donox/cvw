@@ -165,6 +165,41 @@ Build and maintain a membership management web application for CVW (Central Virg
 ### Member Management
 - [ ] Pagination on member list (currently loads all ~109 members)
 - [x] Email member(s) directly from member detail page
+- [ ] Reverse sort (toggle asc/desc) on member list columns
+- [ ] Member Query / Report page (see detail below)
+
+#### Member Query / Report Page
+
+A dedicated `/members/query` page separate from the management list, designed
+for ad-hoc reporting and targeted outreach rather than day-to-day record editing.
+
+**Filter criteria** (all optional, AND logic — same approach as dynamic groups):
+- Status (Active / Prospective / Former)
+- Membership Type
+- Dues Paid (yes / no)
+- Skill Level
+- Volunteer Interest (yes / no)
+- Years Turning (range: min / max)
+- Join date range
+
+**Sort columns** (clickable headers, asc/desc toggle):
+- Last Name, First Name, Status, Membership Type, Dues Paid,
+  Skill Level, Years Turning, Join Date
+
+**Output options:**
+- On-screen table (default)
+- **Print** — browser print with header showing filter criteria applied and member count
+- **Export CSV** — downloads a spreadsheet-compatible file of the result set
+- **Save as Group** — one-click to create a static group from the current result
+  (name prompted; links to the existing groups system)
+- **Email this list** — link to compose form pre-targeted to the query result
+
+**Implementation notes:**
+- New router GET `/members/query` with optional query-string filter params
+- Reuses the `resolve_members` pattern from dynamic groups for the query logic
+- CSV export via Python `csv` module (no new dependencies)
+- Print styling via `@media print` CSS — hide nav, filters, action buttons
+- "Save as Group" posts the current member IDs to `/groups/` as a static group
 
 ### Programs
 - [ ] Program console — add auth to remaining routes

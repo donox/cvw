@@ -3,7 +3,10 @@
 {% block content %}
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
     <h1 style="margin:0">Members</h1>
-    <a href="/members/new" class="btn btn-primary">+ Add Member</a>
+    <div style="display:flex; gap:0.5rem">
+        <a href="/members/query" class="btn btn-secondary">Query / Export</a>
+        <a href="/members/new" class="btn btn-primary">+ Add Member</a>
+    </div>
 </div>
 
 <form method="get" action="/members/" style="margin-bottom:1rem; display:flex; gap:0.5rem; align-items:center">
@@ -15,9 +18,11 @@
 </form>
 
 {% macro sort_link(col, label) %}
-    {% set arrow = ' ▲' if sort == col else '' %}
-    <a href="/members/?sort={{ col }}{% if search %}&search={{ search }}{% endif %}"
-       style="color:inherit; text-decoration:{% if sort == col %}underline{% else %}none{% endif %}">{{ label }}{{ arrow }}</a>
+    {% set active = sort == col %}
+    {% set next_dir = 'desc' if (active and dir == 'asc') else 'asc' %}
+    {% set arrow = ' ▲' if (active and dir == 'asc') else (' ▼' if (active and dir == 'desc') else '') %}
+    <a href="/members/?sort={{ col }}&dir={{ next_dir }}{% if search %}&search={{ search }}{% endif %}"
+       style="color:inherit; text-decoration:{% if active %}underline{% else %}none{% endif %}">{{ label }}{{ arrow }}</a>
 {% endmacro %}
 
 {% if members %}
