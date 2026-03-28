@@ -57,6 +57,9 @@ Build and maintain a membership management web application for CVW (Central Virg
 | 2026-03-16 | `OrgEvent.show_on_public` flag drives public "Upcoming Events" page | OrgEvent is the primary calendar model; Programs are a refinement (feedback QR, ratings); `show_on_public` belongs on OrgEvent |
 | 2026-03-16 | Optional `org_event_id` FK on Program links to OrgEvent | Program is a refinement of OrgEvent; programs can display alongside event details on Upcoming Events page |
 | 2026-03-16 | Renamed "Next Meeting" → "Upcoming Events" on public site | Page now shows all upcoming flagged OrgEvents, not just one; allows multiple programs/events to be visible |
+| 2026-03-27 | Role permissions expanded — exec/financial/program now have email + groups edit | All officer roles can send email and manage groups, not just membership |
+| 2026-03-27 | Planning docs (`docs/*.md`) served via `/guides/` for all logged-in users | No duplication; edits to source files reflected immediately |
+| 2026-03-27 | Mailgun `h:Reply-To` — configurable default in `.env`, overridable per compose | Thunderbird strips Reply-To in some configurations; per-send override gives sender control |
 
 ---
 
@@ -113,6 +116,8 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [x] Group CRUD (`/groups/`) — membership VP + admin
 - [x] Client-side member filter on group edit form
 - [x] Groups usable as email targets in compose and scheduled email
+- [x] Dynamic groups — filter criteria (status, type, dues, skill, volunteer) resolved at send time
+- [x] Migration: `is_dynamic`, `filter_criteria` columns added to `member_groups`
 
 ### Email Console
 - [x] Compose & send — to all active members or a named group
@@ -123,6 +128,9 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [x] Scheduled email — APScheduler cron jobs, persisted in DB, active/inactive toggle
 - [x] Email log — records every send with recipient count, status, errors
 - [x] Available template variables: first_name, last_name, full_name, email, membership_type, status, dues_paid
+- [x] Single-member email from member detail page
+- [x] Mailgun HTTP API (replaces SMTP, bypasses DigitalOcean port 587 block)
+- [x] Reply-To header — configurable default in `.env` (`MAILGUN_REPLY_TO`); overridable per send in compose form
 
 ### Programs (additions)
 - [x] `show_on_public` flag — kept on Program for officer reference
@@ -157,6 +165,7 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [x] `librarian` role added to ROLE_PERMISSIONS and ROLES
 - [x] "Volunteer ▾" CSS dropdown in internal nav (librarian + admin)
 - [x] 93 resources seeded from centralvawoodturners.org (`scripts/seed_resources.py`)
+- [x] File upload support — resources can be uploaded files (PDF, Word, etc.) stored in `app/static/resources/` or external URLs; `file_path` column added via migration
 
 ---
 
@@ -165,41 +174,8 @@ Build and maintain a membership management web application for CVW (Central Virg
 ### Member Management
 - [ ] Pagination on member list (currently loads all ~109 members)
 - [x] Email member(s) directly from member detail page
-- [ ] Reverse sort (toggle asc/desc) on member list columns
-- [ ] Member Query / Report page (see detail below)
-
-#### Member Query / Report Page
-
-A dedicated `/members/query` page separate from the management list, designed
-for ad-hoc reporting and targeted outreach rather than day-to-day record editing.
-
-**Filter criteria** (all optional, AND logic — same approach as dynamic groups):
-- Status (Active / Prospective / Former)
-- Membership Type
-- Dues Paid (yes / no)
-- Skill Level
-- Volunteer Interest (yes / no)
-- Years Turning (range: min / max)
-- Join date range
-
-**Sort columns** (clickable headers, asc/desc toggle):
-- Last Name, First Name, Status, Membership Type, Dues Paid,
-  Skill Level, Years Turning, Join Date
-
-**Output options:**
-- On-screen table (default)
-- **Print** — browser print with header showing filter criteria applied and member count
-- **Export CSV** — downloads a spreadsheet-compatible file of the result set
-- **Save as Group** — one-click to create a static group from the current result
-  (name prompted; links to the existing groups system)
-- **Email this list** — link to compose form pre-targeted to the query result
-
-**Implementation notes:**
-- New router GET `/members/query` with optional query-string filter params
-- Reuses the `resolve_members` pattern from dynamic groups for the query logic
-- CSV export via Python `csv` module (no new dependencies)
-- Print styling via `@media print` CSS — hide nav, filters, action buttons
-- "Save as Group" posts the current member IDs to `/groups/` as a static group
+- [x] Reverse sort (toggle asc/desc) on member list columns
+- [x] Member Query / Report page — `/members/query` with filters, sortable columns, CSV export, print, Save as Group
 
 ### Programs
 - [ ] Program console — add auth to remaining routes
