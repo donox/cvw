@@ -10,6 +10,7 @@ from app.dependencies import get_current_user
 from app.models.user import User
 
 GUIDES_DIR = Path("docs/guides")
+PLANS_DIR  = Path("docs")
 
 # Which subfolders each role may read (admin sees all)
 ROLE_FOLDERS: dict[str, list[str]] = {
@@ -54,6 +55,16 @@ def guides_index(request: Request, user: User = Depends(get_current_user)):
         )
         if docs:
             sections.append({"label": FOLDER_LABELS.get(folder, folder.title()), "docs": docs})
+
+    # Planning docs — visible to all logged-in users
+    plan_docs = sorted(
+        [{"name": f.stem.replace("_", " ").title(), "filename": f.name, "folder": "planning"}
+         for f in PLANS_DIR.glob("*.md")],
+        key=lambda d: d["name"]
+    )
+    if plan_docs:
+        sections.append({"label": "Planning Documents", "docs": plan_docs})
+
     return templates.TemplateResponse("guides/index.html", {
         "request": request, "sections": sections,
     })
@@ -61,11 +72,16 @@ def guides_index(request: Request, user: User = Depends(get_current_user)):
 
 @router.get("/{folder}/{filename}", response_class=HTMLResponse)
 def guide_view(folder: str, filename: str, request: Request, user: User = Depends(get_current_user)):
-    if folder not in _allowed_folders(user.role):
-        raise HTTPException(status_code=403)
-    path = (GUIDES_DIR / folder / filename).resolve()
-    if not path.exists() or path.suffix != ".md" or not path.is_relative_to(GUIDES_DIR.resolve()):
-        raise HTTPException(status_code=404)
+    if folder == "planning":
+        path = (PLANS_DIR / filename).resolve()
+        if not path.exists() or path.suffix != ".md" or not path.is_relative_to(PLANS_DIR.resolve()):
+            raise HTTPException(status_code=404)
+    else:
+        if folder not in _allowed_folders(user.role):
+            raise HTTPException(status_code=403)
+        path = (GUIDES_DIR / folder / filename).resolve()
+        if not path.exists() or path.suffix != ".md" or not path.is_relative_to(GUIDES_DIR.resolve()):
+            raise HTTPException(status_code=404)
     content_html = md.markdown(path.read_text(), extensions=["tables", "toc", "fenced_code"])
     return templates.TemplateResponse("guides/view.html", {
         "request": request,
