@@ -39,12 +39,15 @@ def _from_address() -> str:
 
 def _send_via_mailgun(to_addresses: list[str], subject: str, body: str) -> None:
     from_addr = settings.MAILGUN_FROM or f"info@{settings.MAILGUN_DOMAIN}"
-    data = urllib.parse.urlencode({
+    params = {
         "from": from_addr,
         "to": ", ".join(to_addresses),
         "subject": subject,
         "text": body,
-    }).encode()
+    }
+    if settings.MAILGUN_REPLY_TO:
+        params["h:Reply-To"] = settings.MAILGUN_REPLY_TO
+    data = urllib.parse.urlencode(params).encode()
     credentials = b64encode(f"api:{settings.MAILGUN_API_KEY}".encode()).decode()
     url = f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages"
     req = urllib.request.Request(url, data=data, method="POST")
@@ -69,6 +72,8 @@ def send_email(to_addresses: list[str], subject: str, body: str) -> None:
     msg["Subject"] = subject
     msg["From"] = settings.SMTP_FROM
     msg["To"] = ", ".join(to_addresses)
+    if settings.MAILGUN_REPLY_TO:
+        msg["Reply-To"] = settings.MAILGUN_REPLY_TO
     msg.attach(MIMEText(body, "plain"))
 
     context = ssl.create_default_context()

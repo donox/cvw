@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     MAILGUN_API_KEY: str = ""
     MAILGUN_DOMAIN: str = ""
     MAILGUN_FROM: str = ""
+    MAILGUN_REPLY_TO: str = ""  # optional; if set, replies go here instead of MAILGUN_FROM
 
     class Config:
         env_file = ".env"
