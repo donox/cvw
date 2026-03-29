@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Category" if cat else "New Category" }}{% endblock %}
+{% block content %}
+<h1>{{ "Edit Category" if cat else "New Category" }}</h1>
+
+{% if errors %}
+<div class="errors">{% for e in errors %}<div>{{ e }}</div>{% endfor %}</div>
+{% endif %}
+
+<form method="post" action="{{ '/financial/accounts/' + cat.id|string + '/edit' if cat else '/financial/accounts' }}">
+    <fieldset>
+        <legend>Account Category</legend>
+        <div class="form-row">
+            <div>
+                <label for="name">Name *</label>
+                <input type="text" id="name" name="name" required
+                       value="{{ cat.name if cat else '' }}">
+            </div>
+            <div>
+                <label for="type">Type *</label>
+                <select id="type" name="type">
+                    {% for t in types %}
+                    <option value="{{ t }}" {% if cat and cat.type == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div style="flex:2">
+                <label for="description">Description</label>
+                <input type="text" id="description" name="description"
+                       value="{{ cat.description if cat else '' }}">
+            </div>
+            {% if cat %}
+            <div style="align-self:flex-end; padding-bottom:0.5rem">
+                <label>
+                    <input type="checkbox" name="active" {% if cat.active %}checked{% endif %}>
+                    Active
+                </label>
+            </div>
+            {% endif %}
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ "Save" if cat else "Add Category" }}</button>
+        <a href="/financial/accounts" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

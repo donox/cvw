@@ -1,6 +1,6 @@
 # CVW Financial Management — Enhancement Plan
 
-**Status:** Proposed — for officer discussion
+**Status:** In progress — items 1 and 5 completed 2026-03-29
 **Prepared:** 2026-03-15
 **Audience:** Treasurer, President, Executive Committee
 
@@ -149,13 +149,58 @@ additional dependencies.
 
 ---
 
+### 6 — PayPal Dues Payment
+
+**What:** Allow members to pay dues online via PayPal directly from the
+public website. Payments are recorded automatically as transactions in the
+financial ledger and the paying member's `dues_paid` flag is updated.
+
+**How it works:**
+1. A **Pay Dues** button appears on the public site (initially on the test/
+   dev page; later on the member portal or home page once the public site is live).
+2. Clicking it redirects to a PayPal-hosted checkout for a fixed dues amount
+   (configured in site settings).
+3. After payment, PayPal sends an **Instant Payment Notification (IPN)** or
+   **webhook** to a CVW endpoint (`/financial/paypal/notify`).
+4. The endpoint verifies the payment, creates a `Dues` transaction, and
+   marks the member paid — matched by email address.
+
+**Implementation options:**
+
+| Option | Effort | Notes |
+|---|---|---|
+| PayPal Standard (IPN) | Low | Simple redirect + POST-back; no SDK needed; legacy but widely supported |
+| PayPal Orders API (v2) | Medium | Modern REST API; requires `requests` or `httpx`; cleaner error handling |
+
+Recommend **PayPal Standard** to start — works with the existing test page
+with minimal new code, no additional dependencies.
+
+**Configuration (site settings):**
+- `PAYPAL_EMAIL` — the club's PayPal business email
+- `PAYPAL_DUES_AMOUNT` — dues amount in dollars (e.g. `40.00`)
+- `PAYPAL_MODE` — `sandbox` or `live`
+
+**Considerations:**
+- PayPal takes a transaction fee (~2.9% + $0.30); net dues income will be
+  slightly reduced — the transaction record can store gross and net amounts.
+- Member must use the same email in PayPal as in the CVW database for
+  automatic matching; unmatched payments are flagged for manual review.
+- IPN endpoint must be publicly reachable — satisfied once deployed to cvwdev.org.
+
+**Discussion questions:**
+- What is the current dues amount? Is it the same for all membership types?
+- Does CVW already have a PayPal business account?
+- Should family memberships be a different amount?
+
+---
+
 ## What Is Deliberately Out of Scope
 
 | Item | Reason |
-|---|---|
+|------|--------|
 | Double-entry / debits & credits | Unnecessary complexity for a club; single-entry is sufficient and auditable |
 | Bank reconciliation workflow | Treasurer reconciles against statements manually; automating this adds little value at CVW's scale |
-| PayPal / online dues payment | Requires a publicly accessible server and PayPal developer account — deferred to public website Phase 3 |
+| ~~PayPal / online dues payment~~ | Moved into scope — see Enhancement 6 above |
 | Payroll | CVW has no employees |
 | Tax filing integration | Out of scope for a membership system |
 
@@ -164,13 +209,14 @@ additional dependencies.
 ## Suggested Implementation Order
 
 | Priority | Item | Effort | Value |
-|---|---|---|---|
-| 1 | Chart of Accounts | Low | Immediate — flexible categories |
+|----------|------|--------|-------|
+| 1 | Chart of Accounts | Low | ✅ Done 2026-03-29 |
 | 2 | Reports page (A + B) | Medium | High — replaces manual spreadsheet work |
 | 3 | Fiscal year support | Low | Medium — correctness |
-| 4 | CSV export | Very low | High — easy win |
-| 5 | Budget | Medium | Optional — only if CVW uses formal budgets |
-| 6 | PDF reports | Low | Nice to have — print/archive |
+| 4 | CSV export | Very low | ✅ Done 2026-03-29 |
+| 5 | PayPal dues payment | Medium | High — reduces manual tracking |
+| 6 | Budget | Medium | Optional — only if CVW uses formal budgets |
+| 7 | PDF reports | Low | Nice to have — print/archive |
 
 ---
 

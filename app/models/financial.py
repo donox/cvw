@@ -1,11 +1,22 @@
-from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.orm import relationship
 
 from app.database import Base
 
+# Legacy constants kept for fallback / migration seeding only
 INCOME_CATEGORIES = ["Dues", "Show Income", "Store Sale", "Donation", "Other Income"]
 EXPENSE_CATEGORIES = ["Venue", "Supplies", "Program Cost", "Printing", "Equipment", "Website", "Other Expense"]
 TRANSACTION_TYPES = ["Income", "Expense"]
+
+
+class AccountCategory(Base):
+    __tablename__ = "account_categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    type = Column(String, nullable=False)        # "Income" or "Expense"
+    description = Column(String)
+    active = Column(Boolean, default=True, nullable=False)
 
 
 class FinancialTransaction(Base):
