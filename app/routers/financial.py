@@ -1,5 +1,7 @@
+import calendar
 import csv
 import io
+from collections import defaultdict
 from datetime import date, datetime
 from typing import Optional
 
@@ -57,6 +59,61 @@ def _summary(db: Session, year: int) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Reports helpers
+# ---------------------------------------------------------------------------
+
+def _report_data(db: Session, year: int) -> dict:
+    """Build all data for the annual reports page."""
+    start = date(year, 1, 1)
+    end = date(year, 12, 31)
+    txns = db.query(FinancialTransaction).filter(
+        FinancialTransaction.date >= start,
+        FinancialTransaction.date <= end,
+    ).all()
+
+    # --- Category summary (Report A) ---
+    income_by_cat: dict[str, float] = defaultdict(float)
+    expense_by_cat: dict[str, float] = defaultdict(float)
+    for t in txns:
+        if t.type == "Income":
+            income_by_cat[t.category] += t.amount
+        else:
+            expense_by_cat[t.category] += t.amount
+
+    total_income = sum(income_by_cat.values())
+    total_expense = sum(expense_by_cat.values())
+
+    # --- Month-by-month (Report B) ---
+    monthly: list[dict] = []
+    for month in range(1, 13):
+        month_income = sum(
+            t.amount for t in txns
+            if t.type == "Income" and t.date.month == month
+        )
+        month_expense = sum(
+            t.amount for t in txns
+            if t.type == "Expense" and t.date.month == month
+        )
+        monthly.append({
+            "month": calendar.month_abbr[month],
+            "income": month_income,
+            "expense": month_expense,
+            "net": month_income - month_expense,
+        })
+
+    return {
+        "year": year,
+        "income_by_cat": dict(sorted(income_by_cat.items())),
+        "expense_by_cat": dict(sorted(expense_by_cat.items())),
+        "total_income": total_income,
+        "total_expense": total_expense,
+        "net": total_income - total_expense,
+        "monthly": monthly,
+        "transaction_count": len(txns),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Dashboard
 # ---------------------------------------------------------------------------
 
@@ -69,6 +126,30 @@ def financial_index(request: Request, _=auth, db: Session = Depends(get_db)):
     ).limit(10).all()
     return templates.TemplateResponse("financial/index.html", {
         "request": request, "year": year, "summary": summary, "recent": recent
+    })
+
+
+# ---------------------------------------------------------------------------
+# Reports
+# ---------------------------------------------------------------------------
+
+@router.get("/reports", response_class=HTMLResponse)
+def reports(
+    request: Request,
+    year: Optional[int] = None,
+    _=auth,
+    db: Session = Depends(get_db),
+):
+    if year is None:
+        year = datetime.now().year
+    # Build available year list from transactions
+    first = db.query(FinancialTransaction).order_by(FinancialTransaction.date).first()
+    current_year = datetime.now().year
+    years = list(range(current_year, (first.date.year if first else current_year) - 1, -1))
+    data = _report_data(db, year)
+    return templates.TemplateResponse("financial/reports.html", {
+        "request": request, "data": data, "years": years, "selected_year": year,
+        "generated": datetime.now().strftime("%Y-%m-%d"),
     })
 
 

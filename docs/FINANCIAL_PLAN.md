@@ -211,7 +211,7 @@ with minimal new code, no additional dependencies.
 | Priority | Item | Effort | Value |
 |----------|------|--------|-------|
 | 1 | Chart of Accounts | Low | ✅ Done 2026-03-29 |
-| 2 | Reports page (A + B) | Medium | High — replaces manual spreadsheet work |
+| 2 | Reports page (A + B) | Medium | ✅ Done 2026-03-29 |
 | 3 | Fiscal year support | Low | Medium — correctness |
 | 4 | CSV export | Very low | ✅ Done 2026-03-29 |
 | 5 | PayPal dues payment | Medium | High — reduces manual tracking |

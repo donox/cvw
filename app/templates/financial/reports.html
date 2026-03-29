@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Financial Reports — {{ selected_year }}{% endblock %}
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem">
+    <h1 style="margin:0">Financial Reports</h1>
+    <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap">
+        <form method="get" action="/financial/reports" style="display:flex; gap:0.5rem; align-items:center">
+            <label for="year" style="margin:0; font-weight:600">Year:</label>
+            <select id="year" name="year" onchange="this.form.submit()" style="padding:0.3rem 0.5rem">
+                {% for y in years %}
+                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <button onclick="window.print()" class="btn btn-secondary">Print</button>
+        <a href="/financial/" class="btn btn-secondary">Dashboard</a>
+    </div>
+</div>
+
+<!-- Year summary strip -->
+<div class="stat-grid">
+    <div class="stat-card stat-income">
+        <h3>Total Income</h3>
+        <div class="stat-value">${{ "%.2f"|format(data.total_income) }}</div>
+    </div>
+    <div class="stat-card stat-expense">
+        <h3>Total Expenses</h3>
+        <div class="stat-value">${{ "%.2f"|format(data.total_expense) }}</div>
+    </div>
+    <div class="stat-card {{ 'stat-net-pos' if data.net >= 0 else 'stat-net-neg' }}">
+        <h3>Net</h3>
+        <div class="stat-value">{{ '$' if data.net >= 0 else '-$' }}{{ "%.2f"|format(data.net|abs) }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Transactions</h3>
+        <div class="stat-value">{{ data.transaction_count }}</div>
+    </div>
+</div>
+
+<!-- =====================================================================
+     Report A: Income & Expense by Category
+     ===================================================================== -->
+<h2>Income &amp; Expense Summary — {{ selected_year }}</h2>
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-bottom:2rem">
+
+    <div>
+        <h3 style="margin-bottom:0.5rem; color:#155724">Income by Category</h3>
+        {% if data.income_by_cat %}
+        <table>
+            <thead>
+                <tr><th>Category</th><th style="text-align:right">Amount</th><th style="text-align:right">%</th></tr>
+            </thead>
+            <tbody>
+                {% for cat, amt in data.income_by_cat.items() %}
+                <tr>
+                    <td>{{ cat }}</td>
+                    <td style="text-align:right">${{ "%.2f"|format(amt) }}</td>
+                    <td style="text-align:right; color:#888">
+                        {% if data.total_income > 0 %}{{ "%.1f"|format(amt / data.total_income * 100) }}%{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr style="font-weight:700; border-top:2px solid #ccc">
+                    <td>Total</td>
+                    <td style="text-align:right">${{ "%.2f"|format(data.total_income) }}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+        {% else %}
+        <p style="color:#888">No income transactions for {{ selected_year }}.</p>
+        {% endif %}
+    </div>
+
+    <div>
+        <h3 style="margin-bottom:0.5rem; color:#721c24">Expenses by Category</h3>
+        {% if data.expense_by_cat %}
+        <table>
+            <thead>
+                <tr><th>Category</th><th style="text-align:right">Amount</th><th style="text-align:right">%</th></tr>
+            </thead>
+            <tbody>
+                {% for cat, amt in data.expense_by_cat.items() %}
+                <tr>
+                    <td>{{ cat }}</td>
+                    <td style="text-align:right">${{ "%.2f"|format(amt) }}</td>
+                    <td style="text-align:right; color:#888">
+                        {% if data.total_expense > 0 %}{{ "%.1f"|format(amt / data.total_expense * 100) }}%{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr style="font-weight:700; border-top:2px solid #ccc">
+                    <td>Total</td>
+                    <td style="text-align:right">${{ "%.2f"|format(data.total_expense) }}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+        {% else %}
+        <p style="color:#888">No expense transactions for {{ selected_year }}.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- =====================================================================
+     Report B: Month-by-Month
+     ===================================================================== -->
+<h2>Month-by-Month — {{ selected_year }}</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Month</th>
+            <th style="text-align:right; color:#155724">Income</th>
+            <th style="text-align:right; color:#721c24">Expenses</th>
+            <th style="text-align:right">Net</th>
+            <th style="text-align:right; color:#888">Running Net</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% set ns = namespace(running=0) %}
+        {% for row in data.monthly %}
+        {% set ns.running = ns.running + row.net %}
+        <tr {% if row.income == 0 and row.expense == 0 %}style="color:#bbb"{% endif %}>
+            <td>{{ row.month }}</td>
+            <td style="text-align:right">{% if row.income %}<span style="color:#155724">${{ "%.2f"|format(row.income) }}</span>{% else %}—{% endif %}</td>
+            <td style="text-align:right">{% if row.expense %}<span style="color:#721c24">${{ "%.2f"|format(row.expense) }}</span>{% else %}—{% endif %}</td>
+            <td style="text-align:right; font-weight:{% if row.net != 0 %}600{% else %}400{% endif %}; color:{% if row.net > 0 %}#0d6efd{% elif row.net < 0 %}#cc2200{% else %}#bbb{% endif %}">
+                {% if row.net != 0 %}{{ '$' if row.net > 0 else '-$' }}{{ "%.2f"|format(row.net|abs) }}{% else %}—{% endif %}
+            </td>
+            <td style="text-align:right; color:{% if ns.running > 0 %}#0d6efd{% elif ns.running < 0 %}#cc2200{% else %}#888{% endif %}">
+                {{ '$' if ns.running >= 0 else '-$' }}{{ "%.2f"|format(ns.running|abs) }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr style="font-weight:700; border-top:2px solid #ccc">
+            <td>Total</td>
+            <td style="text-align:right; color:#155724">${{ "%.2f"|format(data.total_income) }}</td>
+            <td style="text-align:right; color:#721c24">${{ "%.2f"|format(data.total_expense) }}</td>
+            <td style="text-align:right; color:{% if data.net >= 0 %}#0d6efd{% else %}#cc2200{% endif %}; font-weight:700">
+                {{ '$' if data.net >= 0 else '-$' }}{{ "%.2f"|format(data.net|abs) }}
+            </td>
+            <td></td>
+        </tr>
+    </tfoot>
+</table>
+
+<p style="color:#888; font-size:0.85rem; margin-top:1.5rem">
+    Generated {{ generated }} &mdash; {{ data.transaction_count }} transactions
+</p>
+
+{% endblock %}
