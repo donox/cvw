@@ -13,6 +13,7 @@ description: >
 roles:
   - id: vp-membership
     title: VP Membership
+    db_title: VP Member Services
     backup: President
     responsibilities:
       - Receives all application notifications
@@ -21,6 +22,7 @@ roles:
       - Posts updated member list to the website
   - id: treasurer
     title: Treasurer
+    db_title: Treasurer
     responsibilities:
       - Receives PayPal payment notifications
       - Confirms payment receipt to VP Membership
@@ -129,27 +131,15 @@ This document describes how CVW processes new member applications and annual ren
 
 ---
 
-## Who Is Involved
-
-| Role | Current Person | What They Do |
-|------|---------------|--------------|
-| VP Membership | TBD | Central coordinator — receives all applications and payment confirmations, updates the database and website |
-| Treasurer | TBD | Confirms PayPal payments for online paths |
-| Greeter | Buck or Ron | Accepts cash/check at meetings, deposits funds, emails VP Membership |
-
-> **Note for incoming officers:** If you are taking over VP Membership, make sure you have access to the Dropbox membership folder before your predecessor steps down. If the VP Membership role is temporarily vacant, the **President** is the designated backup.
-
----
-
 ## The Three Paths
 
 ### Path 1 — In-Person Application (at a meeting)
 
 1. The applicant fills out a paper application form at the meeting.
 2. The form is scanned and emailed to the VP Membership.
-3. The applicant pays by cash or check — given to Buck, Ron, or Don at the meeting.
-4. The Greeter deposits the payment.
-5. The Greeter emails payment details (member name, amount, date) to the VP Membership.
+3. The applicant pays by cash or check — given to greeter or store manager at the meeting.
+4. The Treasurer deposits the payment.
+5. The Treasurer emails payment details (member name, amount, date) to the VP Membership.
 6. VP Membership updates the membership database in Dropbox and posts the updated member list to the website.
 
 ### Path 2 — Online Application (new member)
@@ -172,6 +162,6 @@ This document describes how CVW processes new member applications and annual ren
 ## What Can Go Wrong
 
 - **Payment received but database not updated** — VP Membership should update the DB within 48 hours of receiving payment confirmation. If you are VP Membership and are going to be unavailable, notify the President to cover.
-- **Cash/check payment not communicated** — The Greeter must email VP Membership after every meeting where dues were collected. Don't wait.
+- **Cash/check payment not communicated** — The Greeter must communicate to VP Membership after every meeting where dues were collected. Don't wait.
 - **Online form submission lost** — Check with the applicant and have them resubmit if needed.
 - **Applicant paid but never received confirmation** — VP Membership should send a brief acknowledgment email once the database is updated.

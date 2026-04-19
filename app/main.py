@@ -26,6 +26,7 @@ from app.routers import public_ as public_router
 from app.routers import librarian as librarian_router
 from app.routers import admin_backup as backup_router
 from app.routers import guides as guides_router
+from app.routers import processes as processes_router
 
 # Apply any staged restore BEFORE opening DB connections
 from app.backup_service import apply_pending_restore
@@ -106,6 +107,7 @@ app.include_router(public_router.router)
 app.include_router(librarian_router.router)
 app.include_router(backup_router.router)
 app.include_router(guides_router.router)
+app.include_router(processes_router.router)
 
 
 @app.get("/")

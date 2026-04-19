@@ -6,6 +6,17 @@ noted otherwise.
 
 ---
 
+## Running the Local Development Server
+
+```bash
+source .venv/bin/activate
+uvicorn app.main:app --reload
+```
+
+Then open `http://localhost:8000`.
+
+---
+
 ## Connecting to the Server
 
 ```bash

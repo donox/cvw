@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Process Library — CVW{% endblock %}
+{% block content %}
+<h1>Process Library</h1>
+<p style="color:#555; margin-bottom:1.5rem">Step-by-step guides for key club operations. Select a process to view the full procedure.</p>
+
+{% if processes %}
+<table>
+  <thead>
+    <tr>
+      <th>Process</th>
+      <th>Owner</th>
+      <th>Status</th>
+      <th>Last Updated</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in processes %}
+    <tr>
+      <td>
+        <a href="/processes/{{ p.slug }}" style="font-weight:600">{{ p.title }}</a>
+        {% if p.open_issues %}
+          <span style="background:#fff3cd; color:#856404; font-size:0.75rem; font-weight:600;
+                       padding:0.1rem 0.45rem; border-radius:10px; margin-left:0.4rem">
+            {{ p.open_issues|length }} open
+          </span>
+        {% endif %}
+      </td>
+      <td>{{ p.owner }}</td>
+      <td>
+        {% if p.status == 'active' %}
+          <span class="badge badge-active">Active</span>
+        {% elif p.status == 'draft' %}
+          <span class="badge badge-prospective">Draft</span>
+        {% else %}
+          <span class="badge">{{ p.status|title }}</span>
+        {% endif %}
+      </td>
+      <td>{{ p.last_updated }}</td>
+      <td><a href="/processes/{{ p.slug }}" class="btn btn-secondary" style="font-size:0.85rem">View →</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p style="color:#888">No processes defined yet.</p>
+{% endif %}
+{% endblock %}

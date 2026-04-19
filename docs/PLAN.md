@@ -283,6 +283,19 @@ A mechanism for defining, rendering, and managing key club operational processes
 - Public visibility: processes are public only where necessary (e.g., renewal instructions); officer-only by default
 - Compliance tracking: out of scope — process docs are reference material only
 
+**Completed:**
+- [x] List view — table of all processes with status badge and open-questions count
+- [x] Detail view — roles table (current person from DB), path-selector tabs, open questions callout, narrative body
+- [x] Nav entry: "Processes" visible to all logged-in roles
+- [x] Current person pulled live from Officers table via `db_title` field on each role
+
+**Pending — Visual & Authoring improvements:**
+- [ ] Swimlane diagram — auto-generate Mermaid from YAML; render in-browser via mermaid.js CDN; no extra authoring needed
+- [ ] Flat schema + form wizard — replace nested trigger_variants/variants with a flat Path→Steps model; form lets officers build processes without touching YAML (target authoring solution)
+- [ ] Claude API "describe it" bridge — officer types plain-English process description; Claude converts to structured YAML; bridges the gap until form wizard is built
+
+**Schema note:** Current YAML schema (trigger_variants, nested variants) is over-engineered for human authoring. Target schema flattens to: Process → named Paths → ordered Steps (actor + action). Simpler to form-edit and cleaner to generate Mermaid from. Migration path: rewrite membership process file when flat schema is adopted.
+
 #### First Process: Membership — New Members and Renewals
 
 - Source: `docs/processes/membership-new-and-renewal.md`

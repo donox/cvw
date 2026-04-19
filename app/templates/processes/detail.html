@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — CVW Processes{% endblock %}
+{% block content %}
+
+<div style="margin-bottom:0.5rem">
+  <a href="/processes/" style="color:#888; font-size:0.9rem">← Process Library</a>
+</div>
+<h1 style="margin-bottom:0.25rem">{{ title }}</h1>
+
+<div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1.25rem; flex-wrap:wrap">
+  {% if meta.status == 'active' %}
+    <span class="badge badge-active">Active</span>
+  {% else %}
+    <span class="badge badge-prospective">{{ meta.status|default('draft')|title }}</span>
+  {% endif %}
+  <span style="color:#777; font-size:0.9rem">Owner: <strong>{{ meta.owner|default('') }}</strong></span>
+  {% if meta.backup %}
+    <span style="color:#777; font-size:0.9rem">Backup: <strong>{{ meta.backup }}</strong></span>
+  {% endif %}
+  <span style="color:#aaa; font-size:0.85rem">v{{ meta.version|default('1.0') }} · Updated {{ meta.last_updated|default('') }}</span>
+  {% if open_issues %}
+    <span style="background:#fff3cd; color:#856404; font-size:0.8rem; font-weight:600;
+                 padding:0.2rem 0.6rem; border-radius:10px">
+      ⚠ {{ open_issues|length }} open question{{ 's' if open_issues|length != 1 }}
+    </span>
+  {% endif %}
+</div>
+
+{% if meta.description %}
+<p style="color:#555; margin-bottom:1.5rem">{{ meta.description }}</p>
+{% endif %}
+
+{# ── Roles ── #}
+{% if roles %}
+<h2 style="font-size:1.1rem; margin-bottom:0.5rem">Who Is Involved</h2>
+<table style="margin-bottom:1.75rem">
+  <thead>
+    <tr>
+      <th>Role</th>
+      <th>Current Person</th>
+      <th>Responsibilities</th>
+      {% if roles | selectattr('notes') | list %}<th>Notes</th>{% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in roles %}
+    <tr>
+      <td style="font-weight:600; white-space:nowrap">{{ r.title }}</td>
+      <td>
+        {% if r.current_person %}
+          {{ r.current_person }}
+        {% else %}
+          <span style="color:#aaa">TBD</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if r.responsibilities %}
+          <ul style="margin:0; padding-left:1.2rem">
+            {% for item in r.responsibilities %}<li>{{ item }}</li>{% endfor %}
+          </ul>
+        {% endif %}
+      </td>
+      {% if r.notes is defined and r.notes %}
+      <td style="color:#666; font-size:0.9rem">{{ r.notes }}</td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{# ── Path selector ── #}
+{% if triggers and paths %}
+<h2 style="font-size:1.1rem; margin-bottom:0.75rem">Step-by-Step — Choose Your Path</h2>
+
+<div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem">
+  {% for t in triggers %}
+  <button
+    class="path-tab btn {% if loop.first %}btn-primary{% else %}btn-secondary{% endif %}"
+    data-path="{{ t.id }}"
+    onclick="selectPath('{{ t.id }}')"
+    style="font-size:0.9rem">
+    {{ t.label }}
+  </button>
+  {% endfor %}
+</div>
+
+{% for t in triggers %}
+<div id="path-{{ t.id }}" class="path-panel"
+     style="{% if not loop.first %}display:none;{% endif %} background:#f9f9f9; border:1px solid #e0e0e0; border-radius:6px; padding:1rem 1.25rem; margin-bottom:1.5rem">
+  <p style="color:#555; font-size:0.9rem; margin:0 0 0.75rem">{{ t.description }}</p>
+  <ol style="margin:0; padding-left:1.4rem; line-height:1.7">
+    {% for step in paths[t.id] %}
+    <li>
+      {% if step.actor %}
+        <span style="background:#e8f0fe; color:#1a56db; font-size:0.78rem; font-weight:600;
+                     padding:0.1rem 0.45rem; border-radius:10px; margin-right:0.4rem">
+          {{ step.actor.replace('-', ' ').title() }}
+        </span>
+      {% endif %}
+      {{ step.action }}
+    </li>
+    {% endfor %}
+  </ol>
+</div>
+{% endfor %}
+
+<script>
+function selectPath(pathId) {
+  document.querySelectorAll('.path-panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.path-tab').forEach(b => {
+    b.classList.remove('btn-primary');
+    b.classList.add('btn-secondary');
+  });
+  document.getElementById('path-' + pathId).style.display = 'block';
+  document.querySelector('[data-path="' + pathId + '"]').classList.replace('btn-secondary', 'btn-primary');
+}
+</script>
+{% endif %}
+
+{# ── Open issues ── #}
+{% if open_issues %}
+<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:6px; padding:0.9rem 1.1rem; margin-bottom:1.75rem">
+  <strong style="color:#856404">⚠ Open Questions</strong>
+  <ul style="margin:0.5rem 0 0; padding-left:1.3rem; color:#5a4000">
+    {% for issue in open_issues %}<li>{{ issue }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{# ── Full narrative (body below YAML frontmatter) ── #}
+{% if body_html %}
+<hr style="margin:1.5rem 0; border:none; border-top:1px solid #e0e0e0">
+<div class="prose">{{ body_html|safe }}</div>
+{% endif %}
+
+{% endblock %}
