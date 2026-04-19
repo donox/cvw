@@ -278,22 +278,22 @@ A mechanism for defining, rendering, and managing key club operational processes
 - `artifacts` — documents and systems referenced
 - `open_issues` — unresolved questions (drives the amber badge)
 
-**Decisions needed:**
-- [ ] Confirm file-based editing only (Claude Code) vs. in-app Markdown editor for officers
-- [ ] Decide public visibility — officer-only for now, or some processes on public site (e.g., how to renew)?
-- [ ] Future: process compliance tracking (log "last run by / on") — out of scope for now
+**Decisions made:**
+- Editing model: file-based only (Claude Code) — no in-app editor
+- Public visibility: processes are public only where necessary (e.g., renewal instructions); officer-only by default
+- Compliance tracking: out of scope — process docs are reference material only
 
 #### First Process: Membership — New Members and Renewals
 
-- Source: `docs/processes/membership-new-and-renewal.md` (draft exists)
+- Source: `docs/processes/membership-new-and-renewal.md`
 - Owner: VP Membership
 - Three paths: In-Person Application, Online New Application, Online Renewal
 - All paths converge at: Membership DB updated in Dropbox + member list posted to website
-- [ ] Resolve open questions before marking status → Active:
-  1. Cash/check payment communication method (email vs. form)
-  2. AI-monitored mailbox — address and what automation it drives
-  3. Dropbox membership DB folder path or shared link
-  4. Designated backup when VP Membership role is vacant
+- Open questions resolved:
+  1. Cash/check payment communication — **email** to VP Membership
+  2. AI-monitored mailbox — **no automation for now**; mailbox is a future placeholder
+  3. Dropbox membership DB location — **placeholder** (to be filled in when known)
+  4. Backup for vacant VP Membership — **President**
 
 ---
 
@@ -302,8 +302,8 @@ A mechanism for defining, rendering, and managing key club operational processes
 | # | Topic | Summary |
 |---|---|---|
 | 1 | Long-term maintenance by non-technical admins | Admin UI covers routine content (settings, blocks, members, events). Structural changes (new pages, new fields, nav) should be delegated to Claude Code via plain-English requests. See [MAINTENANCE.md](MAINTENANCE.md) for draft guide and open questions. Key decisions needed: production server choice, remote access method, Claude Code licensing, and who fills the maintainer role. |
-| 2 | Process Library — editing model | File-based (Claude Code only) keeps processes in git and is simpler to build. An in-app Markdown editor would let officers self-serve. Decision needed before building the detail view. |
-| 3 | Process Library — public visibility | Some processes (e.g., how to renew membership) may be useful on the public site. Decide scope before building the router. |
+| 2 | Process Library — editing model | **Decided:** file-based only (Claude Code). Officers request changes via plain-English; no in-app editor needed. |
+| 3 | Process Library — public visibility | **Decided:** public only where necessary (e.g., renewal instructions). Officer-only by default. |
 
 ---
 
