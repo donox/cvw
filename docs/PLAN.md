@@ -60,6 +60,7 @@ Build and maintain a membership management web application for CVW (Central Virg
 | 2026-03-27 | Role permissions expanded — exec/financial/program now have email + groups edit | All officer roles can send email and manage groups, not just membership |
 | 2026-03-27 | Planning docs (`docs/*.md`) served via `/guides/` for all logged-in users | No duplication; edits to source files reflected immediately |
 | 2026-03-27 | Mailgun `h:Reply-To` — configurable default in `.env`, overridable per compose | Thunderbird strips Reply-To in some configurations; per-send override gives sender control |
+| 2026-04-19 | `scripts/admin/` pattern for gitignored production scripts; deployed via `sync_admin.sh` + `run_admin.sh` | Avoids committing credentials or server-specific logic; scripts run inside Docker container |
 
 ---
 
@@ -73,6 +74,8 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [x] Auto-seed admin user on first startup
 - [x] Docker / docker-compose setup (dev)
 - [x] Role-aware nav bar (CVW brown theme)
+- [x] Admin script infrastructure (`scripts/admin/`, `sync_admin.sh`, `run_admin.sh`)
+- [x] Chart of Accounts seeded on production via `fix_server_accounts.sh`
 
 ### Member Management
 - [x] Member model — full field set matching CVW application form
@@ -182,11 +185,11 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [ ] Feedback summary report per program (currently just averages on detail page)
 
 ### Financial Console
-- [ ] Chart of Accounts — DB-managed categories replacing hardcoded lists
+- [x] Chart of Accounts — DB-managed categories replacing hardcoded lists
 - [ ] Fiscal year awareness — configurable start, year selector on dashboard
-- [ ] Reports page — Income & Expense Summary, Month-by-Month, Transaction Ledger
+- [x] Reports page — Income & Expense Summary, Month-by-Month (Transaction Ledger still pending)
 - [ ] Budget — optional actual vs. budget comparison
-- [ ] CSV export of filtered transactions
+- [x] CSV export of filtered transactions
 - [ ] (Optional) PDF reports via fpdf2
 - See [FINANCIAL_PLAN.md](FINANCIAL_PLAN.md) for full discussion
 

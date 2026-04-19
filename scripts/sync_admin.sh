@@ -7,7 +7,8 @@
 SERVER=root@cvwdev.org
 REMOTE_DIR=/opt/cvwapp/admin
 
-rsync -av --mkpath scripts/admin/ "$SERVER:$REMOTE_DIR/"
+ssh "$SERVER" "mkdir -p $REMOTE_DIR"
+rsync -av scripts/admin/ "$SERVER:$REMOTE_DIR/"
 echo ""
 echo "Synced to $SERVER:$REMOTE_DIR"
 echo "On the server, run:  ./admin/run_admin.sh <script.py>"
