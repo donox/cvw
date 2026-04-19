@@ -69,6 +69,18 @@
 </table>
 {% endif %}
 
+{# ── Swimlane diagram ── #}
+{% if mermaid_diagram %}
+<h2 style="font-size:1.1rem; margin-bottom:0.5rem">Flow Diagram</h2>
+<div style="background:#f9f9f9; border:1px solid #e0e0e0; border-radius:6px; padding:1rem; margin-bottom:1.75rem; overflow-x:auto">
+  <pre class="mermaid" style="margin:0">{{ mermaid_diagram }}</pre>
+</div>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+</script>
+{% endif %}
+
 {# ── Path selector ── #}
 {% if triggers and paths %}
 <h2 style="font-size:1.1rem; margin-bottom:0.75rem">Step-by-Step — Choose Your Path</h2>
