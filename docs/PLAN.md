@@ -61,6 +61,7 @@ Build and maintain a membership management web application for CVW (Central Virg
 | 2026-03-27 | Planning docs (`docs/*.md`) served via `/guides/` for all logged-in users | No duplication; edits to source files reflected immediately |
 | 2026-03-27 | Mailgun `h:Reply-To` — configurable default in `.env`, overridable per compose | Thunderbird strips Reply-To in some configurations; per-send override gives sender control |
 | 2026-04-19 | `scripts/admin/` pattern for gitignored production scripts; deployed via `sync_admin.sh` + `run_admin.sh` | Avoids committing credentials or server-specific logic; scripts run inside Docker container |
+| 2026-04-19 | Process Library stored as YAML-frontmatter Markdown in `docs/processes/`; rendered by a new router | File-based keeps processes in git history and editable by Claude Code; no DB or form editor needed for officers |
 
 ---
 
@@ -252,6 +253,48 @@ Build and maintain a membership management web application for CVW (Central Virg
 ### Executive Console
 - [ ] Reconsider non-officer event ownership for registration control (currently officer-only; future: event coordinator role or per-event owner)
 
+### Process Library
+
+A mechanism for defining, rendering, and managing key club operational processes in a form suitable for non-technical officers to follow.
+
+**Storage:** YAML-frontmatter Markdown files in `docs/processes/` — version-controlled, Claude Code-editable via plain-English requests. No DB or in-app editor required.
+
+**New router** `app/routers/processes.py` at `/processes/` (any logged-in user):
+
+- [ ] List view — table of all processes (title, owner, status, last updated, open-questions badge)
+- [ ] Detail view — structured HTML from YAML frontmatter + rendered Markdown narrative below
+  - Overview card: description, owner, version
+  - Roles table: Role | Current Person | Responsibilities
+  - Path selector: JS tabs for multi-path processes (shows numbered steps for chosen path only)
+  - Open Questions section — amber callout if any unresolved items
+- [ ] Nav entry: "Processes" in internal nav, visible to all logged-in roles
+
+**Process files schema** (YAML frontmatter fields):
+- `process`, `version`, `status`, `last_updated`, `owner`, `description`
+- `roles` — list of role objects (id, title, responsibilities, notes)
+- `triggers` — entry points / starting conditions
+- `steps` — with `actor`, `depends_on`, `trigger_variants` or `variants`
+- `decision_points` — branching logic
+- `artifacts` — documents and systems referenced
+- `open_issues` — unresolved questions (drives the amber badge)
+
+**Decisions needed:**
+- [ ] Confirm file-based editing only (Claude Code) vs. in-app Markdown editor for officers
+- [ ] Decide public visibility — officer-only for now, or some processes on public site (e.g., how to renew)?
+- [ ] Future: process compliance tracking (log "last run by / on") — out of scope for now
+
+#### First Process: Membership — New Members and Renewals
+
+- Source: `docs/processes/membership-new-and-renewal.md` (draft exists)
+- Owner: VP Membership
+- Three paths: In-Person Application, Online New Application, Online Renewal
+- All paths converge at: Membership DB updated in Dropbox + member list posted to website
+- [ ] Resolve open questions before marking status → Active:
+  1. Cash/check payment communication method (email vs. form)
+  2. AI-monitored mailbox — address and what automation it drives
+  3. Dropbox membership DB folder path or shared link
+  4. Designated backup when VP Membership role is vacant
+
 ---
 
 ## Open Questions / Items for Discussion
@@ -259,6 +302,8 @@ Build and maintain a membership management web application for CVW (Central Virg
 | # | Topic | Summary |
 |---|---|---|
 | 1 | Long-term maintenance by non-technical admins | Admin UI covers routine content (settings, blocks, members, events). Structural changes (new pages, new fields, nav) should be delegated to Claude Code via plain-English requests. See [MAINTENANCE.md](MAINTENANCE.md) for draft guide and open questions. Key decisions needed: production server choice, remote access method, Claude Code licensing, and who fills the maintainer role. |
+| 2 | Process Library — editing model | File-based (Claude Code only) keeps processes in git and is simpler to build. An in-app Markdown editor would let officers self-serve. Decision needed before building the detail view. |
+| 3 | Process Library — public visibility | Some processes (e.g., how to renew membership) may be useful on the public site. Decide scope before building the router. |
 
 ---
 
