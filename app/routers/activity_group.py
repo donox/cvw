@@ -158,12 +158,18 @@ def members_view(
     _require_leader(user, group, db)
     all_active = db.query(Member).filter(Member.status == "Active").order_by(Member.last_name, Member.first_name).all()
     member_ids = {m.id for m in group.members}
+    overall_leaders = db.query(GroupLeader).filter(
+        GroupLeader.group_id == group.id, GroupLeader.role == "overall"
+    ).all()
+    leader_member_ids = {gl.member_id for gl in overall_leaders}
     return templates.TemplateResponse("activity/members.html", {
         "request": request,
         "group": group,
         "members": sorted(group.members, key=lambda m: (m.last_name, m.first_name)),
         "all_active": all_active,
         "member_ids": member_ids,
+        "overall_leaders": overall_leaders,
+        "leader_member_ids": leader_member_ids,
     })
 
 
@@ -195,6 +201,44 @@ def remove_member(
     member = db.get(Member, member_id)
     if member and member in group.members:
         group.members.remove(member)
+        db.commit()
+    return RedirectResponse(url=f"/activity/{slug}/members", status_code=303)
+
+
+# ── Overall leaders ───────────────────────────────────────────────────────────
+
+@router.post("/{slug}/leaders/add", response_class=RedirectResponse)
+def add_leader(
+    slug: str,
+    member_id: int = Form(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    group = _get_group_or_404(slug, db)
+    _require_leader(user, group, db)
+    existing = db.query(GroupLeader).filter(
+        GroupLeader.group_id == group.id,
+        GroupLeader.member_id == member_id,
+        GroupLeader.role == "overall",
+    ).first()
+    if not existing:
+        db.add(GroupLeader(group_id=group.id, member_id=member_id, role="overall"))
+        db.commit()
+    return RedirectResponse(url=f"/activity/{slug}/members", status_code=303)
+
+
+@router.post("/{slug}/leaders/remove", response_class=RedirectResponse)
+def remove_leader(
+    slug: str,
+    leader_id: int = Form(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    group = _get_group_or_404(slug, db)
+    _require_leader(user, group, db)
+    gl = db.get(GroupLeader, leader_id)
+    if gl and gl.group_id == group.id and gl.role == "overall":
+        db.delete(gl)
         db.commit()
     return RedirectResponse(url=f"/activity/{slug}/members", status_code=303)
 

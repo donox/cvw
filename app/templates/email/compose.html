@@ -51,7 +51,7 @@
             <select name="group_id">
                 <option value="">All Active Members</option>
                 {% for g in groups %}
-                <option value="{{ g.id }}">{{ g.name }} ({{ g.members|length }})</option>
+                <option value="{{ g.id }}" {% if preselect_group_id and preselect_group_id == g.id %}selected{% endif %}>{{ g.name }} ({{ g.members|length }})</option>
                 {% endfor %}
             </select>
         </div>

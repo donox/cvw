@@ -29,17 +29,25 @@ def email_index(request: Request, _=auth, db: Session = Depends(get_db)):
 # ── Compose & send ────────────────────────────────────────────────────────────
 
 @router.get("/compose", response_class=HTMLResponse)
-def compose_form(request: Request, member_id: str = Query(default=""), _=auth, db: Session = Depends(get_db)):
+def compose_form(
+    request: Request,
+    member_id: str = Query(default=""),
+    group_id: str = Query(default=""),
+    _=auth,
+    db: Session = Depends(get_db),
+):
     groups = db.query(MemberGroup).order_by(MemberGroup.name).all()
     templates_list = db.query(EmailTemplate).order_by(EmailTemplate.name).all()
     members = db.query(Member).filter(Member.email != None, Member.email != "").order_by(Member.last_name, Member.first_name).all()
     single_member = db.get(Member, int(member_id)) if member_id else None
+    preselect_group_id = int(group_id) if group_id.isdigit() else None
     from app.database import settings as app_settings
     return templates.TemplateResponse("email/compose.html", {
         "request": request, "groups": groups, "email_templates": templates_list,
         "members": members, "single_member": single_member,
         "errors": [], "form": {},
         "default_reply_to": app_settings.MAILGUN_REPLY_TO,
+        "preselect_group_id": preselect_group_id,
     })
 
 

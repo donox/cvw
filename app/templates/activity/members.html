@@ -38,6 +38,44 @@
 <p style="color:#888">No members in this group yet.</p>
 {% endif %}
 
+<h2 style="margin-top:1.5rem">Overall Leaders</h2>
+{% if overall_leaders %}
+<table>
+    <thead><tr><th>Name</th><th></th></tr></thead>
+    <tbody>
+    {% for gl in overall_leaders %}
+    <tr>
+        <td>{{ gl.member.last_name }}, {{ gl.member.first_name }}</td>
+        <td>
+            <form method="post" action="/activity/{{ group.slug }}/leaders/remove" style="margin:0; display:inline">
+                <input type="hidden" name="leader_id" value="{{ gl.id }}">
+                <button type="submit" class="btn btn-danger" style="font-size:0.85rem"
+                        onclick="return confirm('Remove as leader?')">Remove</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">No overall leaders assigned.</p>
+{% endif %}
+
+<form method="post" action="/activity/{{ group.slug }}/leaders/add" style="display:flex; gap:0.75rem; align-items:flex-end; flex-wrap:wrap; margin-top:0.75rem">
+    <div style="flex:1; min-width:220px">
+        <label for="leader_member_id">Add Overall Leader</label>
+        <select name="member_id" id="leader_member_id" required>
+            <option value="">— choose from group members —</option>
+            {% for m in members %}
+            {% if m.id not in leader_member_ids %}
+            <option value="{{ m.id }}">{{ m.last_name }}, {{ m.first_name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Leader</button>
+</form>
+
 <h2 style="margin-top:1.5rem">Add Member</h2>
 <form method="post" action="/activity/{{ group.slug }}/members/add" style="display:flex; gap:0.75rem; align-items:flex-end; flex-wrap:wrap">
     <div style="flex:1; min-width:220px">
