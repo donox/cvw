@@ -21,6 +21,12 @@ class MemberGroup(Base):
     description = Column(String)
     is_dynamic = Column(Boolean, default=False)
     filter_criteria = Column(String)   # JSON: {status, membership_type, dues_paid, skill_level, volunteer_interest}
+    # Activity group fields
+    is_activity       = Column(Boolean, default=False)
+    slug              = Column(String, unique=True, nullable=True)   # URL key e.g. "drop-in-saturday"
+    meeting_day       = Column(String, nullable=True)                # e.g. "4th Saturday"
+    meeting_frequency = Column(String, nullable=True)                # e.g. "Monthly"
+    google_group_url  = Column(String, nullable=True)
     created_by = Column(String)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())

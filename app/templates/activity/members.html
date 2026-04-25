@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} — Members{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <div>
+        <a href="/activity/{{ group.slug }}/" style="font-size:0.9rem; color:#666">← {{ group.name }}</a>
+        <h1 style="margin:0.25rem 0">Manage Members</h1>
+    </div>
+</div>
+
+<h2>Current Members ({{ members|length }})</h2>
+{% if members %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for m in members %}
+    <tr>
+        <td>{{ m.last_name }}, {{ m.first_name }}</td>
+        <td><span class="badge badge-{{ m.status|lower }}">{{ m.status }}</span></td>
+        <td>
+            <form method="post" action="/activity/{{ group.slug }}/members/remove" style="margin:0; display:inline">
+                <input type="hidden" name="member_id" value="{{ m.id }}">
+                <button type="submit" class="btn btn-danger" style="font-size:0.85rem"
+                        onclick="return confirm('Remove {{ m.first_name }} {{ m.last_name }}?')">Remove</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">No members in this group yet.</p>
+{% endif %}
+
+<h2 style="margin-top:1.5rem">Add Member</h2>
+<form method="post" action="/activity/{{ group.slug }}/members/add" style="display:flex; gap:0.75rem; align-items:flex-end; flex-wrap:wrap">
+    <div style="flex:1; min-width:220px">
+        <label for="member_id">Select Active Member</label>
+        <select name="member_id" id="member_id" required>
+            <option value="">— choose —</option>
+            {% for m in all_active %}
+            {% if m.id not in member_ids %}
+            <option value="{{ m.id }}">{{ m.last_name }}, {{ m.first_name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Add</button>
+</form>
+{% endblock %}

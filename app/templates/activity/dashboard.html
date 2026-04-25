@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }}{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <div>
+        <a href="/activity/" style="font-size:0.9rem; color:#666">← Activity Groups</a>
+        <h1 style="margin:0.25rem 0">{{ group.name }}</h1>
+    </div>
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap">
+        {% if is_leader %}
+        <a href="/activity/{{ group.slug }}/events/new" class="btn btn-primary">+ New Event</a>
+        <a href="/activity/{{ group.slug }}/members" class="btn btn-secondary">Manage Members</a>
+        <a href="/activity/{{ group.slug }}/resources" class="btn btn-secondary">Resources</a>
+        {% endif %}
+        {% if opted_in %}
+        <form method="post" action="/activity/{{ group.slug }}/leave" style="margin:0">
+            <button type="submit" class="btn btn-secondary">Leave Group</button>
+        </form>
+        {% else %}
+        <form method="post" action="/activity/{{ group.slug }}/join" style="margin:0">
+            <button type="submit" class="btn btn-primary">Join Group</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="detail-grid">
+    <section>
+        <h2>Group Info</h2>
+        <dl>
+            {% if group.meeting_day %}
+            <dt>Meeting Day</dt><dd>{{ group.meeting_day }}</dd>
+            {% endif %}
+            {% if group.meeting_frequency %}
+            <dt>Frequency</dt><dd>{{ group.meeting_frequency }}</dd>
+            {% endif %}
+            {% if group.description %}
+            <dt>Description</dt><dd>{{ group.description }}</dd>
+            {% endif %}
+            <dt>Members</dt><dd>{{ member_count }}</dd>
+        </dl>
+        {% if group.google_group_url %}
+        <div style="margin-top:0.75rem">
+            <a href="{{ group.google_group_url }}" target="_blank" class="btn btn-secondary" style="font-size:0.85rem">Google Group →</a>
+        </div>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Overall Leaders</h2>
+        {% if overall_leaders %}
+        <ul style="margin:0; padding-left:1.25rem">
+            {% for gl in overall_leaders %}
+            <li>{{ gl.member.first_name }} {{ gl.member.last_name }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color:#888; margin:0">No leaders assigned.</p>
+        {% endif %}
+        {% if is_leader %}
+        <div style="margin-top:0.75rem">
+            <a href="/email/?group_id={{ group.id }}" class="btn btn-secondary" style="font-size:0.85rem">Email Group →</a>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<h2>Upcoming Events</h2>
+{% if upcoming %}
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Title</th>
+            <th>Monthly Leader</th>
+            <th>Time / Location</th>
+            {% if is_leader %}<th>Planning Notes</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+    {% for evt in upcoming %}
+    <tr>
+        <td style="white-space:nowrap">{{ evt.date.strftime('%b %-d, %Y') }}</td>
+        <td>{{ evt.title }}</td>
+        <td>
+            {% set ml = monthly_leaders[evt.id] %}
+            {% if ml %}{{ ml.first_name }} {{ ml.last_name }}{% else %}<span style="color:#aaa">—</span>{% endif %}
+            {% if is_leader %}
+            <form method="post" action="/activity/{{ group.slug }}/events/{{ evt.id }}/leader" style="display:inline; margin-left:0.4rem">
+                <select name="monthly_leader_id" onchange="this.form.submit()" style="font-size:0.8rem; width:auto; padding:0.2rem">
+                    <option value="">— assign —</option>
+                    {% for m in group.members|sort(attribute='last_name') %}
+                    <option value="{{ m.id }}" {% if ml and ml.id == m.id %}selected{% endif %}>{{ m.last_name }}, {{ m.first_name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            {% endif %}
+        </td>
+        <td style="font-size:0.9rem; color:#555">
+            {% if evt.start_time %}{{ evt.start_time }}{% endif %}
+            {% if evt.location %}<br>{{ evt.location }}{% endif %}
+        </td>
+        {% if is_leader %}
+        <td style="font-size:0.85rem; color:#666; max-width:200px">{{ (evt.planning_notes or '')[:80] }}{% if evt.planning_notes and evt.planning_notes|length > 80 %}…{% endif %}</td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">No upcoming events.</p>
+{% endif %}
+
+{% if artifacts %}
+<h2 style="margin-top:1.5rem">Resources</h2>
+<table>
+    <thead><tr><th>Title</th><th>Description</th></tr></thead>
+    <tbody>
+    {% for r in artifacts %}
+    <tr>
+        <td><a href="{{ r.href }}" target="_blank">{{ r.title }}</a></td>
+        <td style="color:#666; font-size:0.9rem">{{ r.description or '' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

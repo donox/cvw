@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Activity Groups{% endblock %}
+{% block content %}
+{% set user = request.state.user %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <h1 style="margin:0">Activity Groups</h1>
+    {% if is_admin %}
+    <a href="/groups/new" class="btn btn-primary">+ New Group</a>
+    {% endif %}
+</div>
+
+{% if groups %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Meeting</th>
+            <th style="text-align:center">Members</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for g in groups %}
+    <tr>
+        <td>
+            <a href="/activity/{{ g.slug }}/">{{ g.name }}</a>
+            {% if g.id in led_ids %}
+            <span class="badge" style="background:#d4edda;color:#155724;margin-left:0.4rem">leader</span>
+            {% endif %}
+        </td>
+        <td style="color:#666">
+            {% if g.meeting_day %}{{ g.meeting_day }}{% endif %}
+            {% if g.meeting_frequency %} · {{ g.meeting_frequency }}{% endif %}
+        </td>
+        <td style="text-align:center">{{ g.members|length }}</td>
+        <td>
+            <a href="/activity/{{ g.slug }}/" class="btn btn-secondary">Dashboard</a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">No activity groups defined yet.</p>
+{% endif %}
+{% endblock %}

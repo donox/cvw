@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} — Resources{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <div>
+        <a href="/activity/{{ group.slug }}/" style="font-size:0.9rem; color:#666">← {{ group.name }}</a>
+        <h1 style="margin:0.25rem 0">Group Resources</h1>
+    </div>
+</div>
+
+{% if resources %}
+<table>
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Active</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in resources %}
+    <tr>
+        <td><a href="{{ r.href }}" target="_blank">{{ r.title }}</a></td>
+        <td style="color:#666; font-size:0.9rem">{{ r.description or '' }}</td>
+        <td>{{ '✓' if r.active else '' }}</td>
+        <td>
+            <form method="post" action="/activity/{{ group.slug }}/resources/{{ r.id }}/delete" style="margin:0; display:inline">
+                <button type="submit" class="btn btn-danger" style="font-size:0.85rem"
+                        onclick="return confirm('Delete this resource?')">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">No resources added yet.</p>
+{% endif %}
+
+<h2 style="margin-top:1.5rem">Add Resource</h2>
+<form method="post" action="/activity/{{ group.slug }}/resources/add">
+    <div class="form-row">
+        <div style="flex:1; min-width:180px">
+            <label for="title">Title *</label>
+            <input type="text" name="title" id="title" required>
+        </div>
+        <div style="flex:2; min-width:220px">
+            <label for="url">URL *</label>
+            <input type="text" name="url" id="url" required placeholder="https://…">
+        </div>
+    </div>
+    <div style="margin-top:0.75rem">
+        <label for="description">Description</label>
+        <input type="text" name="description" id="description">
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add Resource</button>
+    </div>
+</form>
+{% endblock %}

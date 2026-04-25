@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} — {% if event %}Edit Event{% else %}New Event{% endif %}{% endblock %}
+{% block content %}
+<div>
+    <a href="/activity/{{ group.slug }}/" style="font-size:0.9rem; color:#666">← {{ group.name }}</a>
+    <h1>{% if event %}Edit Event{% else %}New Event{% endif %}</h1>
+</div>
+
+{% if errors %}
+<div class="errors">
+    <ul style="margin:0; padding-left:1.25rem">
+    {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="post">
+<fieldset>
+    <legend>Event Details</legend>
+    <div class="form-row">
+        <div style="flex:2; min-width:200px">
+            <label for="title">Title *</label>
+            <input type="text" name="title" id="title" required value="{{ (event.title if event else '') }}">
+        </div>
+        <div style="flex:1; min-width:140px">
+            <label for="event_type">Type</label>
+            <select name="event_type" id="event_type">
+                {% for t in event_types %}
+                <option value="{{ t }}" {% if event and event.event_type == t %}selected{% elif not event and t == 'Member Drop-In' %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="form-row" style="margin-top:0.75rem">
+        <div>
+            <label for="event_date">Date *</label>
+            <input type="date" name="event_date" id="event_date" required value="{{ (event.date.isoformat() if event else '') }}">
+        </div>
+        <div>
+            <label for="start_time">Start Time</label>
+            <input type="text" name="start_time" id="start_time" placeholder="e.g. 10:00 AM" value="{{ (event.start_time or '') }}">
+        </div>
+        <div>
+            <label for="end_time">End Time</label>
+            <input type="text" name="end_time" id="end_time" placeholder="e.g. 12:00 PM" value="{{ (event.end_time or '') }}">
+        </div>
+    </div>
+
+    <div style="margin-top:0.75rem">
+        <label for="location">Location</label>
+        <input type="text" name="location" id="location" value="{{ (event.location or '') }}">
+    </div>
+
+    <div style="margin-top:0.75rem">
+        <label for="zoom_url">Zoom URL</label>
+        <input type="text" name="zoom_url" id="zoom_url" value="{{ (event.zoom_url or '') }}">
+    </div>
+
+    <div style="margin-top:0.75rem">
+        <label for="description">Description</label>
+        <textarea name="description" id="description" rows="3">{{ (event.description or '') }}</textarea>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Leader &amp; Planning</legend>
+
+    <label for="monthly_leader_id">Monthly Leader</label>
+    <select name="monthly_leader_id" id="monthly_leader_id">
+        <option value="">— none —</option>
+        {% for m in members %}
+        <option value="{{ m.id }}">{{ m.last_name }}, {{ m.first_name }}</option>
+        {% endfor %}
+    </select>
+
+    <div style="margin-top:0.75rem">
+        <label for="planning_notes">Planning Notes (internal)</label>
+        <textarea name="planning_notes" id="planning_notes" rows="3">{{ (event.planning_notes or '') }}</textarea>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Registration</legend>
+    <label style="display:flex; align-items:center; gap:0.5rem; font-weight:normal; cursor:pointer">
+        <input type="checkbox" name="registration_enabled" value="on" {% if event and event.registration_enabled %}checked{% endif %} style="width:auto">
+        Enable registration for this event
+    </label>
+
+    <div style="margin-top:0.75rem">
+        <label for="capacity">Capacity (leave blank for unlimited)</label>
+        <input type="number" name="capacity" id="capacity" min="1" style="max-width:120px" value="{{ (event.capacity or '') }}">
+    </div>
+</fieldset>
+
+<div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save Event</button>
+    <a href="/activity/{{ group.slug }}/" class="btn btn-secondary">Cancel</a>
+</div>
+</form>
+{% endblock %}

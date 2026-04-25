@@ -16,6 +16,7 @@ import app.models.financial     # register with Base
 import app.models.group         # register with Base
 import app.models.email_models  # register with Base
 import app.models.resource             # register with Base
+import app.models.group_leader         # register with Base
 import app.models.event_registration   # register with Base
 import app.models.site_content         # register with Base (SiteSetting, ContentBlock, PublicPage)
 from app.dependencies import NotAuthenticatedException, PermissionDeniedException
@@ -27,6 +28,7 @@ from app.routers import librarian as librarian_router
 from app.routers import admin_backup as backup_router
 from app.routers import guides as guides_router
 from app.routers import processes as processes_router
+from app.routers import activity_group as activity_router
 
 # Apply any staged restore BEFORE opening DB connections
 from app.backup_service import apply_pending_restore
@@ -108,6 +110,7 @@ app.include_router(librarian_router.router)
 app.include_router(backup_router.router)
 app.include_router(guides_router.router)
 app.include_router(processes_router.router)
+app.include_router(activity_router.router)
 
 
 @app.get("/")

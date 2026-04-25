@@ -18,7 +18,7 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
     "membership": ["members", "groups", "email", "dashboard"],
     "program":    ["programs", "members", "groups", "email", "dashboard"],
     "financial":  ["financial", "members", "groups", "email", "dashboard"],
-    "exec":       ["exec", "members", "groups", "programs", "email", "dashboard"],
+    "exec":       ["exec", "members", "groups", "programs", "email", "dashboard", "activity"],
     "librarian":  ["librarian", "dashboard"],
     "admin":      ["*"],
 }

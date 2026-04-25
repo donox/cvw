@@ -1,4 +1,5 @@
-from sqlalchemy import Boolean, Column, Date, DateTime, Integer, String, func
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy.orm import relationship
 
 from app.database import Base
 
@@ -40,7 +41,11 @@ class OrgEvent(Base):
     registration_note        = Column(String(500), nullable=True)
     registration_restriction = Column(String(20),  nullable=True)  # None/"zoom_members_only"/"members_only"
     show_on_public           = Column(Boolean, default=False)
-    created_at = Column(DateTime, server_default=func.now())
+    activity_group_id        = Column(Integer, ForeignKey("member_groups.id"), nullable=True)
+    planning_notes           = Column(Text, nullable=True)
+    created_at               = Column(DateTime, server_default=func.now())
+
+    activity_group = relationship("MemberGroup", backref="org_events")
 
 
 class OrgTodo(Base):
