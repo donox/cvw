@@ -167,9 +167,11 @@ columns or tables and lose data.
 ```bash
 git pull
 docker compose up -d --build
-docker compose exec web bash -c "cd /app && alembic upgrade head"
 docker compose logs web --tail=20   # confirm clean startup
 ```
+
+`alembic upgrade head` runs automatically on container start via `scripts/entrypoint.sh`.
+You no longer need to run it manually after a deploy.
 
 ### Scenario: Migration fails with "table already exists" or "duplicate column name"
 
