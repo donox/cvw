@@ -12,14 +12,16 @@
         <a href="/activity/{{ group.slug }}/members" class="btn btn-secondary">Manage Members</a>
         <a href="/activity/{{ group.slug }}/resources" class="btn btn-secondary">Resources</a>
         {% endif %}
-        {% if opted_in %}
-        <form method="post" action="/activity/{{ group.slug }}/leave" style="margin:0">
-            <button type="submit" class="btn btn-secondary">Leave Group</button>
-        </form>
-        {% else %}
-        <form method="post" action="/activity/{{ group.slug }}/join" style="margin:0">
-            <button type="submit" class="btn btn-primary">Join Group</button>
-        </form>
+        {% if request.state.user.member_id %}
+            {% if opted_in %}
+            <form method="post" action="/activity/{{ group.slug }}/leave" style="margin:0">
+                <button type="submit" class="btn btn-secondary">Leave Group</button>
+            </form>
+            {% else %}
+            <form method="post" action="/activity/{{ group.slug }}/join" style="margin:0">
+                <button type="submit" class="btn btn-primary">Join Group</button>
+            </form>
+            {% endif %}
         {% endif %}
     </div>
 </div>

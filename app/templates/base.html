@@ -111,21 +111,24 @@
         {% if role in ['admin', 'exec'] %}
             <a href="/exec/">Exec</a>
         {% endif %}
-        {% if role in ['admin', 'membership'] %}
-            <a href="/groups/">Groups</a>
-            <a href="/email/">Email</a>
-        {% endif %}
-        {% if role in ['admin', 'librarian'] %}
         <div class="nav-dropdown">
-            <a href="#">Volunteer ▾</a>
+            <a href="#">Admin ▾</a>
             <div class="nav-dropdown-menu">
+                {% if role in ['admin', 'membership'] %}
+                <a href="/groups/">Groups</a>
+                {% endif %}
+                {% if role in ['admin', 'membership', 'exec', 'program', 'financial'] %}
+                <a href="/email/">Email</a>
+                {% endif %}
+                {% if role in ['admin', 'librarian'] %}
                 <a href="/librarian/resources/">Library</a>
+                {% endif %}
+                {% if role == 'admin' %}
+                <a href="/admin/">Console</a>
+                <a href="/admin/backup/">Backup</a>
+                {% endif %}
             </div>
         </div>
-        {% endif %}
-        {% if role == 'admin' %}
-            <a href="/admin/">Admin</a>
-        {% endif %}
         <a href="/activity/">Activities</a>
         <a href="/processes/">Processes</a>
         <a href="/guides/">Guides</a>

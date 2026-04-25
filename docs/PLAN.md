@@ -382,6 +382,7 @@ A capability for managing recurring sub-group activities where a subset of CVW m
 | 1 | Long-term maintenance by non-technical admins | Admin UI covers routine content (settings, blocks, members, events). Structural changes (new pages, new fields, nav) should be delegated to Claude Code via plain-English requests. See [MAINTENANCE.md](MAINTENANCE.md) for draft guide and open questions. Key decisions needed: production server choice, remote access method, Claude Code licensing, and who fills the maintainer role. |
 | 2 | Process Library — editing model | **Decided:** file-based only (Claude Code). Officers request changes via plain-English; no in-app editor needed. |
 | 3 | Process Library — public visibility | **Decided:** public only where necessary (e.g., renewal instructions). Officer-only by default. |
+| 4 | Email origination — who can send and to whom | Current system roles (exec, program, financial, membership, admin) can email any group or all members. Activity group leaders are not system roles — it is unclear whether they should be able to originate email at all, or only to their own group, or whether the right answer is to assign them a system role. Needs discussion before implementing group-leader email access. |
 
 ---
 
