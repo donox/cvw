@@ -17,7 +17,7 @@ CVW Membership Database — a FastAPI web application for managing CVW membershi
 - Entry point: `app/main.py` (FastAPI app instance)
 - `app/database.py` — SQLAlchemy engine, session, Base, `get_db()` dependency
 - `app/dependencies.py` — role/permission guards (`require_role`, `require_permission`)
-- `app/models/` — SQLAlchemy ORM models (member, user, officer, program, financial, group, email_models, event_registration, resource, site_content, org)
+- `app/models/` — SQLAlchemy ORM models (member, user, officer, program, financial, group, group_leader, email_models, event_registration, resource, site_content, org)
 - `app/routers/` — FastAPI routers (one file per resource):
   - `auth` — login/logout
   - `members` — member CRUD, query/report, PDF
@@ -29,10 +29,12 @@ CVW Membership Database — a FastAPI web application for managing CVW membershi
   - `admin_console` — users, site settings, content blocks, access control
   - `admin_backup` — backup/restore console
   - `groups` — member groups (static + dynamic)
-  - `email_` — compose, templates, scheduled email, log
+  - `email_` — compose, templates, scheduled email, log; accepts `?group_id=` on compose to pre-select a group
   - `librarian` — resource library CRUD
   - `public_` — public website (`/site/`)
   - `guides` — serves `docs/*.md` at `/guides/`
+  - `processes` — process library, serves `docs/processes/*.md` at `/processes/`
+  - `activity_group` — member activity groups; prefix `/activity`; overall-leader dashboard, member roster, events, resources, self opt-in/out
 - `app/schemas/` — Pydantic schemas
 - `app/templates/` — Jinja2 HTML templates (subdirectory per resource)
 - `app/email_service.py` — Mailgun HTTP API integration
@@ -52,6 +54,7 @@ CVW Membership Database — a FastAPI web application for managing CVW membershi
 - `scripts/run_admin.sh` — runs a Python script inside the Docker container
 - `scripts/fix_server_accounts.sh` — production: stamps Alembic migration + seeds Chart of Accounts
 - `scripts/admin/seed_accounts.py` — seeds AccountCategory with 12 default categories (idempotent)
+- `scripts/admin/seed_drop_in_saturday.py` — seeds Drop-In Saturday activity group and assigns overall leaders interactively (gitignored)
 
 ## Supplementary Docs
 
@@ -59,6 +62,9 @@ CVW Membership Database — a FastAPI web application for managing CVW membershi
 - `docs/FINANCIAL_PLAN.md` — financial module enhancement roadmap
 - `docs/PUBLIC_SITE_PLAN.md` — public website phase roadmap
 - `docs/MAINTENANCE.md` — guide for non-technical long-term maintenance
+- `docs/SERVER_ADMIN.md` — server administration guide (DigitalOcean Docker deployment)
+- `docs/processes/` — YAML-frontmatter Markdown files defining organisational processes
+- `docs/guides/` — Markdown guides served at `/guides/` (including `defining_processes.md`)
 
 ## Dependency Notes
 
