@@ -310,6 +310,71 @@ A mechanism for defining, rendering, and managing key club operational processes
 
 ---
 
+### Member Activity Groups
+
+A capability for managing recurring sub-group activities where a subset of CVW members opt in, there is dedicated leadership, and the group needs its own events, email, planning docs, and artifacts.
+
+#### Pilot: Drop-In Saturday
+
+- Meets the 4th Saturday of each month
+- ~20 opted-in members participate
+- **Two leadership tiers:**
+  - *Monthly leader* — one member designated as leader for a specific month's session; rotates
+  - *Overall leaders* — small standing committee (3–5 people) who own the program long-term
+- Google Group exists for chat; keep it for now and link from the dashboard
+- Needs: opt-in list, event management, email to members, shared planning notes, group artifacts
+
+#### Architecture
+
+**Reuse existing models where possible:**
+
+| Need | Approach |
+|---|---|
+| Opt-in member list | Extend `MemberGroup` — add `is_activity` flag + `meeting_day`, `meeting_frequency`, `google_group_url` fields |
+| Overall leaders | New `GroupLeader` table: `group_id`, `member_id`, `role` ("overall" or "monthly") |
+| Monthly leader per event | Add `monthly_leader_id` FK (→ Member) to `OrgEvent` |
+| Events | Reuse `OrgEvent` + `EventRegistration` + `Attendance`; filter by group |
+| Email to group | Reuse email console — group already usable as target; no change needed |
+| Group artifacts / resources | Add optional `group_id` FK to `Resource`; group-scoped resources shown on dashboard |
+| Planning notes | Add `planning_notes` text field to `OrgEvent` — simple, visible to leaders only |
+| Group chat | Link to existing Google Group URL — no in-app chat needed now |
+
+**New router:** `app/routers/activity_group.py` at `/activity/` — visible to overall leaders + admin.
+
+#### Pending — Phase 1 (core)
+
+- [ ] DB changes: `is_activity`, `meeting_day`, `meeting_frequency`, `google_group_url` on `MemberGroup`; `GroupLeader` table; `monthly_leader_id` + `planning_notes` on `OrgEvent`; `group_id` on `Resource`
+- [ ] Self-service opt-in: member can join/leave an activity group from their profile page (or a public `/activity/{slug}/join` page)
+- [ ] Overall leader dashboard at `/activity/{slug}/` — scoped to one group:
+  - Member roster (opted-in list, with join/leave controls)
+  - Event list — upcoming + past sessions for this group
+  - Designate monthly leader per event (dropdown on event edit)
+  - Email compose — pre-targeted to this group's members
+  - Artifacts — group-scoped resources (links, uploaded docs)
+  - Planning notes per event
+  - Link to Google Group (chat/discussion)
+- [ ] Admin can create/configure activity groups
+- [ ] Nav: "Activities ▾" dropdown in internal nav, visible to overall leaders + admin; lists groups they lead
+
+#### Pending — Phase 2 (enhancements)
+
+- [ ] Recurring event auto-generation — create all 4th-Saturday events for a calendar year in one action
+- [ ] Monthly leader rotation — notify designated leader by email when they are assigned
+- [ ] Public-facing activity page — opt-in form for members who aren't logged in (requires member email lookup, same pattern as event registration)
+- [ ] In-app planning discussion thread per event (if Google Groups proves insufficient)
+
+#### Decisions needed
+
+| Question | Recommendation |
+|---|---|
+| Who can opt in — self-service or leader-managed? | Both: leaders manage the list, but members can self-opt from their profile |
+| Is "monthly leader" per calendar month or per specific event? | Per event — more flexible, handles cancellations and schedule shifts |
+| Google Groups vs. in-app chat | Keep Google Groups for now; link from dashboard; revisit if usage shows it's insufficient |
+| Nav placement | New "Activities ▾" dropdown (not under VP Membership) — activity groups may span multiple officer roles over time |
+| Multiple activity groups eventually? | Yes — build generic from the start; Drop-In Saturday is just the first instance |
+
+---
+
 ## Open Questions / Items for Discussion
 
 | # | Topic | Summary |
