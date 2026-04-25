@@ -26,6 +26,44 @@
                value="{{ group.description if group else (description|default('')) }}">
     </div>
 
+    {# ── Activity group toggle ── #}
+    <div class="form-group">
+        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:normal; cursor:pointer">
+            <input type="checkbox" name="is_activity" id="is_activity" value="on"
+                   {% if group and group.is_activity %}checked{% endif %}
+                   onchange="toggleActivitySection()">
+            This is an Activity Group (opt-in sub-group with dedicated leadership and events)
+        </label>
+    </div>
+    <div id="activity-section" style="{% if not (group and group.is_activity) %}display:none;{% endif %}
+         background:#f0f5f0; border:1px solid #b8d0b8; border-radius:6px; padding:1rem 1.25rem; margin-bottom:1rem">
+        <div class="form-row">
+            <div>
+                <label>URL Slug</label>
+                <input type="text" name="slug" placeholder="e.g. drop-in-saturday"
+                       value="{{ group.slug if group and group.slug else '' }}">
+                <p style="font-size:0.8rem; color:#666; margin:0.25rem 0 0">Used in the URL: /activity/{slug}/  — lowercase, hyphens only</p>
+            </div>
+            <div>
+                <label>Meeting Day</label>
+                <input type="text" name="meeting_day" placeholder="e.g. 4th Saturday"
+                       value="{{ group.meeting_day if group and group.meeting_day else '' }}">
+            </div>
+        </div>
+        <div class="form-row" style="margin-top:0.75rem">
+            <div>
+                <label>Meeting Frequency</label>
+                <input type="text" name="meeting_frequency" placeholder="e.g. Monthly"
+                       value="{{ group.meeting_frequency if group and group.meeting_frequency else '' }}">
+            </div>
+            <div>
+                <label>Google Group URL</label>
+                <input type="url" name="google_group_url" placeholder="https://groups.google.com/…"
+                       value="{{ group.google_group_url if group and group.google_group_url else '' }}">
+            </div>
+        </div>
+    </div>
+
     {# ── Group type toggle ── #}
     <div class="form-group">
         <label>Group Type</label>
@@ -132,6 +170,10 @@
 </form>
 
 <script>
+function toggleActivitySection() {
+    const active = document.getElementById('is_activity').checked;
+    document.getElementById('activity-section').style.display = active ? '' : 'none';
+}
 function toggleGroupType() {
     const dynamic = document.getElementById('type-dynamic').checked;
     document.getElementById('dynamic-section').style.display = dynamic ? '' : 'none';

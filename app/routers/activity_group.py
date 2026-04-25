@@ -248,6 +248,7 @@ def remove_leader(
 @router.post("/{slug}/join", response_class=RedirectResponse)
 def join_group(
     slug: str,
+    next: str = Form(""),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -257,12 +258,13 @@ def join_group(
         if member and member not in group.members:
             group.members.append(member)
             db.commit()
-    return RedirectResponse(url=f"/activity/{slug}/", status_code=303)
+    return RedirectResponse(url=next or f"/activity/{slug}/", status_code=303)
 
 
 @router.post("/{slug}/leave", response_class=RedirectResponse)
 def leave_group(
     slug: str,
+    next: str = Form(""),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -272,7 +274,7 @@ def leave_group(
         if member and member in group.members:
             group.members.remove(member)
             db.commit()
-    return RedirectResponse(url=f"/activity/{slug}/", status_code=303)
+    return RedirectResponse(url=next or f"/activity/{slug}/", status_code=303)
 
 
 # ── Events ────────────────────────────────────────────────────────────────────

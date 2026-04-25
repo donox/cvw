@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import require_permission
+from app.models.group import MemberGroup, member_group_assoc
 from app.models.member import Member
 
 router = APIRouter(prefix="/members", tags=["members"])
@@ -314,7 +315,27 @@ def create_member(
 @router.get("/{member_id}", response_class=HTMLResponse)
 def member_detail(member_id: int, request: Request, _=auth, db: Session = Depends(get_db)):
     member = _get_or_404(db, member_id)
-    return templates.TemplateResponse("members/detail.html", {"request": request, "member": member})
+    activity_groups = db.query(MemberGroup).filter(MemberGroup.is_activity == True).order_by(MemberGroup.name).all()
+    opted_in_ids = set()
+    for ag in activity_groups:
+        row = db.execute(
+            member_group_assoc.select().where(
+                member_group_assoc.c.group_id == ag.id,
+                member_group_assoc.c.member_id == member_id,
+            )
+        ).first()
+        if row:
+            opted_in_ids.add(ag.id)
+    # Only show the opt-in section if the logged-in user is viewing their own profile
+    viewer = request.state.user
+    is_own_profile = viewer and viewer.member_id == member_id
+    return templates.TemplateResponse("members/detail.html", {
+        "request": request,
+        "member": member,
+        "activity_groups": activity_groups,
+        "opted_in_ids": opted_in_ids,
+        "is_own_profile": is_own_profile,
+    })
 
 
 @router.get("/{member_id}/edit", response_class=HTMLResponse)

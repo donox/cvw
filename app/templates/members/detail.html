@@ -77,6 +77,55 @@
 
 </div>
 
+{% if activity_groups %}
+<section style="margin-top:1.5rem">
+    <h2>Activity Groups</h2>
+    {% if is_own_profile %}
+    <p style="font-size:0.9rem; color:#555; margin-bottom:0.75rem">
+        Join or leave recurring activity sub-groups. Leaders may also add you directly.
+    </p>
+    {% endif %}
+    <table class="data-table" style="max-width:600px">
+        <thead>
+            <tr><th>Group</th><th>Schedule</th><th>Status</th>{% if is_own_profile %}<th></th>{% endif %}</tr>
+        </thead>
+        <tbody>
+        {% for ag in activity_groups %}
+        {% set joined = ag.id in opted_in_ids %}
+        <tr>
+            <td><a href="/activity/{{ ag.slug }}/">{{ ag.name }}</a></td>
+            <td style="color:#666">
+                {{ ag.meeting_day or '' }}{% if ag.meeting_day and ag.meeting_frequency %}, {% endif %}{{ ag.meeting_frequency or '' }}
+            </td>
+            <td>
+                {% if joined %}
+                <span class="badge badge-active">Joined</span>
+                {% else %}
+                <span style="color:#888">—</span>
+                {% endif %}
+            </td>
+            {% if is_own_profile %}
+            <td>
+                {% if joined %}
+                <form method="post" action="/activity/{{ ag.slug }}/leave" style="display:inline">
+                    <input type="hidden" name="next" value="/members/{{ member.id }}">
+                    <button type="submit" class="btn btn-secondary" style="padding:0.2rem 0.6rem; font-size:0.85rem">Leave</button>
+                </form>
+                {% else %}
+                <form method="post" action="/activity/{{ ag.slug }}/join" style="display:inline">
+                    <input type="hidden" name="next" value="/members/{{ member.id }}">
+                    <button type="submit" class="btn btn-primary" style="padding:0.2rem 0.6rem; font-size:0.85rem">Join</button>
+                </form>
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
 <div class="form-actions">
     <a href="/members/{{ member.id }}/edit" class="btn btn-primary">Edit</a>
     {% if member.email %}

@@ -341,20 +341,17 @@ A capability for managing recurring sub-group activities where a subset of CVW m
 
 **New router:** `app/routers/activity_group.py` at `/activity/` — visible to overall leaders + admin.
 
-#### Pending — Phase 1 (core)
+#### Completed — Phase 1 (core)
 
-- [ ] DB changes: `is_activity`, `meeting_day`, `meeting_frequency`, `google_group_url` on `MemberGroup`; `GroupLeader` table; `monthly_leader_id` + `planning_notes` on `OrgEvent`; `group_id` on `Resource`
-- [ ] Self-service opt-in: member can join/leave an activity group from their profile page (or a public `/activity/{slug}/join` page)
-- [ ] Overall leader dashboard at `/activity/{slug}/` — scoped to one group:
-  - Member roster (opted-in list, with join/leave controls)
-  - Event list — upcoming + past sessions for this group
-  - Designate monthly leader per event (dropdown on event edit)
-  - Email compose — pre-targeted to this group's members
-  - Artifacts — group-scoped resources (links, uploaded docs)
-  - Planning notes per event
-  - Link to Google Group (chat/discussion)
-- [ ] Admin can create/configure activity groups
-- [ ] Nav: "Activities ▾" dropdown in internal nav, visible to overall leaders + admin; lists groups they lead
+- [x] DB changes: `is_activity`, `meeting_day`, `meeting_frequency`, `google_group_url` on `MemberGroup`; `GroupLeader` table; `monthly_leader_id` + `planning_notes` on `OrgEvent`; `group_id` on `Resource`
+- [x] Overall leader dashboard at `/activity/{slug}/` — scoped to one group: member roster, upcoming events, monthly leader designation, email link, group-scoped artifacts, planning notes, Google Group link
+- [x] Add/remove overall leaders from the members page
+- [x] Nav: "Activities" link in internal nav; activity list at `/activity/`
+
+#### Completed — Phase 2
+
+- [x] Self-service opt-in on member profile page: member views own profile → sees all activity groups with Join/Leave buttons; redirects back to profile after action
+- [x] Activity fields on group create/edit form: `is_activity` checkbox reveals slug, meeting day, meeting frequency, and Google Group URL fields; slug uniqueness validated
 
 #### Pending — Phase 2 (enhancements)
 

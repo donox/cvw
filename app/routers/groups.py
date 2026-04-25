@@ -54,12 +54,20 @@ def create_group(
     fc_skill_level: str = Form(""),
     fc_volunteer_interest: str = Form(""),
     member_ids: list[int] = Form(default=[]),
+    is_activity: Optional[str] = Form(None),
+    slug: str = Form(""),
+    meeting_day: str = Form(""),
+    meeting_frequency: str = Form(""),
+    google_group_url: str = Form(""),
     _=edit_auth,
     db: Session = Depends(get_db),
 ):
     errors = []
     if db.query(MemberGroup).filter(MemberGroup.name == name.strip()).first():
         errors.append(f"A group named '{name}' already exists.")
+    slug_val = slug.strip() or None
+    if slug_val and db.query(MemberGroup).filter(MemberGroup.slug == slug_val).first():
+        errors.append(f"The slug '{slug_val}' is already in use.")
     if errors:
         members = db.query(Member).filter(Member.status == "Active").order_by(
             Member.last_name, Member.first_name).all()
@@ -71,6 +79,7 @@ def create_group(
         }, status_code=422)
 
     dynamic = is_dynamic == "on"
+    activity = is_activity == "on"
     criteria = None
     if dynamic:
         criteria = json.dumps({k: v for k, v in {
@@ -83,6 +92,11 @@ def create_group(
     group = MemberGroup(
         name=name.strip(), description=description.strip(),
         is_dynamic=dynamic, filter_criteria=criteria,
+        is_activity=activity,
+        slug=slug_val,
+        meeting_day=meeting_day.strip() or None,
+        meeting_frequency=meeting_frequency.strip() or None,
+        google_group_url=google_group_url.strip() or None,
         created_by=user.username if user else "",
     )
     if not dynamic and member_ids:
@@ -129,6 +143,11 @@ def update_group(
     fc_skill_level: str = Form(""),
     fc_volunteer_interest: str = Form(""),
     member_ids: list[int] = Form(default=[]),
+    is_activity: Optional[str] = Form(None),
+    slug: str = Form(""),
+    meeting_day: str = Form(""),
+    meeting_frequency: str = Form(""),
+    google_group_url: str = Form(""),
     _=edit_auth,
     db: Session = Depends(get_db),
 ):
@@ -142,6 +161,13 @@ def update_group(
     ).first()
     if duplicate:
         errors.append(f"A group named '{name}' already exists.")
+    slug_val = slug.strip() or None
+    if slug_val:
+        slug_conflict = db.query(MemberGroup).filter(
+            MemberGroup.slug == slug_val, MemberGroup.id != group_id
+        ).first()
+        if slug_conflict:
+            errors.append(f"The slug '{slug_val}' is already in use.")
     if errors:
         members = db.query(Member).order_by(Member.last_name, Member.first_name).all()
         return templates.TemplateResponse("groups/form.html", {
@@ -151,6 +177,7 @@ def update_group(
         }, status_code=422)
 
     dynamic = is_dynamic == "on"
+    activity = is_activity == "on"
     criteria = None
     if dynamic:
         criteria = json.dumps({k: v for k, v in {
@@ -163,6 +190,11 @@ def update_group(
     group.description = description.strip()
     group.is_dynamic = dynamic
     group.filter_criteria = criteria
+    group.is_activity = activity
+    group.slug = slug_val
+    group.meeting_day = meeting_day.strip() or None
+    group.meeting_frequency = meeting_frequency.strip() or None
+    group.google_group_url = google_group_url.strip() or None
     if not dynamic:
         group.members = db.query(Member).filter(Member.id.in_(member_ids)).all() if member_ids else []
     db.commit()
