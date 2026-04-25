@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} — Documents{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+    <div>
+        <a href="/activity/{{ group.slug }}/" style="font-size:0.9rem; color:#666">← {{ group.name }}</a>
+        <h1 style="margin:0.25rem 0">Documents</h1>
+    </div>
+    {% if is_leader %}
+    <a href="/activity/{{ group.slug }}/docs/new" class="btn btn-primary">+ New Document</a>
+    {% endif %}
+</div>
+
+{% if docs %}
+<table class="data-table">
+    <thead>
+        <tr><th>Title</th><th>Last Updated</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for doc in docs %}
+    <tr>
+        <td><a href="/activity/{{ group.slug }}/docs/{{ doc.id }}">{{ doc.title }}</a></td>
+        <td style="color:#666; font-size:0.9rem">{{ doc.updated_at.strftime('%Y-%m-%d') if doc.updated_at else '—' }}</td>
+        <td>
+            {% if is_leader %}
+            <a href="/activity/{{ group.slug }}/docs/{{ doc.id }}/edit" class="btn btn-secondary" style="font-size:0.85rem; padding:0.2rem 0.6rem">Edit</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888">No documents yet.{% if is_leader %} <a href="/activity/{{ group.slug }}/docs/new">Create the first one.</a>{% endif %}</p>
+{% endif %}
+{% endblock %}

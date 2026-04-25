@@ -171,20 +171,47 @@ docker compose exec web bash -c "cd /app && alembic upgrade head"
 docker compose logs web --tail=20   # confirm clean startup
 ```
 
-### Scenario: Migration fails with "table already exists"
+### Scenario: Migration fails with "table already exists" or "duplicate column name"
 
-The table was created outside of Alembic (e.g. by `create_all` on first boot).
+SQLAlchemy's `create_all` on first boot can pre-create tables/columns before
+Alembic migrations were in place. When a migration then tries to add them it
+errors — and any columns/tables listed *after* the duplicate in the same
+migration are never created.
 
-1. Stamp the revision so Alembic considers it done:
-   ```bash
-   docker compose exec web bash -c "cd /app && alembic stamp <revision_id>"
-   ```
-2. If the migration also seeded data, run the seed script manually
-   (see Admin Scripts below).
-3. Confirm state:
-   ```bash
-   docker compose exec web bash -c "cd /app && alembic current"
-   ```
+**Step 1 — stamp the revision** so Alembic considers it done:
+```bash
+docker compose exec web bash -c "cd /app && python -m alembic stamp <revision_id>"
+```
+
+**Step 2 — check what actually got created.** The migration may have failed
+partway through, leaving later columns/tables missing. Inspect the DB:
+```bash
+docker compose cp /opt/cvwapp/admin/check_groups.py web:/app/check_groups.py
+docker compose exec web bash -c "cd /app && python check_groups.py"
+```
+Or for a specific table's columns:
+```bash
+docker compose exec web bash -c "cd /app && python -c \"
+from sqlalchemy import text; from app.database import engine
+with engine.connect() as c:
+    [print(r) for r in c.execute(text('PRAGMA table_info(org_events)')).fetchall()]
+\""
+```
+
+**Step 3 — patch any missing columns** with a script in `scripts/admin/`
+that uses `ALTER TABLE ... ADD COLUMN` (SQLite is safe to re-run these —
+just check `PRAGMA table_info` first to avoid duplicate errors).
+
+**Step 4 — confirm and restart:**
+```bash
+docker compose exec web bash -c "cd /app && python -m alembic current"
+docker compose restart web
+docker compose logs web --tail=20
+```
+
+**Why this happens:** SQLAlchemy's `create_all` creates the full schema from
+models on first boot. Alembic then can't add what's already there. The fix
+is always stamp + manually patch anything that was skipped.
 
 ### Scenario: App won't start after a deploy
 

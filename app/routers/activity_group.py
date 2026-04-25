@@ -1,6 +1,7 @@
 """Activity Group router — leader dashboard for opt-in sub-group activities."""
 from datetime import date
 
+import markdown as md
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.group import MemberGroup, member_group_assoc
+from app.models.group_document import GroupDocument
 from app.models.group_leader import GroupLeader
 from app.models.member import Member
 from app.models.org import OrgEvent, EVENT_TYPES
@@ -453,3 +455,149 @@ def delete_resource(
         db.delete(res)
         db.commit()
     return RedirectResponse(url=f"/activity/{slug}/resources", status_code=303)
+
+
+# ── Documents ─────────────────────────────────────────────────────────────────
+
+@router.get("/{slug}/docs", response_class=HTMLResponse)
+def docs_list(
+    slug: str,
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    group = _get_group_or_404(slug, db)
+    is_leader = _is_overall_leader(user, group, db)
+    docs = (
+        db.query(GroupDocument)
+        .filter(GroupDocument.group_id == group.id)
+        .order_by(GroupDocument.sort_order, GroupDocument.title)
+        .all()
+    )
+    return templates.TemplateResponse("activity/docs_list.html", {
+        "request": request,
+        "group": group,
+        "docs": docs,
+        "is_leader": is_leader,
+    })
+
+
+@router.get("/{slug}/docs/new", response_class=HTMLResponse)
+def new_doc_form(
+    slug: str,
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    group = _get_group_or_404(slug, db)
+    _require_leader(user, group, db)
+    return templates.TemplateResponse("activity/doc_form.html", {
+        "request": request,
+        "group": group,
+        "doc": None,
+        "errors": [],
+    })
+
+
+@router.post("/{slug}/docs/new", response_class=RedirectResponse)
+def create_doc(
+    slug: str,
+    title: str = Form(...),
+    body: str = Form(""),
+    sort_order: str = Form("0"),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    group = _get_group_or_404(slug, db)
+    _require_leader(user, group, db)
+    doc = GroupDocument(
+        group_id=group.id,
+        title=title.strip(),
+        body=body,
+        sort_order=int(sort_order) if sort_order.strip().lstrip("-").isdigit() else 0,
+    )
+    db.add(doc)
+    db.commit()
+    return RedirectResponse(url=f"/activity/{slug}/docs/{doc.id}", status_code=303)
+
+
+@router.get("/{slug}/docs/{doc_id}", response_class=HTMLResponse)
+def view_doc(
+    slug: str,
+    doc_id: int,
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    group = _get_group_or_404(slug, db)
+    doc = db.get(GroupDocument, doc_id)
+    if not doc or doc.group_id != group.id:
+        raise HTTPException(status_code=404)
+    is_leader = _is_overall_leader(user, group, db)
+    body_html = md.markdown(doc.body or "", extensions=["tables", "toc", "fenced_code"])
+    return templates.TemplateResponse("activity/doc_detail.html", {
+        "request": request,
+        "group": group,
+        "doc": doc,
+        "body_html": body_html,
+        "is_leader": is_leader,
+    })
+
+
+@router.get("/{slug}/docs/{doc_id}/edit", response_class=HTMLResponse)
+def edit_doc_form(
+    slug: str,
+    doc_id: int,
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    group = _get_group_or_404(slug, db)
+    _require_leader(user, group, db)
+    doc = db.get(GroupDocument, doc_id)
+    if not doc or doc.group_id != group.id:
+        raise HTTPException(status_code=404)
+    return templates.TemplateResponse("activity/doc_form.html", {
+        "request": request,
+        "group": group,
+        "doc": doc,
+        "errors": [],
+    })
+
+
+@router.post("/{slug}/docs/{doc_id}/edit", response_class=RedirectResponse)
+def update_doc(
+    slug: str,
+    doc_id: int,
+    title: str = Form(...),
+    body: str = Form(""),
+    sort_order: str = Form("0"),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    group = _get_group_or_404(slug, db)
+    _require_leader(user, group, db)
+    doc = db.get(GroupDocument, doc_id)
+    if not doc or doc.group_id != group.id:
+        raise HTTPException(status_code=404)
+    doc.title = title.strip()
+    doc.body = body
+    doc.sort_order = int(sort_order) if sort_order.strip().lstrip("-").isdigit() else 0
+    db.commit()
+    return RedirectResponse(url=f"/activity/{slug}/docs/{doc_id}", status_code=303)
+
+
+@router.post("/{slug}/docs/{doc_id}/delete", response_class=RedirectResponse)
+def delete_doc(
+    slug: str,
+    doc_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    group = _get_group_or_404(slug, db)
+    _require_leader(user, group, db)
+    doc = db.get(GroupDocument, doc_id)
+    if doc and doc.group_id == group.id:
+        db.delete(doc)
+        db.commit()
+    return RedirectResponse(url=f"/activity/{slug}/docs", status_code=303)

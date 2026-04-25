@@ -11,6 +11,7 @@
         <a href="/activity/{{ group.slug }}/events/new" class="btn btn-primary">+ New Event</a>
         <a href="/activity/{{ group.slug }}/members" class="btn btn-secondary">Manage Members</a>
         <a href="/activity/{{ group.slug }}/resources" class="btn btn-secondary">Resources</a>
+        <a href="/activity/{{ group.slug }}/docs" class="btn btn-secondary">Documents</a>
         {% endif %}
         {% if request.state.user.member_id %}
             {% if opted_in %}
