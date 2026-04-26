@@ -4,9 +4,46 @@ Living document tracking decisions, directions, and status of ongoing developmen
 
 ---
 
+## Index
+
+- [Current Direction](#current-direction)
+- [Architecture](#architecture)
+- [Decisions Log](#decisions-log)
+- [Completed Features](#completed-features)
+  - [Infrastructure](#infrastructure)
+  - [Member Management](#member-management)
+  - [Programs](#programs)
+  - [Financial Console](#financial-console)
+  - [Executive Console](#executive-console)
+  - [Admin Console](#admin-console)
+  - [Member Groups](#member-groups)
+  - [Email Console](#email-console)
+  - [Programs (additions)](#programs-additions)
+  - [Public Website (Phase 1)](#public-website-phase-1)
+  - [Event Registration & Attendance](#event-registration--attendance)
+  - [Librarian Console](#librarian-console)
+- [Pending / Backlog](#pending--backlog)
+  - [Member Management](#member-management-1)
+  - [Programs](#programs-1)
+  - [Financial Console](#financial-console-1)
+  - [Infrastructure](#infrastructure-1)
+  - [Public Website](#public-website)
+  - [Off-Site Backup — Google Drive](#off-site-backup--google-drive-pending-team-decision)
+  - [Executive Console](#executive-console-1)
+  - [Process Library](#process-library)
+  - [Member Activity Groups](#member-activity-groups)
+- [Inbound Email](#inbound-email)
+- [Open Questions / Items for Discussion](#open-questions--items-for-discussion)
+- [Conventions](#conventions)
+- [Deployment](#deployment)
+
+---
+
 ## Current Direction
 
 Build and maintain a membership management web application for CVW (Central Virginia Woodturners), with a public-facing website at `/site/` (Phase 1 live). See [PUBLIC_SITE_PLAN.md](PUBLIC_SITE_PLAN.md) for the public site roadmap and [FINANCIAL_PLAN.md](FINANCIAL_PLAN.md) for planned financial enhancements.
+
+[↑ Index](#index)
 
 ---
 
@@ -24,6 +61,8 @@ Build and maintain a membership management web application for CVW (Central Virg
 | Settings | pydantic-settings via .env | Twelve-factor config |
 | Email | smtplib (stdlib) | No external dependency; SMTP config in .env |
 | Scheduling | APScheduler 3.x + SQLAlchemy jobstore | Persistent scheduled email jobs |
+
+[↑ Index](#index)
 
 ---
 
@@ -62,6 +101,8 @@ Build and maintain a membership management web application for CVW (Central Virg
 | 2026-03-27 | Mailgun `h:Reply-To` — configurable default in `.env`, overridable per compose | Thunderbird strips Reply-To in some configurations; per-send override gives sender control |
 | 2026-04-19 | `scripts/admin/` pattern for gitignored production scripts; deployed via `sync_admin.sh` + `run_admin.sh` | Avoids committing credentials or server-specific logic; scripts run inside Docker container |
 | 2026-04-19 | Process Library stored as YAML-frontmatter Markdown in `docs/processes/`; rendered by a new router | File-based keeps processes in git history and editable by Claude Code; no DB or form editor needed for officers |
+
+[↑ Index](#index)
 
 ---
 
@@ -171,6 +212,8 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [x] 93 resources seeded from centralvawoodturners.org (`scripts/seed_resources.py`)
 - [x] File upload support — resources can be uploaded files (PDF, Word, etc.) stored in `app/static/resources/` or external URLs; `file_path` column added via migration
 
+[↑ Index](#index)
+
 ---
 
 ## Pending / Backlog
@@ -247,6 +290,8 @@ Build and maintain a membership management web application for CVW (Central Virg
 - **Migrate to PostgreSQL only if** `database is locked` errors appear in logs after group events — migration is straightforward when needed
 
 **Why not S3:** Google Drive is free at this scale and the club likely already has Google accounts. S3 would require AWS credentials and small monthly cost.
+
+[↑ Index](#index)
 
 ---
 
@@ -370,6 +415,8 @@ A capability for managing recurring sub-group activities where a subset of CVW m
 | Nav placement | New "Activities ▾" dropdown (not under VP Membership) — activity groups may span multiple officer roles over time |
 | Multiple activity groups eventually? | Yes — build generic from the start; Drop-In Saturday is just the first instance |
 
+[↑ Index](#index)
+
 ---
 
 ## Inbound Email
@@ -454,6 +501,8 @@ Parser strips whitespace, handles case variations, ignores unrecognised lines.
 - [ ] **Phase 2 — Skills/interests update form:** outbound email template with structured fields; inbound parser; member record update.
 - [ ] **Phase 3 — Application by email:** inbound parser for application fields; create `Prospective` member; notify VP Membership.
 
+[↑ Index](#index)
+
 ---
 
 ## Open Questions / Items for Discussion
@@ -464,6 +513,8 @@ Parser strips whitespace, handles case variations, ignores unrecognised lines.
 | 2 | Process Library — editing model | **Decided:** file-based only (Claude Code). Officers request changes via plain-English; no in-app editor needed. |
 | 3 | Process Library — public visibility | **Decided:** public only where necessary (e.g., renewal instructions). Officer-only by default. |
 | 4 | Email origination — who can send and to whom | Current system roles (exec, program, financial, membership, admin) can email any group or all members. Activity group leaders are not system roles — it is unclear whether they should be able to originate email at all, or only to their own group, or whether the right answer is to assign them a system role. Needs discussion before implementing group-leader email access. |
+
+[↑ Index](#index)
 
 ---
 
@@ -476,6 +527,8 @@ Parser strips whitespace, handles case variations, ignores unrecognised lines.
 - `.env` for all environment-specific config; never hardcode
 - Form dropdowns defined as constants in the router file
 - SQLite batch mode required for `ALTER COLUMN` in Alembic migrations
+
+[↑ Index](#index)
 
 ---
 
@@ -495,3 +548,5 @@ See Docker section — add nginx/Caddy reverse proxy for HTTPS, switch `docker-c
 docker compose up -d --build
 docker compose exec web alembic upgrade head
 ```
+
+[↑ Index](#index)
