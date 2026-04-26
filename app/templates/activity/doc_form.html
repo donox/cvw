@@ -19,8 +19,9 @@
     </div>
     <div class="form-group">
         <label>Content <span style="font-weight:normal; color:#888">(Markdown supported)</span></label>
-        <textarea name="body" rows="24"
+        <textarea id="body" name="body" rows="24"
                   style="font-family: monospace; font-size: 0.9rem; width:100%">{{ doc.body if doc else '' }}</textarea>
+        <div id="md-warnings" style="margin-top:0.4rem"></div>
     </div>
     <div class="form-group" style="max-width:120px">
         <label>Sort Order</label>
@@ -31,4 +32,98 @@
         <a href="/activity/{{ group.slug }}/docs{% if doc %}/{{ doc.id }}{% endif %}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
+
+<script>
+function checkMarkdown(text) {
+    const warnings = [];
+    const lines = text.split('\n');
+
+    // Unclosed fenced code blocks (odd number of ```)
+    const fenceCount = (text.match(/^```/gm) || []).length;
+    if (fenceCount % 2 !== 0) {
+        warnings.push('Unclosed fenced code block — odd number of ``` markers.');
+    }
+
+    // Unclosed bold (**) — count non-overlapping pairs
+    const boldMarkers = (text.match(/\*\*/g) || []).length;
+    if (boldMarkers % 2 !== 0) {
+        warnings.push('Unclosed bold — odd number of ** markers.');
+    }
+
+    // Heading hierarchy — track levels, warn on skipped levels
+    let lastLevel = 0;
+    lines.forEach((line, i) => {
+        const m = line.match(/^(#{1,6})\s/);
+        if (m) {
+            const level = m[1].length;
+            if (lastLevel > 0 && level > lastLevel + 1) {
+                warnings.push(`Line ${i + 1}: heading jumps from H${lastLevel} to H${level} (skips a level).`);
+            }
+            lastLevel = level;
+        }
+    });
+
+    // Broken link syntax — [ without matching ](
+    const openBrackets = (text.match(/\[/g) || []).length;
+    const closedLinks  = (text.match(/\]\(/g) || []).length;
+    const closedRef    = (text.match(/\]\[/g) || []).length;
+    const closedPlain  = (text.match(/\][^(\[]/g) || []).length;
+    if (openBrackets > closedLinks + closedRef + closedPlain) {
+        warnings.push('Possible broken link — a [ may be missing its ]( or ).');
+    }
+
+    // Malformed tables — header row not followed by separator
+    lines.forEach((line, i) => {
+        if (line.includes('|') && i + 1 < lines.length) {
+            const next = lines[i + 1];
+            const looksLikeHeader = line.trim().startsWith('|') || line.includes(' | ');
+            const nextIsSep = /^\s*\|?\s*[-:]+[-| :]*$/.test(next);
+            const nextIsAlsoSep = /^\s*\|?\s*[-:]+[-| :]*$/.test(line);
+            if (looksLikeHeader && !nextIsSep && !nextIsAlsoSep && i > 0) {
+                const prevIsSep = /^\s*\|?\s*[-:]+[-| :]*$/.test(lines[i - 1]);
+                if (!prevIsSep) {
+                    // only warn once per table: first pipe row not preceded/followed by separator
+                }
+            }
+        }
+        // Simpler table check: separator row must follow header
+        if (/^\|.+\|/.test(line) && i + 1 < lines.length) {
+            const next = lines[i + 1];
+            if (!/[-|: ]{3,}/.test(next) && i === 0) {
+                warnings.push(`Line ${i + 1}: table header may be missing a separator row (|---|---|).`);
+            }
+        }
+    });
+
+    // Empty link URLs  [text]()
+    if (/\]\(\s*\)/.test(text)) {
+        warnings.push('Empty link URL — found ]() with no address.');
+    }
+
+    return warnings;
+}
+
+function renderWarnings(warnings) {
+    const el = document.getElementById('md-warnings');
+    if (warnings.length === 0) {
+        el.innerHTML = '';
+        return;
+    }
+    el.innerHTML = '<div style="background:#fff8e1; border:1px solid #f0c040; border-radius:4px; padding:0.6rem 0.9rem; font-size:0.875rem">'
+        + '<strong style="color:#7a5c00">Formatting notes</strong>'
+        + '<ul style="margin:0.4rem 0 0; padding-left:1.4rem">'
+        + warnings.map(w => `<li>${w}</li>`).join('')
+        + '</ul></div>';
+}
+
+let debounce;
+const textarea = document.getElementById('body');
+textarea.addEventListener('input', function() {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => renderWarnings(checkMarkdown(this.value)), 400);
+});
+
+// Run on page load for existing content
+renderWarnings(checkMarkdown(textarea.value));
+</script>
 {% endblock %}

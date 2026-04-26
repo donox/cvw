@@ -372,6 +372,90 @@ A capability for managing recurring sub-group activities where a subset of CVW m
 
 ---
 
+## Inbound Email
+
+A mechanism for receiving email sent to club addresses and routing it — either processing structured form replies automatically or logging unstructured replies for officer review.
+
+### Use Cases
+
+| Type | Example | Desired outcome |
+|---|---|---|
+| Structured | Member replies to a mailed application or skills-update form | Parse fields, create/update DB record |
+| Unstructured | General reply to a club email | Log to inbox, admin reviews and acts |
+
+### Architecture
+
+**Inbound routing via Mailgun webhooks** — Mailgun receives email at configured addresses on `cvwdev.org` and POSTs parsed content to a webhook endpoint in the app. No separate mail server required; extends the existing Mailgun integration.
+
+**Address-based classification** (recommended over subject/body parsing — explicit and reliable):
+
+| Address | Handler |
+|---|---|
+| `apply@cvwdev.org` | Structured — membership application |
+| `update@cvwdev.org` | Structured — member skills/interests update |
+| `reply@cvwdev.org` | Unstructured — general inbox |
+
+**New components:**
+
+| Component | Purpose |
+|---|---|
+| `InboundEmail` model | Stores every received email: sender, recipient, subject, body, received_at, status (`new`/`handled`), handler (who marked it handled), raw JSON payload |
+| `POST /inbound/email` | Mailgun webhook endpoint — validates signature, saves to DB, dispatches to classifier |
+| Classifier | Routes by recipient address to structured parser or unstructured inbox |
+| Structured parsers | One per form type; extract fields from body, create/update DB records |
+| Admin inbox | `/admin/inbox/` — lists unstructured emails, mark-handled, reroute; admin-role only (expandable) |
+
+### Structured Forms — Phase 1 Targets
+
+**Membership Application (`apply@cvwdev.org`)**
+- Sender becomes the applicant email
+- Body parsed for fields matching the `/apply` form (name, address, membership type, etc.)
+- Creates a new `Member` record with status `Prospective` — same outcome as the web form
+- Sends confirmation email to applicant; notifies VP Membership
+
+**Skills / Interests Update (`update@cvwdev.org`)**
+- New email form (not yet built) sent to existing members asking them to update skill level, volunteer interest, volunteer areas
+- Body parsed for key:value pairs or a simple structured format (TBD)
+- Updates the matched `Member` record; match by sender email
+
+### Structured Email Format
+
+For reply-based forms, members fill in values next to labelled fields in the email body. Simple, no app login required. Example:
+
+```
+Skill Level: Intermediate
+Volunteer Interest: Yes
+Volunteer Areas: Demonstrating, Teaching beginners
+```
+
+Parser strips whitespace, handles case variations, ignores unrecognised lines.
+
+### Mailgun Setup (one-time, when ready to build)
+
+1. In Mailgun dashboard → Receiving → Create Route
+2. Match: `match_recipient("apply@cvwdev.org")` (one route per address)
+3. Action: `forward("https://cvwdev.org/inbound/email")`
+4. Repeat for each inbound address
+5. Add `MAILGUN_WEBHOOK_SIGNING_KEY` to `.env` (found in Mailgun dashboard → Webhooks)
+
+### Open Decisions
+
+| Question | Notes |
+|---|---|
+| Mailgun pricing for inbound | **Resolved:** all current CVW usage (outbound + inbound) qualifies for the free tier as of 2026-04-26. |
+| Format of skills-update email | Key:value pairs (simplest to parse); or a numbered response format; decide when building the outbound form |
+| Rerouting unstructured mail | Admin can currently only mark handled; future: reassign to a specific officer or forward to their email |
+| Spam / invalid webhook calls | Mailgun signs all webhook POSTs — validate signature in the endpoint before processing |
+| Matching update emails to members | Match by sender email address; if no match, log as unstructured with a note |
+
+### Implementation Phases
+
+- [ ] **Phase 1 — Unstructured inbox:** `InboundEmail` model + migration, webhook endpoint, admin inbox view at `/admin/inbox/`. All inbound mail logged and visible to admin.
+- [ ] **Phase 2 — Skills/interests update form:** outbound email template with structured fields; inbound parser; member record update.
+- [ ] **Phase 3 — Application by email:** inbound parser for application fields; create `Prospective` member; notify VP Membership.
+
+---
+
 ## Open Questions / Items for Discussion
 
 | # | Topic | Summary |
