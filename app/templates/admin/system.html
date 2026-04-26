@@ -79,4 +79,47 @@
         </form>
     </section>
 </div>
+
+<div style="margin-top:2rem; display:flex; flex-direction:column; gap:1rem">
+
+    <details style="background:#f9f9f9; border:1px solid #ddd; border-radius:6px; padding:0.75rem 1.25rem">
+        <summary style="cursor:pointer; font-weight:600; font-size:0.95rem">
+            When is a terminal deploy required instead of Deploy Update?
+        </summary>
+        <div style="margin-top:0.75rem; font-size:0.9rem; color:#444; line-height:1.6">
+            <p style="margin:0 0 0.5rem"><strong>Deploy Update</strong> (this page) does a <code>git pull</code>
+            and lets Uvicorn reload the Python files. That covers most code changes.</p>
+            <p style="margin:0 0 0.5rem">A <strong>terminal deploy</strong> is required when:</p>
+            <ul style="margin:0 0 0.5rem; padding-left:1.4rem">
+                <li><strong>New Python packages were added</strong> — <code>git pull</code> alone won't install them;
+                    the Docker image must be rebuilt with <code>docker compose up -d --build</code>.</li>
+                <li><strong>The Dockerfile or docker-compose.yml changed</strong> — same reason; a rebuild is needed.</li>
+                <li><strong>A migration failed or was stamped manually</strong> — you may need to run
+                    <code>python -m alembic upgrade head</code> or a patch script inside the container.</li>
+            </ul>
+            <p style="margin:0; color:#666">The deploy output above will say
+            <em>"If new packages were added, a manual docker compose up -d --build is required"</em>
+            when it detects changed files — but when in doubt, a full terminal deploy is always safe.</p>
+        </div>
+    </details>
+
+    <details style="background:#f9f9f9; border:1px solid #ddd; border-radius:6px; padding:0.75rem 1.25rem">
+        <summary style="cursor:pointer; font-weight:600; font-size:0.95rem">
+            What is a staged database restore?
+        </summary>
+        <div style="margin-top:0.75rem; font-size:0.9rem; color:#444; line-height:1.6">
+            <p style="margin:0 0 0.5rem">When you click <strong>Restore</strong> on the Backups page, the backup file
+            is copied to a holding location but the live database is <em>not touched yet</em>.
+            This is the "staged" state — nothing is overwritten until the server restarts.</p>
+            <p style="margin:0 0 0.5rem">On restart, the app detects the staged file, swaps it in as the live
+            database, and starts normally with the restored data. The yellow
+            <em>"Restore staged"</em> banner at the top of this page appears when a restore is waiting.</p>
+            <p style="margin:0; color:#666">The two-step design means you can cancel a restore simply by
+            restarting without confirming — though once the restart begins the swap happens automatically.
+            Always take a fresh manual backup before restoring, so you can recover the state you had
+            just before.</p>
+        </div>
+    </details>
+
+</div>
 {% endblock %}
