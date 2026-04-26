@@ -5,6 +5,25 @@ This document is intended to support executive understanding and discussion of t
 
 ---
 
+## Index
+
+- [Purpose](#purpose)
+- [Two Kinds of Maintenance](#two-kinds-of-maintenance)
+- [Site Settings — How They Work](#site-settings--how-they-work)
+- [What Is Claude Code?](#what-is-claude-code)
+- [Who Should Be the Maintainer?](#who-should-be-the-maintainer)
+- [Hypothetical Example: Making a Change](#hypothetical-example-making-a-change)
+- [Hypothetical Example: Correcting Content Not in the Admin Console](#hypothetical-example-correcting-content-that-is-not-in-the-admin-console)
+- [What the Non-Technical Maintainer Model Handles Well](#what-the-non-technical-maintainer-model-handles-well)
+- [Where the Model Has Gaps — When a Developer Is Needed](#where-the-model-has-gaps--when-a-developer-is-needed)
+- [Recommended Maintenance Model](#recommended-maintenance-model)
+- [What Claude Code Cannot Do](#what-claude-code-cannot-do-without-extra-steps)
+- [Backup and Recovery](#backup-and-recovery)
+- [Open Questions](#open-questions-requiring-decision-before-this-guide-is-operational)
+- [Summary](#summary)
+
+---
+
 ## Purpose
 
 The CVW membership system is a custom web application. Unlike a hosted platform (WordPress, Wild Apricot), it runs on a server we control and is maintained by editing code files. This gives full control over features and data, but it means someone must be able to make changes when they are needed.
@@ -43,6 +62,20 @@ These tasks require editing the application code. Examples include:
 - Changing how something looks or is laid out
 
 For these, a designated maintainer opens a conversation with Claude Code, describes what is needed in plain English, and Claude Code makes the changes. No programming knowledge is required to describe the task — only the ability to say clearly what you want.
+
+---
+
+## Site Settings — How They Work
+
+The **Admin → Site Content → Settings** page shows editable values such as meeting time, location, and dues amounts. These values are pre-defined in code and seeded into the database on first startup. **You can edit them freely in the UI, but you cannot add new settings there — the UI has no "Add" button.**
+
+To add a new setting (e.g. a new dues category or a configurable label that appears on the public site):
+
+1. Ask Claude Code: *"Add a site setting for X with label Y and default value Z."*
+2. Claude Code adds it to the seed list in `app/main.py` and any templates that use it.
+3. On next startup the new setting appears automatically in the Settings page for editing.
+
+This also applies to **Content Blocks** (the narrative text sections on About, Skill Center, etc.) — new blocks must be defined in code, then they become editable in the UI.
 
 ---
 

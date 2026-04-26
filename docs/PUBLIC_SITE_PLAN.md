@@ -5,9 +5,27 @@
 
 ---
 
+## Index
+
+- [Concept](#concept)
+- [Current Site Inventory](#current-site-inventory)
+- [What CVWdata Already Covers](#what-cvwdata-already-covers)
+- [Proposed Public Pages](#proposed-public-pages)
+  - [Phase 1 — Complete](#phase-1---complete-live-at-site)
+  - [Phase 2 — Medium effort](#phase-2--medium-effort)
+  - [Phase 3 — Deferred / Complex](#phase-3--deferred--complex)
+- [Technical Approach](#technical-approach)
+- [Open Questions for Officer Discussion](#open-questions-for-officer-discussion)
+- [Suggested Next Steps](#suggested-next-steps)
+- [Dependencies on CVWdata Backlog](#dependencies-on-cvwdata-backlog)
+
+---
+
 ## Concept
 
 Replace the current WordPress site at centralvawoodturners.org with public-facing pages served directly from the CVWdata FastAPI application. The internal officer consoles remain behind login; public pages are open to all. One codebase, one server.
+
+[↑ Index](#index)
 
 ---
 
@@ -31,6 +49,8 @@ The existing WordPress site (centralvawoodturners.org) has the following pages:
 | Contact Us | Form | Multi-select officer dropdown, Contact Form 7 |
 | Virginia Woodturning Symposium | Static | Annual event info, volunteer opportunities |
 
+[↑ Index](#index)
+
 ---
 
 ## What CVWdata Already Covers
@@ -42,6 +62,8 @@ The existing WordPress site (centralvawoodturners.org) has the following pages:
 | Program/meeting calendar | ✅ OrgEvent model exists, needs public route |
 | Dues payment tiers | ❌ Static page needed |
 | Member feedback (QR) | ✅ `/programs/{id}/feedback` — public |
+
+[↑ Index](#index)
 
 ---
 
@@ -120,6 +142,8 @@ The initial plan proposed a YAML file (`data/resources.yaml`) on the grounds tha
 
 **Actual approach:** `Resource` DB table (category, title, url, description, sort_order, active) managed via the Librarian console at `/librarian/resources/`. The `librarian` role and a "Volunteer ▾" nav dropdown were added at the same time to support future volunteer-role consoles.
 
+[↑ Index](#index)
+
 ---
 
 ### Phase 3 — Deferred / Complex
@@ -131,6 +155,8 @@ The initial plan proposed a YAML file (`data/resources.yaml`) on the grounds tha
 | Gallery submission | Members submit photos; admin approves |
 | Email contact routing | Contact form emails correct officer by role; requires SMTP config |
 | Zoom link management | Store and display Zoom credentials per meeting |
+
+[↑ Index](#index)
 
 ---
 
@@ -156,6 +182,8 @@ Use Python's `smtplib` or `fastapi-mail` with SMTP credentials in `.env`. Route 
 - Run behind nginx or Caddy for HTTPS (Let's Encrypt)
 - Keep the WordPress site live until the new site is fully ready, then cut over
 
+[↑ Index](#index)
+
 ---
 
 ## Open Questions for Officer Discussion
@@ -172,6 +200,8 @@ Use Python's `smtplib` or `fastapi-mail` with SMTP credentials in `.env`. Route 
 
 6. **Timeline** — Phase 1 could be prototyped quickly for discussion. Full cutover to replace WordPress would require officer sign-off and a transition plan.
 
+[↑ Index](#index)
+
 ---
 
 ## Suggested Next Steps
@@ -180,6 +210,8 @@ Use Python's `smtplib` or `fastapi-mail` with SMTP credentials in `.env`. Route 
 2. **Decide on Phase 2 priorities** — Newsletters and gallery require the most effort; resources and dues page are simpler.
 3. **Decide on content ownership** — Static pages (About, Skill Center, Resources) need someone to update them. With FastAPI/Jinja2 this means editing template files — not as easy as WordPress.
 4. **Set a cutover target** — If approved, aim to replace the WordPress site after Phase 2 is at least 80% complete.
+
+[↑ Index](#index)
 
 ---
 
@@ -190,3 +222,5 @@ Completing this plan depends on:
 - Officer data being kept current in the DB (already seeded)
 - A production hosting environment (Docker + domain)
 - SMTP credentials for contact form email routing
+
+[↑ Index](#index)

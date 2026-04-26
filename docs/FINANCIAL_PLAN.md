@@ -6,6 +6,24 @@
 
 ---
 
+## Index
+
+- [Background](#background)
+- [What Works Well Today](#what-works-well-today)
+- [Proposed Enhancements](#proposed-enhancements)
+  - [1 — Chart of Accounts](#1--chart-of-accounts)
+  - [2 — Fiscal Year Awareness](#2--fiscal-year-awareness)
+  - [3 — Reports Page](#3--reports-page)
+  - [4 — Budget](#4--budget)
+  - [5 — CSV Export](#5--csv-export)
+  - [6 — PayPal Dues Payment](#6--paypal-dues-payment)
+- [What Is Deliberately Out of Scope](#what-is-deliberately-out-of-scope)
+- [Suggested Implementation Order](#suggested-implementation-order)
+- [Questions for Discussion](#questions-for-discussion)
+- [Dependencies](#dependencies)
+
+---
+
 ## Background
 
 CVWdata currently records income and expense transactions and displays a
@@ -18,6 +36,8 @@ financial console more useful for day-to-day club management and year-end
 reporting — without introducing the complexity of double-entry accounting
 software.
 
+[↑ Index](#index)
+
 ---
 
 ## What Works Well Today
@@ -29,6 +49,8 @@ software.
 | Transaction list with Income/Expense filter | ✅ Working |
 | Dues paid / unpaid status by member | ✅ Working |
 | Member linked to transaction (e.g. dues payment) | ✅ Working |
+
+[↑ Index](#index)
 
 ---
 
@@ -192,6 +214,8 @@ with minimal new code, no additional dependencies.
 - Does CVW already have a PayPal business account?
 - Should family memberships be a different amount?
 
+[↑ Index](#index)
+
 ---
 
 ## What Is Deliberately Out of Scope
@@ -203,6 +227,8 @@ with minimal new code, no additional dependencies.
 | ~~PayPal / online dues payment~~ | Moved into scope — see Enhancement 6 above |
 | Payroll | CVW has no employees |
 | Tax filing integration | Out of scope for a membership system |
+
+[↑ Index](#index)
 
 ---
 
@@ -229,6 +255,8 @@ with minimal new code, no additional dependencies.
 5. **Audit trail:** Should edited or deleted transactions be logged for audit purposes, or is the current edit/delete approach acceptable?
 6. **Access:** Should the exec role have read-only access to financial reports, or is financial data strictly Treasurer + President only?
 
+[↑ Index](#index)
+
 ---
 
 ## Dependencies
@@ -236,3 +264,5 @@ with minimal new code, no additional dependencies.
 - No new Python packages required for items 1–5
 - PDF export (item 6) uses fpdf2, which is already installed
 - All changes are backward-compatible with existing transaction data
+
+[↑ Index](#index)
