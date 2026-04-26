@@ -38,6 +38,21 @@
 </div>
 {% endif %}
 
+<div style="background:#f4f4f4; border:1px solid #ddd; border-radius:6px;
+            padding:0.75rem 1.25rem; margin-bottom:1.5rem; font-size:0.9rem">
+    <strong>Running version:</strong>
+    {% if git.full %}
+    <a href="https://github.com/donox/cvw/commit/{{ git.full }}" target="_blank"
+       style="font-family:monospace">{{ git.short }}</a>
+    &nbsp;·&nbsp; {{ git.date }}
+    &nbsp;·&nbsp; <span style="color:#555">{{ git.message }}</span>
+    {% else %}
+    <span style="color:#888">unavailable</span>
+    {% endif %}
+    &nbsp;·&nbsp;
+    <a href="https://github.com/donox/cvw/commits/main" target="_blank">View all commits on GitHub →</a>
+</div>
+
 <div class="detail-grid">
     <section>
         <h2>Deploy Update</h2>

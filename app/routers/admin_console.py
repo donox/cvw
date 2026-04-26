@@ -207,6 +207,23 @@ def update_user(
 
 # ── System ────────────────────────────────────────────────────────────────────
 
+def _git_info() -> dict:
+    """Return current commit hash, short hash, message, and date."""
+    try:
+        full = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd="/app", text=True
+        ).strip()
+        short = full[:7]
+        log = subprocess.check_output(
+            ["git", "log", "-1", "--format=%s|%cd", "--date=short"],
+            cwd="/app", text=True,
+        ).strip()
+        message, date = log.split("|", 1) if "|" in log else (log, "")
+        return {"full": full, "short": short, "message": message, "date": date}
+    except Exception:
+        return {"full": "", "short": "unknown", "message": "", "date": ""}
+
+
 @router.get("/system", response_class=HTMLResponse)
 def system_index(request: Request, _=auth):
     from app.backup_service import restore_pending_exists
@@ -214,6 +231,7 @@ def system_index(request: Request, _=auth):
         "request": request,
         "restore_pending": restore_pending_exists(),
         "action": None, "output": None,
+        "git": _git_info(),
     })
 
 
@@ -229,6 +247,7 @@ def system_deploy(request: Request, _=auth):
         "request": request,
         "restore_pending": restore_pending_exists(),
         "action": "deploy", "output": output.strip(),
+        "git": _git_info(),
     })
 
 
@@ -245,6 +264,7 @@ def system_restart(request: Request, _=auth):
         "request": request,
         "restore_pending": restore_pending_exists(),
         "action": "restart", "output": "Server is restarting…",
+        "git": _git_info(),
     })
 
 
