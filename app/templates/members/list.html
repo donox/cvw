@@ -25,6 +25,10 @@
        style="color:inherit; text-decoration:{% if active %}underline{% else %}none{% endif %}">{{ label }}{{ arrow }}</a>
 {% endmacro %}
 
+{% macro page_url(p) %}
+/members/?sort={{ sort }}&dir={{ dir }}{% if search %}&search={{ search }}{% endif %}&page={{ p }}
+{% endmacro %}
+
 {% if members %}
 <table>
     <thead>
@@ -66,7 +70,35 @@
         {% endfor %}
     </tbody>
 </table>
-<p style="margin-top:0.75rem; color:#666;">{{ members|length }} member{{ 's' if members|length != 1 }}{% if search %} matching "{{ search }}"{% endif %}</p>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.75rem">
+    <span style="color:#666; font-size:0.9rem">
+        {{ total }} member{{ 's' if total != 1 }}{% if search %} matching "{{ search }}"{% endif %}
+        {% if total_pages > 1 %} — page {{ page }} of {{ total_pages }}{% endif %}
+    </span>
+    {% if total_pages > 1 %}
+    <div style="display:flex; gap:0.25rem; align-items:center">
+        {% if page > 1 %}
+        <a href="{{ page_url(1) }}" class="btn btn-secondary" style="padding:0.25rem 0.5rem; font-size:0.85rem">«</a>
+        <a href="{{ page_url(page - 1) }}" class="btn btn-secondary" style="padding:0.25rem 0.5rem; font-size:0.85rem">‹ Prev</a>
+        {% endif %}
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+            <span style="padding:0.25rem 0.6rem; font-size:0.85rem; background:#5c3a1e; color:#fff;
+                         border-radius:4px; font-weight:600">{{ p }}</span>
+            {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+            <a href="{{ page_url(p) }}" class="btn btn-secondary"
+               style="padding:0.25rem 0.6rem; font-size:0.85rem">{{ p }}</a>
+            {% elif p == page - 3 or p == page + 3 %}
+            <span style="padding:0.25rem 0.2rem; color:#888">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if page < total_pages %}
+        <a href="{{ page_url(page + 1) }}" class="btn btn-secondary" style="padding:0.25rem 0.5rem; font-size:0.85rem">Next ›</a>
+        <a href="{{ page_url(total_pages) }}" class="btn btn-secondary" style="padding:0.25rem 0.5rem; font-size:0.85rem">»</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
 {% else %}
 <p>No members{% if search %} matching "{{ search }}"{% endif %}.</p>
 {% endif %}

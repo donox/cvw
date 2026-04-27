@@ -147,6 +147,9 @@ def _apply_query_filters(q, status, membership_type, dues_paid, skill_level,
     return q
 
 
+PAGE_SIZE = 25
+
+
 @router.get("/", response_class=HTMLResponse)
 def list_members(
     request: Request,
@@ -155,22 +158,32 @@ def list_members(
     search: Optional[str] = None,
     sort: Optional[str] = None,
     dir: Optional[str] = None,
+    page: int = 1,
 ):
     sort_key = sort if sort in SORT_COLUMNS else "last_name"
     direction = "desc" if dir == "desc" else "asc"
+    page = max(1, page)
     q = db.query(Member)
     if search:
         q = q.filter(Member.last_name.ilike(f"{search}%"))
     cols = SORT_COLUMNS[sort_key]
     if direction == "desc":
         cols = [desc_(c) for c in cols]
-    members = q.order_by(*cols).all()
+    q = q.order_by(*cols)
+    total = q.count()
+    total_pages = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
+    page = min(page, total_pages)
+    members = q.offset((page - 1) * PAGE_SIZE).limit(PAGE_SIZE).all()
     return templates.TemplateResponse("members/list.html", {
         "request": request,
         "members": members,
         "search": search or "",
         "sort": sort_key,
         "dir": direction,
+        "page": page,
+        "total_pages": total_pages,
+        "total": total,
+        "page_size": PAGE_SIZE,
     })
 
 

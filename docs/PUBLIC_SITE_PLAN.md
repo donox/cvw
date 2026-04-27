@@ -1,7 +1,7 @@
 # Option A — CVW Public Website Integrated with CVWdata
 
-**Status:** Phase 1 live at `/site/` — Phase 2 pending officer discussion
-**Last updated:** 2026-03-15
+**Status:** Phase 1 live at `/site/` — Phase 2 in progress
+**Last updated:** 2026-04-27
 
 ---
 
@@ -14,6 +14,10 @@
   - [Phase 1 — Complete](#phase-1---complete-live-at-site)
   - [Phase 2 — Medium effort](#phase-2--medium-effort)
   - [Phase 3 — Deferred / Complex](#phase-3--deferred--complex)
+- [Content Migration from WordPress](#content-migration-from-wordpress)
+  - [Content Classification](#content-classification)
+  - [Members Nav Dropdown](#members-nav-dropdown)
+  - [Migration Process](#migration-process)
 - [Technical Approach](#technical-approach)
 - [Open Questions for Officer Discussion](#open-questions-for-officer-discussion)
 - [Suggested Next Steps](#suggested-next-steps)
@@ -155,6 +159,62 @@ The initial plan proposed a YAML file (`data/resources.yaml`) on the grounds tha
 | Gallery submission | Members submit photos; admin approves |
 | Email contact routing | Contact form emails correct officer by role; requires SMTP config |
 | Zoom link management | Store and display Zoom credentials per meeting |
+
+[↑ Index](#index)
+
+---
+
+## Content Migration from WordPress
+
+Migrate content from centralvawoodturners.org in three buckets based on type and age.
+
+[↑ Index](#index)
+
+### Content Classification
+
+| WordPress Page | Bucket | Destination | Status |
+|---|---|---|---|
+| Home | Public | `/site/` | ✅ Done |
+| Club Information (officers, location) | Public | `/site/about`, `/site/officers` | ✅ Done |
+| Membership Application | Public | `/apply` | ✅ Done |
+| Calendar of Events | Public | `/site/calendar` | ✅ Done |
+| Upcoming Meeting | Public | `/site/upcoming-events` | ✅ Done |
+| Skill Center & Mentoring | Public | `/site/skill-center` | ✅ Done |
+| Resources | Public | `/site/resources` | ✅ Done |
+| Contact Us | Public | `/site/contact` | ✅ Done |
+| Membership Dues & Donations | Public | `/site/dues` — Phase 2 | ⬜ Pending |
+| Virginia Woodturning Symposium | Public | `/site/symposium` — static page | ⬜ Pending |
+| Newsletters — current 2 years | Members | `/site/newsletters` — members_only | ⬜ Pending |
+| Newsletters — older than 2 years | Archive | Google Drive: `CVW Club Files/Newsletters/` | ⬜ Pending |
+| Member's Gallery | Members | `/site/gallery` — members_only, Phase 2 | ⬜ Pending |
+| Members Only (WP password page) | TBD | Determine actual content first | ⬜ Blocked |
+
+**Archive rule:** Content older than 2 years moves to Google Drive only — no web route. A "Older issues →" link on the newsletters page points to the Drive folder.
+
+### Members Nav Dropdown
+
+A **"Members"** top-level nav item with a dropdown. Pages flagged `members_only` in the `PublicPage` table do not appear in the dropdown for unauthenticated visitors. Officers bypass the member login automatically (already implemented).
+
+```
+Members ▾
+  ├── Newsletters          (members_only — current 2 years)
+  ├── Member Gallery       (members_only — Phase 2)
+  └── Renew Membership     (members_only — dues + PayPal, Phase 3)
+```
+
+Non-members see the "Members" label but an empty or login-prompt dropdown. The `PublicPage.members_only` flag and `member_site_authed` session handle visibility — no new auth machinery needed.
+
+### Migration Process
+
+- [ ] **Get Dropbox access** — inventory financial records, minutes, member lists, historical docs before finalising what migrates vs. archives (blocker for full classification)
+- [ ] **Determine "Members Only" page content** on WordPress — find out what's behind the WP password; classify each item
+- [ ] **Newsletter PDFs** — download all from WordPress; sort by year; 2024–present → `app/static/newsletters/`; pre-2024 → Google Drive
+- [ ] **Build `/site/newsletters` route** — members_only page listing PDFs by year with "Older issues →" Drive link
+- [ ] **Build Members nav dropdown** — add "Members ▾" to `base_public.html`; items hidden from guests using `member_site_authed`
+- [ ] **Symposium page** — static content, low effort; add to Phase 2
+- [ ] **Dues page** — static tier descriptions + PayPal buttons; coordinate with Treasurer (see FINANCIAL_PLAN.md)
+- [ ] **Gallery** — defer until photo approval owner and storage approach are decided
+- [ ] **Dropbox migration** — once accessed: financial historical records → Google Drive; active items → leave in Dropbox until financial module is ready; member lists → verify against DB
 
 [↑ Index](#index)
 

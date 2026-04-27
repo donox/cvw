@@ -28,6 +28,7 @@ Living document tracking decisions, directions, and status of ongoing developmen
   - [Financial Console](#financial-console-1)
   - [Infrastructure](#infrastructure-1)
   - [Public Website](#public-website)
+  - [Club Google Account](#club-google-account)
   - [Off-Site Backup — Google Drive](#off-site-backup--google-drive-pending-team-decision)
   - [Executive Console](#executive-console-1)
   - [Process Library](#process-library)
@@ -219,7 +220,7 @@ Build and maintain a membership management web application for CVW (Central Virg
 ## Pending / Backlog
 
 ### Member Management
-- [ ] Pagination on member list (currently loads all ~109 members)
+- [x] Pagination on member list — 25 per page, prev/next/numbered controls, preserves search/sort/dir params
 - [x] Email member(s) directly from member detail page
 - [x] Reverse sort (toggle asc/desc) on member list columns
 - [x] Member Query / Report page — `/members/query` with filters, sortable columns, CSV export, print, Save as Group
@@ -246,9 +247,69 @@ Build and maintain a membership management web application for CVW (Central Virg
 - [ ] PayPal dues payment integration (requires public server + PayPal dev account)
 
 ### Public Website
+
+See [PUBLIC_SITE_PLAN.md](PUBLIC_SITE_PLAN.md) for full rationale and content classification detail.
+
+**Infrastructure (done):**
 - [x] Members-only access — per-page flags + shared password; admin UI at `/admin/content/access`
 - [x] Per-event registration restriction — `zoom_members_only` / `members_only` on OrgEvent; enforced in form and server-side
-- [ ] Phase 2: newsletters, gallery (see PUBLIC_SITE_PLAN.md)
+
+**Content migration from WordPress:**
+- [ ] Get Dropbox access — inventory before finalising migration plan (blocker)
+- [ ] Determine actual content behind WordPress "Members Only" password page
+- [ ] Download and sort all newsletter PDFs; 2024–present → server; pre-2024 → Google Drive
+- [ ] Build `/site/newsletters` route — members_only, PDFs by year, link to Drive archive
+- [ ] Build "Members ▾" nav dropdown in `base_public.html` — items hidden from guests
+
+**Phase 2 pages:**
+- [ ] Symposium page — `/site/symposium`, static content, low effort
+- [ ] Dues page — `/site/dues`, tier descriptions + PayPal buttons (coordinate with Treasurer)
+- [ ] Member gallery — `/site/gallery`, members_only; defer until photo approval owner decided
+- [ ] Dropbox migration — historical records → Google Drive; active items stay until financial module ready
+
+**Phase 3 (deferred):**
+- [ ] PayPal dues payment integration — webhook, auto-mark dues_paid (see FINANCIAL_PLAN.md)
+- [ ] Newsletter upload tool — admin UI to upload and publish PDFs
+- [ ] Gallery submission — member upload + officer approval workflow
+- [ ] Email contact routing — contact form emails correct officer by role (requires SMTP config)
+
+### Club Google Account
+
+A dedicated Google account owned by the club (not any individual officer) provides Gmail, Drive, Calendar, and Docs under a single shared identity that survives officer turnover.
+
+**Create the account:**
+1. Go to gmail.com → Create account → "For my personal use"
+2. Choose a name — e.g. `cvwoodturners@gmail.com`, `cvwmembership@gmail.com` (have backups ready; common names are taken)
+3. Add a recovery email (current president or webmaster's personal address) so the account is not locked out if the password is lost
+4. Record credentials in `docs/private/CREDENTIALS.md`
+5. Note the account in `docs/private/SUCCESSION.md` under "Accounts" so future officers can access it
+
+**Uses:**
+
+| Use | Detail |
+|---|---|
+| Off-site database backups | Officers download backups from Admin → Backups and upload to a shared Drive folder; also the target for automated rclone backup (see below) |
+| Document archive | Newsletter PDFs, meeting minutes, historical records — organized in Drive folders; linked from the CVW website where relevant |
+| Officer-to-officer communications | Shared inbox visible to multiple officers without sharing personal email accounts |
+
+**Drive folder structure (suggested):**
+```
+CVW Club Files/
+  Backups/           ← automated + manual DB backups
+  Newsletters/       ← monthly PDFs by year
+  Minutes/           ← meeting minutes
+  Historical/        ← pre-2010 records, old member lists
+  Symposium/         ← VTS planning docs
+```
+
+**Decisions needed:**
+- [ ] Who creates the account and sets the recovery email?
+- [ ] What Gmail address? (Check availability; `cvwoodturners@gmail.com` is a likely candidate)
+- [ ] Who has the password? (Store in CREDENTIALS.md; at minimum: president + webmaster)
+
+[↑ Index](#index)
+
+---
 
 ### Off-Site Backup — Google Drive (pending team decision)
 
